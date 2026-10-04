@@ -372,12 +372,14 @@
                     case '4': case '5': case '6':
                         if (player.pri.fountains[4].completions.gt(0) && player.pri.fountains[5].completions.gt(0) && player.pri.fountains[6].completions.gt(0) && !hasAchievement("achievements", 1209)) completeAchievement("achievements", 1209);
                         break;
-                    case '7': case '8': case '9': case '10':
+                    case '7': case '8': case '9':
                         if (player.pri.fountains[7].completions.gt(0)) {
                             if (!hasAchievement("achievements", 1212)) completeAchievement("achievements", 1212);
                             if (player.pri.fountains[7].completions.gt(0) && player.pri.fountains[8].completions.gt(0) && player.pri.fountains[9].completions.gt(0) && !hasAchievement("achievements", 1214)) completeAchievement("achievements", 1214);
                         }
                         break;
+                    case '10': case '11': case '12':
+                        if (player.pri.fountains[10].completions.gt(0) && player.pri.fountains[11].completions.gt(0) && player.pri.fountains[12].completions.gt(0) && !hasAchievement("achievements", 1223)) completeAchievement("achievements", 1223);
                     default:
                         break;
                 }
@@ -415,16 +417,16 @@
         player.wel.lightGain = new Decimal(1)
 
         player.wel.modules[1].time = player.wel.modules[1].maxTime
-        player.wel.modules[1].timeSpeed = new Decimal(0)
+        player.wel.modules[1].timeSpeed = new Decimal(1)
         player.wel.modules[1].completions = new Decimal(0)
         player.wel.modules[2].time = player.wel.modules[2].maxTime
-        player.wel.modules[2].timeSpeed = new Decimal(0)
+        player.wel.modules[2].timeSpeed = new Decimal(1)
         player.wel.modules[2].completions = new Decimal(0)
         player.wel.modules[3].time = player.wel.modules[3].maxTime
-        player.wel.modules[3].timeSpeed = new Decimal(0)
+        player.wel.modules[3].timeSpeed = new Decimal(1)
         player.wel.modules[3].completions = new Decimal(0)
         player.wel.modules[4].time = player.wel.modules[4].maxTime
-        player.wel.modules[4].timeSpeed = new Decimal(0)
+        player.wel.modules[4].timeSpeed = new Decimal(1)
         player.wel.modules[4].completions = new Decimal(0)
 
         player.wel.fountains[1].completions = new Decimal(0)
@@ -693,401 +695,6 @@
                 } else {
                     look.background = "#361e1e"
                     look.border = "3px solid #663737"
-                    look.color = "white"
-                }
-                return look
-            },
-        },
-        1001: {
-            title() { return "<h3>Focus</h3>" + (hasUpgrade("bum", 11) ? "" : ("<br><small>(" + formatSimpleTime(player.pri.fountains[this.id - 1000].focusTimer, 1) + ")")) },
-            canClick() { return player.prj.focused.lt(player.prj.maxFocused) && !player.pri.fountains[this.id - 1000].isFocused },
-            unlocked() { return layers.pri.fountains[this.id - 1000].canAuto() },
-            onClick() {
-                player.prj.focused = player.prj.focused.add(1)
-                player.pri.fountains[this.id - 1000].isFocused = true
-
-                if (player.pri.fountains[this.id - 1000].focused) {
-                    player.pri.fountains[this.id - 1000].focused = false
-                    player.prj.focused = player.prj.focused.sub(1)
-                }
-            },
-            style() {
-                let look = {width: "108px", minHeight: "45px", borderRadius: "0px"}
-                if (player.pri.fountains[this.id - 1000].isFocused) {
-                    look.backgroundColor = "#335966"
-                    look.border = "3px solid #4d9999"
-                    look.color = "white"
-                } else if (this.canClick()) {
-                    look.backgroundColor = "#dfffdf"
-                    look.border = "3px solid #3359667f"
-                    look.color = "black"
-                } else {
-                    look.background = "#361e1e"
-                    look.border = "3px solid #3359667f"
-                    look.color = "white"
-                }
-                return look
-            },
-        },
-        1002: {
-            title() { return "<h3>Focus</h3>" + (hasUpgrade("bum", 11) ? "" : ("<br><small>(" + formatSimpleTime(player.pri.fountains[this.id - 1000].focusTimer, 1) + ")")) },
-            canClick() { return player.prj.focused.lt(player.prj.maxFocused) && !player.pri.fountains[this.id - 1000].isFocused },
-            unlocked() { return layers.pri.fountains[this.id - 1000].canAuto() },
-            onClick() {
-                player.prj.focused = player.prj.focused.add(1)
-                player.pri.fountains[this.id - 1000].isFocused = true
-            },
-            style() {
-                let look = {width: "108px", minHeight: "45px", borderRadius: "0px"}
-                if (player.pri.fountains[this.id - 1000].isFocused) {
-                    look.backgroundColor = "#335966"
-                    look.border = "3px solid #4d9999"
-                    look.color = "white"
-                } else if (this.canClick()) {
-                    look.backgroundColor = "#dfffdf"
-                    look.border = "3px solid #3359667f"
-                    look.color = "black"
-                } else {
-                    look.background = "#361e1e"
-                    look.border = "3px solid #3359667f"
-                    look.color = "white"
-                }
-                return look
-            },
-        },
-        1003: {
-            title() { return "<h3>Focus</h3>" + (hasUpgrade("bum", 11) ? "" : ("<br><small>(" + formatSimpleTime(player.pri.fountains[this.id - 1000].focusTimer, 1) + ")")) },
-            canClick() { return player.prj.focused.lt(player.prj.maxFocused) && !player.pri.fountains[this.id - 1000].isFocused },
-            unlocked() { return layers.pri.fountains[this.id - 1000].canAuto() },
-            onClick() {
-                player.prj.focused = player.prj.focused.add(1)
-                player.pri.fountains[this.id - 1000].isFocused = true
-            },
-            style() {
-                let look = {width: "108px", minHeight: "45px", borderRadius: "0px"}
-                if (player.pri.fountains[this.id - 1000].isFocused) {
-                    look.backgroundColor = "#335966"
-                    look.border = "3px solid #4d9999"
-                    look.color = "white"
-                } else if (this.canClick()) {
-                    look.backgroundColor = "#dfffdf"
-                    look.border = "3px solid #3359667f"
-                    look.color = "black"
-                } else {
-                    look.background = "#361e1e"
-                    look.border = "3px solid #3359667f"
-                    look.color = "white"
-                }
-                return look
-            },
-        },
-        1004: {
-            title() { return "<h3>Focus</h3>" + (hasUpgrade("bum", 11) ? "" : ("<br><small>(" + formatSimpleTime(player.pri.fountains[this.id - 1000].focusTimer, 1) + ")")) },
-            canClick() { return player.prj.focused.lt(player.prj.maxFocused) && !player.pri.fountains[this.id - 1000].isFocused },
-            unlocked() { return layers.pri.fountains[this.id - 1000].canAuto() },
-            onClick() {
-                player.prj.focused = player.prj.focused.add(1)
-                player.pri.fountains[this.id - 1000].isFocused = true
-            },
-            style() {
-                let look = {width: "108px", minHeight: "45px", borderRadius: "0px"}
-                if (player.pri.fountains[this.id - 1000].isFocused) {
-                    look.backgroundColor = "#335966"
-                    look.border = "3px solid #4d9999"
-                    look.color = "white"
-                } else if (this.canClick()) {
-                    look.backgroundColor = "#dfffdf"
-                    look.border = "3px solid #3359667f"
-                    look.color = "black"
-                } else {
-                    look.background = "#361e1e"
-                    look.border = "3px solid #3359667f"
-                    look.color = "white"
-                }
-                return look
-            },
-        },
-        1005: {
-            title() { return "<h3>Focus</h3>" + (hasUpgrade("bum", 11) ? "" : ("<br><small>(" + formatSimpleTime(player.pri.fountains[this.id - 1000].focusTimer, 1) + ")")) },
-            canClick() { return player.prj.focused.lt(player.prj.maxFocused) && !player.pri.fountains[this.id - 1000].isFocused },
-            unlocked() { return layers.pri.fountains[this.id - 1000].canAuto() },
-            onClick() {
-                player.prj.focused = player.prj.focused.add(1)
-                player.pri.fountains[this.id - 1000].isFocused = true
-            },
-            style() {
-                let look = {width: "108px", minHeight: "45px", borderRadius: "0px"}
-                if (player.pri.fountains[this.id - 1000].isFocused) {
-                    look.backgroundColor = "#335966"
-                    look.border = "3px solid #4d9999"
-                    look.color = "white"
-                } else if (this.canClick()) {
-                    look.backgroundColor = "#dfffdf"
-                    look.border = "3px solid #3359667f"
-                    look.color = "black"
-                } else {
-                    look.background = "#361e1e"
-                    look.border = "3px solid #3359667f"
-                    look.color = "white"
-                }
-                return look
-            },
-        },
-        1006: {
-            title() { return "<h3>Focus</h3>" + (hasUpgrade("bum", 11) ? "" : ("<br><small>(" + formatSimpleTime(player.pri.fountains[this.id - 1000].focusTimer, 1) + ")")) },
-            canClick() { return player.prj.focused.lt(player.prj.maxFocused) && !player.pri.fountains[this.id - 1000].isFocused },
-            unlocked() { return layers.pri.fountains[this.id - 1000].canAuto() },
-            onClick() {
-                player.prj.focused = player.prj.focused.add(1)
-                player.pri.fountains[this.id - 1000].isFocused = true
-            },
-            style() {
-                let look = {width: "108px", minHeight: "45px", borderRadius: "0px"}
-                if (player.pri.fountains[this.id - 1000].isFocused) {
-                    look.backgroundColor = "#335966"
-                    look.border = "3px solid #4d9999"
-                    look.color = "white"
-                } else if (this.canClick()) {
-                    look.backgroundColor = "#dfffdf"
-                    look.border = "3px solid #3359667f"
-                    look.color = "black"
-                } else {
-                    look.background = "#361e1e"
-                    look.border = "3px solid #3359667f"
-                    look.color = "white"
-                }
-                return look
-            },
-        },
-        1007: {
-            title() { return "<h3>Focus</h3>" + (hasUpgrade("bum", 11) ? "" : ("<br><small>(" + formatSimpleTime(player.pri.fountains[this.id - 1000].focusTimer, 1) + ")")) },
-            canClick() { return player.prj.focused.lt(player.prj.maxFocused) && !player.pri.fountains[this.id - 1000].isFocused },
-            unlocked() { return layers.pri.fountains[this.id - 1000].canAuto() },
-            onClick() {
-                player.prj.focused = player.prj.focused.add(1)
-                player.pri.fountains[this.id - 1000].isFocused = true
-            },
-            style() {
-                let look = {width: "108px", minHeight: "45px", borderRadius: "0px"}
-                if (player.pri.fountains[this.id - 1000].isFocused) {
-                    look.backgroundColor = "#335966"
-                    look.border = "3px solid #4d9999"
-                    look.color = "white"
-                } else if (this.canClick()) {
-                    look.backgroundColor = "#dfffdf"
-                    look.border = "3px solid #3359667f"
-                    look.color = "black"
-                } else {
-                    look.background = "#361e1e"
-                    look.border = "3px solid #3359667f"
-                    look.color = "white"
-                }
-                return look
-            },
-        },
-        1008: {
-            title() { return "<h3>Focus</h3>" + (hasUpgrade("bum", 11) ? "" : ("<br><small>(" + formatSimpleTime(player.pri.fountains[this.id - 1000].focusTimer, 1) + ")")) },
-            canClick() { return player.prj.focused.lt(player.prj.maxFocused) && !player.pri.fountains[this.id - 1000].isFocused },
-            unlocked() { return layers.pri.fountains[this.id - 1000].canAuto() },
-            onClick() {
-                player.prj.focused = player.prj.focused.add(1)
-                player.pri.fountains[this.id - 1000].isFocused = true
-            },
-            style() {
-                let look = {width: "108px", minHeight: "45px", borderRadius: "0px"}
-                if (player.pri.fountains[this.id - 1000].isFocused) {
-                    look.backgroundColor = "#335966"
-                    look.border = "3px solid #4d9999"
-                    look.color = "white"
-                } else if (this.canClick()) {
-                    look.backgroundColor = "#dfffdf"
-                    look.border = "3px solid #3359667f"
-                    look.color = "black"
-                } else {
-                    look.background = "#361e1e"
-                    look.border = "3px solid #3359667f"
-                    look.color = "white"
-                }
-                return look
-            },
-        },
-        1009: {
-            title() { return "<h3>Focus</h3>" + (hasUpgrade("bum", 11) ? "" : ("<br><small>(" + formatSimpleTime(player.pri.fountains[this.id - 1000].focusTimer, 1) + ")")) },
-            canClick() { return player.prj.focused.lt(player.prj.maxFocused) && !player.pri.fountains[this.id - 1000].isFocused },
-            unlocked() { return layers.pri.fountains[this.id - 1000].canAuto() },
-            onClick() {
-                player.prj.focused = player.prj.focused.add(1)
-                player.pri.fountains[this.id - 1000].isFocused = true
-            },
-            style() {
-                let look = {width: "108px", minHeight: "45px", borderRadius: "0px"}
-                if (player.pri.fountains[this.id - 1000].isFocused) {
-                    look.backgroundColor = "#335966"
-                    look.border = "3px solid #4d9999"
-                    look.color = "white"
-                } else if (this.canClick()) {
-                    look.backgroundColor = "#dfffdf"
-                    look.border = "3px solid #3359667f"
-                    look.color = "black"
-                } else {
-                    look.background = "#361e1e"
-                    look.border = "3px solid #3359667f"
-                    look.color = "white"
-                }
-                return look
-            },
-        },
-        1010: {
-            title() { return "<h3>Focus</h3>" + (hasUpgrade("bum", 11) ? "" : ("<br><small>(" + formatSimpleTime(player.pri.fountains[this.id - 1000].focusTimer, 1) + ")")) },
-            canClick() { return player.prj.focused.lt(player.prj.maxFocused) && !player.pri.fountains[this.id - 1000].isFocused },
-            unlocked() { return layers.pri.fountains[this.id - 1000].canAuto() },
-            onClick() {
-                player.prj.focused = player.prj.focused.add(1)
-                player.pri.fountains[this.id - 1000].isFocused = true
-            },
-            style() {
-                let look = {width: "108px", minHeight: "45px", borderRadius: "0px"}
-                if (player.pri.fountains[this.id - 1000].isFocused) {
-                    look.backgroundColor = "#335966"
-                    look.border = "3px solid #4d9999"
-                    look.color = "white"
-                } else if (this.canClick()) {
-                    look.backgroundColor = "#dfffdf"
-                    look.border = "3px solid #3359667f"
-                    look.color = "black"
-                } else {
-                    look.background = "#361e1e"
-                    look.border = "3px solid #3359667f"
-                    look.color = "white"
-                }
-                return look
-            },
-        },
-        1011: {
-            title() { return "<h3>Focus</h3>" + (hasUpgrade("bum", 11) ? "" : ("<br><small>(" + formatSimpleTime(player.pri.fountains[this.id - 1000].focusTimer, 1) + ")")) },
-            canClick() { return player.prj.focused.lt(player.prj.maxFocused) && !player.pri.fountains[this.id - 1000].isFocused },
-            unlocked() { return layers.pri.fountains[this.id - 1000].canAuto() },
-            onClick() {
-                player.prj.focused = player.prj.focused.add(1)
-                player.pri.fountains[this.id - 1000].isFocused = true
-            },
-            style() {
-                let look = {width: "108px", minHeight: "45px", borderRadius: "0px"}
-                if (player.pri.fountains[this.id - 1000].isFocused) {
-                    look.backgroundColor = "#335966"
-                    look.border = "3px solid #4d9999"
-                    look.color = "white"
-                } else if (this.canClick()) {
-                    look.backgroundColor = "#dfffdf"
-                    look.border = "3px solid #3359667f"
-                    look.color = "black"
-                } else {
-                    look.background = "#361e1e"
-                    look.border = "3px solid #3359667f"
-                    look.color = "white"
-                }
-                return look
-            },
-        },
-        1012: {
-            title() { return "<h3>Focus</h3>" + (hasUpgrade("bum", 11) ? "" : ("<br><small>(" + formatSimpleTime(player.pri.fountains[this.id - 1000].focusTimer, 1) + ")")) },
-            canClick() { return player.prj.focused.lt(player.prj.maxFocused) && !player.pri.fountains[this.id - 1000].isFocused },
-            unlocked() { return layers.pri.fountains[this.id - 1000].canAuto() },
-            onClick() {
-                player.prj.focused = player.prj.focused.add(1)
-                player.pri.fountains[this.id - 1000].isFocused = true
-            },
-            style() {
-                let look = {width: "108px", minHeight: "45px", borderRadius: "0px"}
-                if (player.pri.fountains[this.id - 1000].isFocused) {
-                    look.backgroundColor = "#335966"
-                    look.border = "3px solid #4d9999"
-                    look.color = "white"
-                } else if (this.canClick()) {
-                    look.backgroundColor = "#dfffdf"
-                    look.border = "3px solid #3359667f"
-                    look.color = "black"
-                } else {
-                    look.background = "#361e1e"
-                    look.border = "3px solid #3359667f"
-                    look.color = "white"
-                }
-                return look
-            },
-        },
-        1013: {
-            title() { return "<h3>Focus</h3>" + (hasUpgrade("bum", 11) ? "" : ("<br><small>(" + formatSimpleTime(player.pri.fountains[this.id - 1000].focusTimer, 1) + ")")) },
-            canClick() { return player.prj.focused.lt(player.prj.maxFocused) && !player.pri.fountains[this.id - 1000].isFocused },
-            unlocked() { return layers.pri.fountains[this.id - 1000].canAuto() },
-            onClick() {
-                player.prj.focused = player.prj.focused.add(1)
-                player.pri.fountains[this.id - 1000].isFocused = true
-            },
-            style() {
-                let look = {width: "108px", minHeight: "45px", borderRadius: "0px"}
-                if (player.pri.fountains[this.id - 1000].isFocused) {
-                    look.backgroundColor = "#335966"
-                    look.border = "3px solid #4d9999"
-                    look.color = "white"
-                } else if (this.canClick()) {
-                    look.backgroundColor = "#dfffdf"
-                    look.border = "3px solid #3359667f"
-                    look.color = "black"
-                } else {
-                    look.background = "#361e1e"
-                    look.border = "3px solid #3359667f"
-                    look.color = "white"
-                }
-                return look
-            },
-        },
-        1014: {
-            title() { return "<h3>Focus</h3>" + (hasUpgrade("bum", 11) ? "" : ("<br><small>(" + formatSimpleTime(player.pri.fountains[this.id - 1000].focusTimer, 1) + ")")) },
-            canClick() { return player.prj.focused.lt(player.prj.maxFocused) && !player.pri.fountains[this.id - 1000].isFocused },
-            unlocked() { return layers.pri.fountains[this.id - 1000].canAuto() },
-            onClick() {
-                player.prj.focused = player.prj.focused.add(1)
-                player.pri.fountains[this.id - 1000].isFocused = true
-            },
-            style() {
-                let look = {width: "108px", minHeight: "45px", borderRadius: "0px"}
-                if (player.pri.fountains[this.id - 1000].isFocused) {
-                    look.backgroundColor = "#335966"
-                    look.border = "3px solid #4d9999"
-                    look.color = "white"
-                } else if (this.canClick()) {
-                    look.backgroundColor = "#dfffdf"
-                    look.border = "3px solid #3359667f"
-                    look.color = "black"
-                } else {
-                    look.background = "#361e1e"
-                    look.border = "3px solid #3359667f"
-                    look.color = "white"
-                }
-                return look
-            },
-        },
-        1015: {
-            title() { return "<h3>Focus</h3>" + (hasUpgrade("bum", 11) ? "" : ("<br><small>(" + formatSimpleTime(player.pri.fountains[this.id - 1000].focusTimer, 1) + ")")) },
-            canClick() { return player.prj.focused.lt(player.prj.maxFocused) && !player.pri.fountains[this.id - 1000].isFocused },
-            unlocked() { return layers.pri.fountains[this.id - 1000].canAuto() },
-            onClick() {
-                player.prj.focused = player.prj.focused.add(1)
-                player.pri.fountains[this.id - 1000].isFocused = true
-            },
-            style() {
-                let look = {width: "108px", minHeight: "45px", borderRadius: "0px"}
-                if (player.pri.fountains[this.id - 1000].isFocused) {
-                    look.backgroundColor = "#335966"
-                    look.border = "3px solid #4d9999"
-                    look.color = "white"
-                } else if (this.canClick()) {
-                    look.backgroundColor = "#dfffdf"
-                    look.border = "3px solid #3359667f"
-                    look.color = "black"
-                } else {
-                    look.background = "#361e1e"
-                    look.border = "3px solid #3359667f"
                     look.color = "white"
                 }
                 return look
@@ -1606,7 +1213,8 @@
                 let completions = player.pri.fountains[10].completions
                 let s = new Decimal(1)
 
-                s = s.mul(completions.add(1).pow_base(completions.div(2).add(1)))
+                s = s.mul(completions.add(1).pow_base(completions.div(4).add(1)))
+                s = s.mul(completions.pow_base(2))
                 s = s.mul(completions.sub(20).max(0).pow_base(2))
 
                 s = s.pow(1.0625).mul(4e40)
@@ -1617,7 +1225,8 @@
                 let completions = player.pri.fountains[10].completions
                 let s = new Decimal(1)
 
-                s = s.mul(completions.add(1).pow_base(completions.div(2).add(1)))
+                s = s.mul(completions.add(1).pow_base(completions.div(4).add(1)))
+                s = s.mul(completions.pow_base(2))
                 s = s.mul(completions.sub(20).max(0).pow_base(2))
 
                 s = s.mul(1e36)
@@ -1660,7 +1269,8 @@
                 let completions = player.pri.fountains[11].completions
                 let s = new Decimal(1)
 
-                s = s.mul(completions.add(1).pow_base(completions.div(2).add(1)))
+                s = s.mul(completions.add(1).pow_base(completions.div(4).add(1)))
+                s = s.mul(completions.pow_base(3))
                 s = s.mul(completions.sub(20).max(0).pow_base(2))
 
                 s = s.pow(1.0625).mul(4e44)
@@ -1671,7 +1281,8 @@
                 let completions = player.pri.fountains[11].completions
                 let s = new Decimal(1)
 
-                s = s.mul(completions.add(1).pow_base(completions.div(2).add(1)))
+                s = s.mul(completions.add(1).pow_base(completions.div(4).add(1)))
+                s = s.mul(completions.pow_base(3))
                 s = s.mul(completions.sub(20).max(0).pow_base(2))
 
                 s = s.mul(1e40)
@@ -1688,12 +1299,10 @@
         },
         12: {
             title: "Star",
-            unlocked() { return player.pri.fountains[2].completions.gt(0) || player.pri.fountains[3].completions.gt(0) },
             conditionDisplay() { return "400 Starlight Fountain ↻"},
-            condition() { return player.pri.fountains[1].completions.gte(8) },
             canAuto() { return hasMilestone("prj", 406) },
             infiniteAuto() { return false },
-            effectDisplay() { return "Boosts starlight fountain speed by x" + formatSimple(layers.pri.fountains[11].getCompletionEffect(), 2) + "."},
+            effectDisplay() { return "Boosts starlight fountain speed by x" + formatSimple(layers.pri.fountains[12].getCompletionEffect(), 2) + "."},
             currencyLocation() { return player.pri },
             currencyInternalName: "prisms",
             currencyDisplayName: "Prisms",
@@ -1706,7 +1315,7 @@
             getCompletionEffect() {
                 let completions = player.pri.fountains[12].completions
 
-                s = completions.div(4).add(1)
+                s = completions.pow(0.75).pow_base(1.5)
 
                 return s
             },
@@ -1714,16 +1323,23 @@
                 let completions = player.pri.fountains[12].completions
                 let s = new Decimal(1)
 
-                s = s.mul(completions.pow_base(5))
-                s = s.mul(completions.sub(20).max(0).pow_base(1.4))
-                s = s.pow(1.0625).mul(4e52)
+                s = s.mul(completions.add(1).pow_base(completions.div(2).add(1)))
+                s = s.mul(completions.pow_base(4))
+                s = s.mul(completions.sub(20).max(0).pow_base(2))
+
+                s = s.pow(1.0625).mul(4e58)
 
                 return s
             },
             getstatReq() {
                 let completions = player.pri.fountains[12].completions
-                let s = completions.pow_base(5).mul(1e48)
-                s = s.mul(completions.sub(20).max(0).pow_base(1.4))
+                let s = new Decimal(1)
+
+                s = s.mul(completions.add(1).pow_base(completions.div(2).add(1)))
+                s = s.mul(completions.pow_base(4))
+                s = s.mul(completions.sub(20).max(0).pow_base(2))
+
+                s = s.mul(1e54)
 
                 return s.floor()
             },

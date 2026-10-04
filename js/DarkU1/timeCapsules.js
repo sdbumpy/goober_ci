@@ -161,7 +161,7 @@
             pay(amt) { player.dt.timeEnergy = this.currency().sub(amt) },
             effect(x) {
                 let eff = getBuyableAmount(this.layer, this.id).mul(0.25).add(1).pow(1.5)
-                if (hasMilestone("prj", 115)) eff = eff.mul(getBuyableAmount(this.layer, this.id).pow_base(1.04))
+                if (hasMilestone("prj", 115)) eff = eff.mul(getBuyableAmount(this.layer, this.id).pow_base(1.02))
                 return eff
             },
             unlocked() { return true },

@@ -1090,7 +1090,7 @@ addLayer("achievements", {
             complete() {return false},
             unlocked: true,
             marked: true,
-        },/*
+        },
         1216: {
             name: "???",
             image: "resources/achievements/12_19.png",
@@ -1120,7 +1120,7 @@ addLayer("achievements", {
             image: "resources/achievements/12_17.png",
             tooltip: "<h3>awwww kitty!!!</h3><hr style='margin-bottom:4px'>Unlock goobert.<br><br>Reward: Fragment<br>shop cooldowns<br>are 2% shorter.",
             color: "#994d99",
-            complete() {return false},
+            complete() {return hasUpgrade("bum", 13)},
             unlocked: true,
             marked: true,
         },
@@ -1129,7 +1129,7 @@ addLayer("achievements", {
             image: "resources/achievements/12_19.png",
             tooltip: "<h3>Those Count?</h3><hr style='margin-bottom:4px'>Complete project 3-6.",
             color: "#994d99",
-            complete() {return false},
+            complete() {return hasMilestone("prj", 306)},
             unlocked: true,
         },
         1221: {
@@ -1137,7 +1137,7 @@ addLayer("achievements", {
             image: "resources/achievements/12_19.png",
             tooltip: "<h3>Mind-numbing</h3><hr style='margin-bottom:4px'>Have 20 focus spent.",
             color: "#994d99",
-            complete() {return false},
+            complete() {return player.prj.focused.gte(20)},
             unlocked: true,
         },
         1222: {
@@ -1163,67 +1163,210 @@ addLayer("achievements", {
             image: "resources/achievements/12_24.png",
             tooltip: "<h3>Now What?</h3><hr style='margin-bottom:4px'>Complete project 4-5.",
             color: "#994d99",
-            complete() {return false},
+            complete() {return hasMilestone("prj", 405)},
             unlocked: true,
         },
-        /*
-        1218: {
-            name: "okay this is getting ridiculous",
-            image: "resources/achievements/12_19.png",
-            tooltip: "<h3>okay this is getting<br>ridiculous</h3><hr style='margin-bottom:4px'>Get at least 1 ↻ for each<br>of the first twelve<br>pyramid fountains.<br><br>Reward: Pyramid fountains<br>are 20% cheaper.",
-            color: "#994d99",
-            complete() {return false},
-            unlocked: true,
-            marked: true,
-        },
-        1220: {
-            name: "Advanced Classes",
-            image: "resources/achievements/12_19.png",
-            tooltip: "<h3>Advanced Classes</h3><hr style='margin-bottom:4px'>Get a research project ↻.",
+        // Row 1: Unlock before prismatic
+        // Row 2: Unlock before light well delta
+        // Row 3: First few starshine runs
+        // Row 4: Unlock before research projects
+        1701: {
+            name: "Level Two",
+            image: "resources/achievements/17_01.png",
+            tooltip: "<h3>Level Two</h3><hr style='margin-bottom:4px'>Unlock research projects.",
             color: "#994d99",
             complete() {return false},
             unlocked: true,
         },
-        1221: {
+        1702: {
+            name: "Busy Work",
+            image: "resources/achievements/17_02.png",
+            tooltip: "<h3>Busy Work</h3><hr style='margin-bottom:4px'>Reach a focus cap of 30.",
+            color: "#994d99",
+            complete() {return false},
+            unlocked: true,
+        },
+        1703: {
+            name: "Lost In Time",
+            image: "resources/achievements/17_03.png",
+            tooltip: "<h3>Lost In Time</h3><hr style='margin-bottom:4px'>Unlock research projects.",
+            color: "#994d99",
+            complete() {return false},
+            unlocked: true,
+        },
+        1704: {
             name: "The Abyss",
-            image: "resources/achievements/12_19.png",
-            tooltip: "<h3>The Abyss</h3><hr style='margin-bottom:4px'>Obtain a ε ↻.<br><br>Reward: Gain 20%<br>more starlight.",
-            color: "#994d99",
-            complete() {return false},
-            unlocked: true,
-            marked: true,
-        },
-        1222: {
-            name: "We've Made It",
-            image: "resources/achievements/12_19.png",
-            tooltip: "<h3>We've Made It</h3><hr style='margin-bottom:4px'>Get at least 1 ↻ for<br>every pyramid fountain.<br><br>Reward: Gain +1 prism<br>well ↻ on collect after<br>multipliers.",
-            color: "#994d99",
-            complete() {return false},
-            unlocked: true,
-            marked: true,
-        },
-        1223: {
-            name: "Rock Bottom",
-            image: "resources/achievements/12_19.png",
-            tooltip: "<h3>Rock Bottom</h3><hr style='margin-bottom:4px'>Obtain a θ ↻.<br><br>Reward: Gain 20%<br>more prism well ↻<br>on collect.",
-            color: "#994d99",
-            complete() {return false},
-            unlocked: true,
-            marked: true,
-        },
-        1224: {
-            name: "Elite Bumpy Knowledge",
-            image: "resources/achievements/12_19.png",
-            tooltip: "<h3>Elite Bumpy Knowledge</h3><hr style='margin-bottom:4px'>Have 60 total project ↻.",
+            image: "resources/achievements/17_04.png",
+            tooltip: "<h3>The Abyss</h3><hr style='margin-bottom:4px'>Obtain an ε ↻.",
             color: "#994d99",
             complete() {return false},
             unlocked: true,
         },
-        */
-        // Row 1: Wells of Light
-        // Row 2: Prisms to Light Well Delta
-        // Row 3: Light Well Delta to Wells of Prisms
-        // Row 4: Wells of Prisms to Cycle unlock
+        1705: {
+            name: "???",
+            image: "resources/achievements/17_05.png",
+            tooltip: "<h3>???</h3><hr style='margin-bottom:4px'>???.",
+            color: "#994d99",
+            complete() {return false},
+            unlocked: true,
+        },
+        1706: {
+            name: "???",
+            image: "resources/achievements/17_06.png",
+            tooltip: "<h3>???</h3><hr style='margin-bottom:4px'>???.",
+            color: "#994d99",
+            complete() {return false},
+            unlocked: true,
+        },
+        1707: {
+            name: "How deep does it go?",
+            image: "resources/achievements/17_07.png",
+            tooltip: "<h3>How deep does it go?</h3><hr style='margin-bottom:4px'>Get at least 1 ↻ for each<br>of the first fourteen pyramid<br>fountains.",
+            color: "#994d99",
+            complete() {return false},
+            unlocked: true,
+        },
+        1708: {
+            name: "???",
+            image: "resources/achievements/17_08.png",
+            tooltip: "<h3>???</h3><hr style='margin-bottom:4px'>???.",
+            color: "#994d99",
+            complete() {return false},
+            unlocked: true,
+        },
+        1709: {
+            name: "???",
+            image: "resources/achievements/17_09.png",
+            tooltip: "<h3>???</h3><hr style='margin-bottom:4px'>???.",
+            color: "#994d99",
+            complete() {return false},
+            unlocked: true,
+        },
+        1710: {
+            name: "???",
+            image: "resources/achievements/17_10.png",
+            tooltip: "<h3>???</h3><hr style='margin-bottom:4px'>???.",
+            color: "#994d99",
+            complete() {return false},
+            unlocked: true,
+        },
+        1711: {
+            name: "???",
+            image: "resources/achievements/17_11.png",
+            tooltip: "<h3>???</h3><hr style='margin-bottom:4px'>???.",
+            color: "#994d99",
+            complete() {return false},
+            unlocked: true,
+        },
+        1712: {
+            name: "???",
+            image: "resources/achievements/17_12.png",
+            tooltip: "<h3>???</h3><hr style='margin-bottom:4px'>???.",
+            color: "#994d99",
+            complete() {return false},
+            unlocked: true,
+        },
+        1713: {
+            name: "Universeception",
+            image: "resources/achievements/17_13.png",
+            tooltip: "<h3>Universeception</h3><hr style='margin-bottom:4px'>Enter the cycle.",
+            color: "#994d73",
+            complete() {return false},
+            unlocked: true,
+        },
+        1714: {
+            name: "Acclimatization",
+            image: "resources/achievements/17_14.png",
+            tooltip: "<h3>Acclimatization</h3><hr style='margin-bottom:4px'>Obtain a Β ↻.",
+            color: "#994d73",
+            complete() {return false},
+            unlocked: true,
+        },
+        1715: {
+            name: "Mega Cycle",
+            image: "resources/achievements/17_15.png",
+            tooltip: "<h3>Mega Cycle</h3><hr style='margin-bottom:4px'>Do 10 cycle resets.",
+            color: "#994d73",
+            complete() {return false},
+            unlocked: true,
+        },
+        1716: {
+            name: "Altitude Sickness",
+            image: "resources/achievements/17_16.png",
+            tooltip: "<h3>Altitude Sickness</h3><hr style='margin-bottom:4px'>Obtain a Γ ↻.",
+            color: "#994d73",
+            complete() {return false},
+            unlocked: true,
+        },
+        1717: {
+            name: "???",
+            image: "resources/achievements/17_17.png",
+            tooltip: "<h3>???</h3><hr style='margin-bottom:4px'>???",
+            color: "#994d73",
+            complete() {return false},
+            unlocked: true,
+        },
+        1718: {
+            name: "???",
+            image: "resources/achievements/17_18.png",
+            tooltip: "<h3>???</h3><hr style='margin-bottom:4px'>???",
+            color: "#994d73",
+            complete() {return false},
+            unlocked: true,
+        },
+        1719: {
+            name: "The Purple Stuff",
+            image: "resources/achievements/17_19.png",
+            tooltip: "<h3>The Purple Stuff</h3><hr style='margin-bottom:4px'>Unlock planetarium.",
+            color: "#994d73",
+            complete() {return false},
+            unlocked: true,
+        },
+        1720: {
+            name: "Automation if it was manual",
+            image: "resources/achievements/17_20.png",
+            tooltip: "<h3>Automation if it<br>was manual</h3><hr style='margin-bottom:4px'>Have a focus cap<br>of 100.",
+            color: "#994d73",
+            complete() {return false},
+            unlocked: true,
+        },
+        1721: {
+            name: "Well Well Well...",
+            image: "resources/achievements/17_21.png",
+            tooltip: "<h3>Well Well Well...</h3><hr style='margin-bottom:4px'>Unlock starlight<br>well ι.",
+            color: "#994d73",
+            complete() {return false},
+            unlocked: true,
+        },
+        1722: {
+            name: "???",
+            image: "resources/achievements/17_22.png",
+            tooltip: "<h3>???</h3><hr style='margin-bottom:4px'>???",
+            color: "#994d73",
+            complete() {return false},
+            unlocked: true,
+        },
+        1723: {
+            name: "???",
+            image: "resources/achievements/17_23.png",
+            tooltip: "<h3>???</h3><hr style='margin-bottom:4px'>???",
+            color: "#994d73",
+            complete() {return false},
+            unlocked: true,
+        },
+        1724: {
+            name: "The Purple Cycle",
+            image: "resources/achievements/17_24.png",
+            tooltip: "<h3>The Purple Cycle</h3><hr style='margin-bottom:4px'>Do 1,000 cycle<br>resets.",
+            color: "#994d73",
+            complete() {return false},
+            unlocked: true,
+        },
+        // Row 1: Unlock before pyramid row 6
+        // Row 2: Unlock before cycle
+        // Row 3: Unlock before planetarium
+        // Row 4: Unlock before starmetal enhancement
+        /*
         1701: {
             name: "Universeception",
             image: "resources/achievements/17_01.png",
@@ -1427,7 +1570,7 @@ addLayer("achievements", {
             color: "#994d73",
             complete() {return false},
             unlocked: true,
-        },
+        },*/
     },
     tooltip: "Achievements",
     color: "white",
@@ -1586,7 +1729,7 @@ addLayer("achievements", {
                     ], {width: "621px", height: "409px", background: "#333", borderLeft: "3px solid white", padding: "3px"}],
                 ],
             },
-            13: { // Interspace before entering the cycle
+            13: { // Interspace before research projects
                 unlocked() {return hasAchievement("achievements", 1201) || player.lightRift.interspaceUnlocked},
                 content: [
                     ["top-column", [
@@ -1629,7 +1772,7 @@ addLayer("achievements", {
                     ], {width: "621px", height: "409px", background: "#333", borderLeft: "3px solid white", padding: "3px"}],
                 ],
             },
-            17: { // Interspace after entering the cycle, before unlocking anti-singularity
+            17: { // Interspace after research projects, before unlocking starmetal enhancement
                 unlocked() {return hasAchievement("achievements", 1701) || true},
                 content: [
                     ["top-column", [
@@ -1652,7 +1795,7 @@ addLayer("achievements", {
                     ], {width: "621px", height: "409px", background: "#333", borderLeft: "3px solid white", padding: "3px"}],
                 ],
             },
-            19: { // Interspace after unlocking anti-singularity
+            19: { // Interspace after unlocking starmetal enhancement
                 unlocked() {return hasAchievement("achievements", 1901) || true},
                 content: [
                     ["top-column", [
@@ -1662,7 +1805,7 @@ addLayer("achievements", {
                             ["achievement", 1913], ["achievement", 1914], ["achievement", 1915], ["achievement", 1916], ["achievement", 1917], ["achievement", 1918],
                             ["achievement", 1919], ["achievement", 1920], ["achievement", 1921], ["achievement", 1922], ["achievement", 1923], ["achievement", 1924],
                         ]],
-                    ], {width: "621px", height: "409px", background: "#2e1522", borderLeft: "3px solid white", padding: "3px"}],
+                    ], {width: "621px", height: "409px", background: "#1f0e0e", borderLeft: "3px solid white", padding: "3px"}],
                 ],
             },
         },
@@ -1729,13 +1872,13 @@ addLayer("achievements", {
                 */
                /*
                 ["style-row", [
-                    ["category-button", ["~ 17 ~<br><h6>Early Cycle</h6>", "stars", 17], {width: "155px", height: "40px", color: "#e0ffff", background: "#402030", borderRight: "3px solid white"}],
+                    ["category-button", ["~ 17 ~<br><h6>Intermediate Interspace</h6>", "stars", 17], {width: "155px", height: "40px", color: "#e0ffff", background: "#402030", borderRight: "3px solid white"}],
                 ], () => {return tmp.achievements.microtabs.stars[17].unlocked ? {width: "155px", height: "40px", borderBottom: "3px solid white"} : {display: "none !important"}}],
                 ["style-row", [
-                    ["category-button", ["~ 19 ~<br><h6>Late Cycle</h6>", "stars", 19], {width: "155px", height: "40px", color: "#ffe0f0", background: "#5e2441", borderRight: "3px solid white"}],
+                    ["category-button", ["~ 19 ~<br><h6>Late Interspace</h6>", "stars", 19], {width: "155px", height: "40px", color: "#ffe0f0", background: "#402020", borderRight: "3px solid white"}],
                 ], () => {return tmp.achievements.microtabs.stars[19].unlocked ? {width: "155px", height: "40px", borderBottom: "3px solid white"} : {display: "none !important"}}],
                 */
-            ], {width: "170px", height: "415px"}],
+                ], {width: "170px", height: "415px"}],
             ["style-column", [
                 ["buttonless-microtabs", "stars", {borderWidth: "0"}],
             ], {width: "630px", height: "415px"}],

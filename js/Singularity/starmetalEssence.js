@@ -2238,9 +2238,9 @@
         },
         193: {
             costBase() { return [new Decimal(2), new Decimal(1e9)] },
-            costGrowth() { return [new Decimal(1.5), new Decimal(2.5)] },
+            costGrowth() { return [new Decimal(2), new Decimal(2.5)] },
             purchaseLimit() { return new Decimal(5) },
-            currency() { return [player.blu.totalBlueshifts, player.sme.starmetalEssence]},
+            currency() { return [player.blu.effectiveBlueshifts, player.sme.starmetalEssence]},
             pay(amt2) {
                 player.sme.starmetalEssence = this.currency()[1].sub(amt2)
             },
@@ -2257,7 +2257,7 @@
                 return "<h3>SME-J3</h3> (" + formatWhole(getBuyableAmount(this.layer, this.id)) + "/5)\n\
                     Increase D1 exit timer tickspeed by +20%.\n\
                     Currently: +" + formatWhole(tmp[this.layer].buyables[this.id].effect.sub(1).mul(100)) + "%\n\ \n\
-                    Cost:<br>" + formatShortWhole(player.blu.totalBlueshifts) + "/" + formatShortWhole(tmp[this.layer].buyables[this.id].cost[0]) + " Blueshifts\n\
+                    Cost:<br>" + formatSimple(player.blu.effectiveBlueshifts) + "/" + formatShortWhole(tmp[this.layer].buyables[this.id].cost[0]) + " Blueshifts\n\
                     " + formatShortWhole(player.sme.starmetalEssence) + "/" + formatShortWhole(tmp[this.layer].buyables[this.id].cost[1]) + " SME"
             },
             buy() {

@@ -18,6 +18,7 @@
                 cycleSpeedRoot: new Decimal(1),
                 shiftBase: new Decimal(10),
                 resetSafety: false,
+                autoToggle: false,
             },
             2: {
                 amount: new Decimal(0),
@@ -25,6 +26,7 @@
                 cycleSpeedRoot: new Decimal(1),
                 shiftBase: new Decimal(20),
                 resetSafety: false,
+                autoToggle: false,
             },
             3: {
                 amount: new Decimal(0),
@@ -32,6 +34,7 @@
                 cycleSpeedRoot: new Decimal(1),
                 shiftBase: new Decimal(40),
                 resetSafety: false,
+                autoToggle: false,
             },
             4: {
                 amount: new Decimal(0),
@@ -39,6 +42,7 @@
                 cycleSpeedRoot: new Decimal(1),
                 shiftBase: new Decimal(160),
                 resetSafety: false,
+                autoToggle: false,
             },
             5: {
                 amount: new Decimal(0),
@@ -46,6 +50,7 @@
                 cycleSpeedRoot: new Decimal(1),
                 shiftBase: new Decimal(6),
                 resetSafety: false,
+                autoToggle: false,
             },
             6: {
                 amount: new Decimal(0),
@@ -53,6 +58,7 @@
                 cycleSpeedRoot: new Decimal(1),
                 shiftBase: new Decimal(12),
                 resetSafety: false,
+                autoToggle: false,
             },
             7: {
                 amount: new Decimal(0),
@@ -60,6 +66,7 @@
                 cycleSpeedRoot: new Decimal(1),
                 shiftBase: new Decimal(24),
                 resetSafety: false,
+                autoToggle: false,
             },
             8: {
                 amount: new Decimal(0),
@@ -67,6 +74,7 @@
                 cycleSpeedRoot: new Decimal(1),
                 shiftBase: new Decimal(160),
                 resetSafety: false,
+                autoToggle: false,
             },
         },
         blueshiftEffectBase: new Decimal(2),
@@ -113,6 +121,14 @@
             blueshift.cycleGainMul = blueshift.shiftBase.pow(blueshift.amount).pow(player.blu.blueshiftYieldStrength)
             blueshift.cycleSpeedRoot = blueshift.amount.mul(b).add(1)
             player.blu.totalBlueshifts = player.blu.totalBlueshifts.add(blueshift.amount)
+
+            if (blueshift.autoToggle) {
+                if (i <= 4) {
+                    clickClickable("blu", "lightWell" + i + "_blueshift");
+                } else if (i <= 8) {
+                    clickClickable("blu", "prismWell" + i + "_blueshift");
+                }
+            }
         }
         player.blu.extraBlueshifts = new Decimal(0)
         player.blu.extraBlueshifts = player.blu.extraBlueshifts.add(player.bum.fountains[3].completionEffect)
@@ -141,16 +157,12 @@
 
     },
     blueshiftReset(isRewarded, id) {
-        if (!player.wel.modules[id].maxTime.div(player.wel.modules[id].timeSpeed).lte(0.1)) return;
         if (isRewarded) {
             if (!player.wel.modules[id].maxTime.div(player.wel.modules[id].timeSpeed).lte(0.1)) return;
             player.blu.blueshifts[id].amount = player.blu.blueshifts[id].amount.add(1)
             if (!hasAchievement("achievements", 1211)) completeAchievement("achievements", 1211);
         }
         layers.pri.prismReset(false)
-        player.wel.modules[4].time = player.wel.modules[4].maxTime
-        player.wel.modules[4].timeSpeed = new Decimal(1)
-        player.wel.modules[4].completions = new Decimal(0)
 
         player.wel.fountains[1].time = new Decimal(0)
         player.wel.fountains[2].time = new Decimal(0)
@@ -526,50 +538,82 @@
             },
         },
         "lightWell1_autoBlueshiftToggle": {
-            title() {return "<h3>" + (player.pri.autoPrismaticToggle ? "Auto-Reset: ON" : "Auto-Reset: OFF") + "</h3><br><small>Requires 1 Focus"},
-            canClick() {return player.prj.maxFocused.sub(player.prj.focused).gte(1) || player.pri.autoPrismaticToggle},
+            title() {return "<h3>" + (player.blu.blueshifts[1].autoToggle ? "Auto-Reset: ON" : "Auto-Reset: OFF") + "</h3><br><small>Requires 1 Focus"},
+            canClick() {return player.prj.maxFocused.sub(player.prj.focused).gte(1) || player.blu.blueshifts[1].autoToggle},
             unlocked() {return hasMilestone("prj", 306)},
             onClick() {
+                if (player.blu.blueshifts[1].autoToggle) {
+                    player.blu.blueshifts[1].autoToggle = false
+                    player.prj.focused = player.prj.focused.sub(1)
+                } else {
+                    if (!player.prj.maxFocused.sub(player.prj.focused).gte(1)) return;
+                    player.blu.blueshifts[1].autoToggle = true
+                    player.prj.focused = player.prj.focused.add(1)
+                }
             },
             style() {
                 let look = {width: "150px", minHeight: "45.5px", maxHeight: "45.5px", fontSize: "9px", border: "3px solid #0000003f", borderRadius: "0", lineHeight: "1", marginTop: "3px"}
-                if (player.pri.autoPrismaticToggle) {look.backgroundColor = "#dfffdf"} else {look.backgroundColor = "#4d4d99"}
+                if (player.blu.blueshifts[1].autoToggle) {look.backgroundColor = "#dfffdf"} else {look.backgroundColor = "#4d4d99"}
                 return look
             },
         },
         "lightWell2_autoBlueshiftToggle": {
-            title() {return "<h3>" + (player.pri.autoPrismaticToggle ? "Auto-Reset: ON" : "Auto-Reset: OFF") + "</h3><br><small>Requires 1 Focus"},
-            canClick() {return player.prj.maxFocused.sub(player.prj.focused).gte(1) || player.pri.autoPrismaticToggle},
+            title() {return "<h3>" + (player.blu.blueshifts[2].autoToggle ? "Auto-Reset: ON" : "Auto-Reset: OFF") + "</h3><br><small>Requires 1 Focus"},
+            canClick() {return player.prj.maxFocused.sub(player.prj.focused).gte(1) || player.blu.blueshifts[2].autoToggle},
             unlocked() {return hasMilestone("prj", 307)},
             onClick() {
+                if (player.blu.blueshifts[2].autoToggle) {
+                    player.blu.blueshifts[2].autoToggle = false
+                    player.prj.focused = player.prj.focused.sub(1)
+                } else {
+                    if (!player.prj.maxFocused.sub(player.prj.focused).gte(1)) return;
+                    player.blu.blueshifts[2].autoToggle = true
+                    player.prj.focused = player.prj.focused.add(1)
+                }
             },
             style() {
                 let look = {width: "150px", minHeight: "45.5px", maxHeight: "45.5px", fontSize: "9px", border: "3px solid #0000003f", borderRadius: "0", lineHeight: "1", marginTop: "3px"}
-                if (player.pri.autoPrismaticToggle) {look.backgroundColor = "#dfffdf"} else {look.backgroundColor = "#4d4d99"}
+                if (player.blu.blueshifts[2].autoToggle) {look.backgroundColor = "#dfffdf"} else {look.backgroundColor = "#4d4d99"}
                 return look
             },
         },
         "lightWell3_autoBlueshiftToggle": {
-            title() {return "<h3>" + (player.pri.autoPrismaticToggle ? "Auto-Reset: ON" : "Auto-Reset: OFF") + "</h3><br><small>Requires 1 Focus"},
-            canClick() {return player.prj.maxFocused.sub(player.prj.focused).gte(1) || player.pri.autoPrismaticToggle},
+            title() {return "<h3>" + (player.blu.blueshifts[3].autoToggle ? "Auto-Reset: ON" : "Auto-Reset: OFF") + "</h3><br><small>Requires 1 Focus"},
+            canClick() {return player.prj.maxFocused.sub(player.prj.focused).gte(1) || player.blu.blueshifts[3].autoToggle},
             unlocked() {return hasMilestone("prj", 308)},
             onClick() {
+                if (player.blu.blueshifts[3].autoToggle) {
+                    player.blu.blueshifts[3].autoToggle = false
+                    player.prj.focused = player.prj.focused.sub(1)
+                } else {
+                    if (!player.prj.maxFocused.sub(player.prj.focused).gte(1)) return;
+                    player.blu.blueshifts[3].autoToggle = true
+                    player.prj.focused = player.prj.focused.add(1)
+                }
             },
             style() {
                 let look = {width: "150px", minHeight: "45.5px", maxHeight: "45.5px", fontSize: "9px", border: "3px solid #0000003f", borderRadius: "0", lineHeight: "1", marginTop: "3px"}
-                if (player.pri.autoPrismaticToggle) {look.backgroundColor = "#dfffdf"} else {look.backgroundColor = "#4d4d99"}
+                if (player.blu.blueshifts[3].autoToggle) {look.backgroundColor = "#dfffdf"} else {look.backgroundColor = "#4d4d99"}
                 return look
             },
         },
         "lightWell4_autoBlueshiftToggle": {
-            title() {return "<h3>" + (player.pri.autoPrismaticToggle ? "Auto-Reset: ON" : "Auto-Reset: OFF") + "</h3><br><small>Requires 1 Focus"},
-            canClick() {return player.prj.maxFocused.sub(player.prj.focused).gte(1) || player.pri.autoPrismaticToggle},
+            title() {return "<h3>" + (player.blu.blueshifts[4].autoToggle ? "Auto-Reset: ON" : "Auto-Reset: OFF") + "</h3><br><small>Requires 1 Focus"},
+            canClick() {return player.prj.maxFocused.sub(player.prj.focused).gte(1) || player.blu.blueshifts[4].autoToggle},
             unlocked() {return hasMilestone("prj", 309)},
             onClick() {
+                if (player.blu.blueshifts[4].autoToggle) {
+                    player.blu.blueshifts[4].autoToggle = false
+                    player.prj.focused = player.prj.focused.sub(1)
+                } else {
+                    if (!player.prj.maxFocused.sub(player.prj.focused).gte(1)) return;
+                    player.blu.blueshifts[4].autoToggle = true
+                    player.prj.focused = player.prj.focused.add(1)
+                }
             },
             style() {
                 let look = {width: "150px", minHeight: "45.5px", maxHeight: "45.5px", fontSize: "9px", border: "3px solid #0000003f", borderRadius: "0", lineHeight: "1", marginTop: "3px"}
-                if (player.pri.autoPrismaticToggle) {look.backgroundColor = "#dfffdf"} else {look.backgroundColor = "#4d4d99"}
+                if (player.blu.blueshifts[4].autoToggle) {look.backgroundColor = "#dfffdf"} else {look.backgroundColor = "#4d4d99"}
                 return look
             },
         },
@@ -610,7 +654,10 @@
                             ["raw-html", "<small>Per-well blueshift effects are ^" + format(player.blu.blueshiftYieldStrength, 3) + " stronger.</small>", {color: "#ffffd1", fontSize: "18px", fontFamily: "monospace"}],
                             ["blank", "10px"],
                         ], {display: player.blu.blueshiftYieldStrength.gt(1) ? "" : "none !important"}],
-
+                        ["style-column", [
+                            ["raw-html", "You are using " + formatWhole(player.prj.focused) + "/" + formatWhole(player.prj.maxFocused) + " focus.", {color: "white", fontSize: "18px", fontFamily: "monospace"}],
+                            ["blank", "15px"],
+                        ], {display: hasMilestone("prj", 306) ? "" : "none !important"}],
                         ["style-row", [
 
                             // alpha

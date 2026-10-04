@@ -2734,12 +2734,12 @@ addLayer("ir", {
                 "</div></div><div style='height:" + this.style().borderWidth + ";background-color:" + this.style().borderColor + "'></div><div style='padding-left:4px;padding-right:4px;height:90px;display:flex;align-items:center'><div>" + 
                 this.description() + // MIDDLE
                 "</div></div><div style='height:" + this.style().borderWidth + ";background-color:" + this.style().borderColor + "'></div><div style='height:25px;display:flex;align-items:center'><div>" + 
-                "<span style='color:#ff0000;text-shadow:0 0 8px #ff0000'>100,000 Project Speed</span>" // BOTTOM
+                "<span style='color:#ff0000;text-shadow:0 0 8px #ff0000'>1,000,000 Project Speed</span>" // BOTTOM
             },
             title: "Warped",
             unlocked() { return hasUpgrade("bum", 23) },
             description() { return "Unlocks Space Zone IV."},
-            canAfford() {return player.prj.projectSpeed.gte(1e5)},
+            canAfford() {return player.prj.projectSpeed.gte(1e6)},
             currencyLocation() { return player.ir },
             currencyDisplayName: "Space Rocks",
             currencyInternalName: "spaceRock",

@@ -118,9 +118,9 @@ const fragShopBase = {
     },
     10: {
         name: "Anti-Singularity Fragment",
-        0: new Decimal(2e3),
-        1: new Decimal(2e3),
-        2: new Decimal(2e3),
+        0: new Decimal(4e4),
+        1: new Decimal(4e4),
+        2: new Decimal(4e4),
     },
 }
 let blinkTime = 0
@@ -3875,16 +3875,16 @@ addLayer("pet", {
             lore() { return "A starlight-infused house cat that freely roams the pyramid. It gives a superphysical presence similar to that of a celestialite." }, 
             description() {
                 return "x" + format(this.effect()[0]) + " to light <small>(based on stars)</small>.<br>" +
-                    "x" + format(this.effect()[1]) + " to starlight <small>(based on star power)</small>.<br>" +
+                    "x" + format(this.effect()[1]) + " to twigs <small>(based on star power)</small>.<br>" +
                     "x" + format(this.effect()[2]) + " to rare pet button yield and cooldown <small>(based on project speed)</small>."
             }, 
             levelLimit() { return getLevelableTier(this.layer, this.id).mul(5).add(10).min(50) },
             effect() {
                 let amt = getLevelableAmount(this.layer, this.id).add(getLevelableTier(this.layer, this.id).mul(5).min(40))
                 return [
-                    player.au2.stars.div(1e25).add(1).log(10).add(1).pow(amt.pow(0.5)).pow(Decimal.pow(2, getLevelableTier(this.layer, this.id))), // Light (Based on Stars)
-                    player.sdim.starPower.div(1e25).add(1).log(10).add(1).pow(amt.pow(0.25).div(3)).pow(Decimal.pow(2, getLevelableTier(this.layer, this.id))), // Light (Based on Stars)
-                    player.prj.projectSpeed.log(10).add(1).pow(amt.pow(0.5)).div(20).pow(Decimal.pow(1.25, getLevelableTier(this.layer, this.id))).add(1) // Rare pet button yield (Based on Project Speed)
+                    player.au2.stars.div(1e25).add(1).log(10).add(1).pow(amt.pow(0.5).mul(0.125)).pow(Decimal.pow(2, getLevelableTier(this.layer, this.id))), // Light (Based on Stars)
+                    player.sdim.starPower.div(1e25).add(1).log(10).add(1).pow(amt.pow(0.5).mul(0.125)).pow(Decimal.pow(2, getLevelableTier(this.layer, this.id))), // Light (Based on Stars)
+                    player.prj.projectSpeed.log(10).pow(amt.pow(0.5).mul(0.5)).div(20).pow(Decimal.pow(1.25, getLevelableTier(this.layer, this.id))).add(1) // Rare pet button yield (Based on Project Speed)
                 ]
             },
             sellValue() { return new Decimal(500)},

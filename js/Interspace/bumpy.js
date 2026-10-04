@@ -768,6 +768,9 @@
                 }
                 return look
             },
+            onPurchase() {
+                if (!hasAchievement("achievements", 1219)) completeAchievement("achievements", 1219);
+            },
         },
         14: {
             unlocked() { return hasUpgrade("bum", 11) && hasUpgrade("bum", 12) },

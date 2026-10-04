@@ -415,6 +415,7 @@
         player.wel.light = new Decimal(0)
         player.wel.bestLight = new Decimal(0)
         player.wel.lightGain = new Decimal(1)
+        player.pri.resetTime = 0
 
         player.wel.modules[1].time = player.wel.modules[1].maxTime
         player.wel.modules[1].timeSpeed = new Decimal(1)

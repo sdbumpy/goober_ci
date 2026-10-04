@@ -1710,7 +1710,7 @@ class RitualArena extends SpaceArena {
         this.running = true;
         this.loop = setInterval(() => this.update(), 1000 / 60);
 
-        if (player && player.ir && player.ir.shipType == 3) {
+        if (player && player.ir && player.ir.type == 3) {
             this.canvas.addEventListener('click', this.canvasClickListener);
         }
     }
@@ -2414,7 +2414,7 @@ class RitualArena extends SpaceArena {
                         }
                         localStorage.setItem('arenaActive', 'false');
 
-                        player.ir.timers[player.ir.shipType].current = player.ir.timers[player.ir.shipType].max
+                        player.ir.timers[player.ir.type].current = player.ir.timers[player.ir.type].max
 
                         player.ir.battleXP = new Decimal(0)
                         player.ir.battleLevel = new Decimal(1)

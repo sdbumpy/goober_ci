@@ -64,6 +64,7 @@ addLayer("ev0", {
         player.ev0.coinShardsPerSecond = player.ev0.coinShardsPerSecond.mul(levelableEffect("pet", 2103)[2])
         player.ev0.coinShardsPerSecond = player.ev0.coinShardsPerSecond.mul(player.ev15.diamondDustEffect)
         player.ev0.coinShardsPerSecond = player.ev0.coinShardsPerSecond.mul(buyableEffect("ev0", 23))
+        player.ev0.coinShardsPerSecond = player.ev0.coinShardsPerSecond.mul(buyableEffect("pl", 19))
 
         player.ev0.coinShards = player.ev0.coinShards.add(player.ev0.coinShardsPerSecond.mul(delta))
 

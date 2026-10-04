@@ -81,7 +81,9 @@ addLayer("cbs", {
     color: "#c6f7ff",
     branches: ["sm",],
     update(delta) {
-        player.cbs.ritualDuration += delta.toNumber()
+        if (typeof delta === "number") player.cbs.ritualDuration += delta;
+        if (typeof delta === "object") player.cbs.ritualDuration += delta.toNumber();
+        if (typeof player.cbs.ritualDuration === "string") player.cbs.ritualDuration = 0;
 
         if (arena == null && player.subtabs["cbs"]['stuff'] == 'Battle') {
             player.subtabs["cbs"]['stuff'] = "Refresh Page :(";
@@ -99,7 +101,7 @@ addLayer("cbs", {
         player.cbs.ritualSpiritCooldown = player.cbs.ritualSpiritCooldown.sub(delta)
 
         //pylon
-        player.cbs.pylonEnergyMax = Decimal.pow(1e5, player.cbs.pylonTier.pow(0.7))
+        player.cbs.pylonEnergyMax = Decimal.pow(1e5, player.cbs.pylonTier.pow(0.75))
 
         if (player.cbs.pylonBuilt) {
             player.cbs.pylonEnergyToGet = new Decimal(1)
@@ -126,7 +128,7 @@ addLayer("cbs", {
         player.cbs.pylonEnergyEffect = effectivePylonEnergy.pow(0.02).div(3).add(1)
         player.cbs.pylonEnergyEffect2 = effectivePylonEnergy.pow(0.1).div(3).add(1)
         player.cbs.pylonEnergyEffect3 = effectivePylonEnergy.pow(0.05).div(4).add(1)
-        player.cbs.pylonEnergyEffect4 = effectivePylonEnergy.pow(0.05).div(50)
+        player.cbs.pylonEnergyEffect4 = effectivePylonEnergy.pow(0.1).div(50)
 
         player.cbs.pylonTierEffect = player.cbs.pylonTier.sub(1).div(10).add(1)
 
@@ -145,13 +147,13 @@ addLayer("cbs", {
                 str += (player.cbs.ritualSpiritCooldown.lte(0) ? ("<br>Requires:<br>" + formatWhole(player.cbs.ritualCosts[0]) + " Evolution Shards<br>" + formatWhole(player.cbs.ritualCosts[1]) + " Paragon Shards") : ("<br>Check back in " + formatTime(player.cbs.ritualSpiritCooldown)))
                 let timer = new Decimal(0)
                 if (player.ir.shipBattleSaveCurrent != null) {
-                    timer = player.ir.timers[player.ir.shipBattleSaveCurrent.shipType].current.max(timer);
+                    timer = player.ir.timers[player.ir.shipBattleSaveCurrent.type].current.max(timer);
                     if (player.ir.shipBattleSaveCurrent.slot >= 0) timer = timer.max(player.ir.saveTimers[player.ir.shipBattleSaveCurrent.slot].current)
                 }
                 if (timer.gt(0)) str += "<br>(Ship Cooling Down: " + formatTime(timer) + ")";
                 return str
             },
-            canClick() {return player.cb.evolutionShards.gte(player.cbs.ritualCosts[0]) && player.cb.paragonShards.gte(player.cbs.ritualCosts[1]) && player.cbs.ritualSpiritCooldown.lte(0) && player.ir.shipBattleSaveCurrent != null && player.ir.timers[player.ir.shipBattleSaveCurrent.shipType].current.lte(0) && (player.ir.shipBattleSaveCurrent.slot < 0 || player.ir.saveTimers[player.ir.shipBattleSaveCurrent.slot].current.lte(0))},
+            canClick() {return !player.uni.A2.paused && player.cb.evolutionShards.gte(player.cbs.ritualCosts[0]) && player.cb.paragonShards.gte(player.cbs.ritualCosts[1]) && player.cbs.ritualSpiritCooldown.lte(0) && player.ir.shipBattleSaveCurrent != null && player.ir.timers[player.ir.shipBattleSaveCurrent.type].current.lte(0) && (player.ir.shipBattleSaveCurrent.slot < 0 || player.ir.saveTimers[player.ir.shipBattleSaveCurrent.slot].current.lte(0))},
             unlocked: true,
             onClick() {
                 SB_enterRun("ascensionRitual")
@@ -192,7 +194,7 @@ addLayer("cbs", {
                 }
                 localStorage.setItem('arenaActive', 'false');
 
-                player.ir.timers[player.ir.shipType].current = player.ir.timers[player.ir.shipType].max
+                player.ir.timers[player.ir.type].current = player.ir.timers[player.ir.type].max
 
                 player.ir.battleXP = new Decimal(0)
                 player.ir.battleLevel = new Decimal(1)
@@ -1215,7 +1217,7 @@ addLayer("cbs", {
                         ["always-scroll-column", [
                             ["top-column", function () {
                                 let container = [["style-row", [], {width: player.ir.inBattle ? "782px" : "514px", marginRight: "24px"}]]
-                                if (player.ir.shipBattleSaveCurrent == null || player.ir.shipType == 0) return container;
+                                if (player.ir.shipBattleSaveCurrent == null || player.ir.type == 0) return container;
                                 for (let [i, v] of Object.entries(SB_zones)) {
                                     if (!v.location || !v.unlocked() || (v.location && v.location != "space")) continue;
                                     let element = ["style-column", [
@@ -1258,7 +1260,7 @@ addLayer("cbs", {
                         ["always-scroll-column", [
                             ["top-column", function () {
                                 let container = [["style-row", [], {width: player.ir.inBattle ? "782px" : "514px", marginRight: "24px"}]]
-                                if (player.ir.shipBattleSaveCurrent == null || player.ir.shipType == 0) return container;
+                                if (player.ir.shipBattleSaveCurrent == null || player.ir.type == 0) return container;
                                 for (let [i, v] of Object.entries(SB_zones)) {
                                     if (!v.location || !v.unlocked() || (v.location && v.location != "blood")) continue;
                                     let element = ["style-column", [
@@ -1304,9 +1306,9 @@ addLayer("cbs", {
                         ["always-scroll-column", [
                             ["top-column", function () {
                                 let container = []
-                                if (player.ir.shipBattleSaveCurrent == null || player.ir.shipType == 0) return container;
+                                if (player.ir.shipBattleSaveCurrent == null || player.ir.type == 0) return container;
                                 let shipStats = SB_getUpgradedShipStats(arena ? arena.upgrades : player.ir.shipBattleSaveCurrent.upgrades)
-                                let baseStats = SB_ships[SB_shipNames[player.ir.shipBattleSaveCurrent.shipType]].baseStats
+                                let baseStats = SB_ships[player.ir.shipBattleSaveCurrent.type].baseStats
                                 for (let [i, v] of Object.entries(shipStats)) {
                                     let statFormat = SHIP_STAT_FORMATTING[i]
                                     let prefix = statFormat.valuePrefix
@@ -1359,7 +1361,7 @@ addLayer("cbs", {
                             ["top-column", function () {
                             let container = []
                             if (player.ir.shipBattleSaveCurrent == null) return container;
-                            let shipStats = SB_ships[SB_shipNames[player.ir.shipBattleSaveCurrent.shipType]].baseStats
+                            let shipStats = SB_ships[player.ir.shipBattleSaveCurrent.type].baseStats
                             for (let [i, v] of Object.entries(SB_getDefaultShipStats())) {
                                 v = shipStats[i]
                                 let statFormat = SHIP_STAT_FORMATTING[i]
@@ -1493,7 +1495,7 @@ addLayer("cbs", {
                             ["top-column", function () {
                             let container = []
                             if (player.ir.shipBattleSaveCurrent == null) return container;
-                            let entries = Object.entries(arena ? arena.upgrades : player.ir.shipBattleSaveCurrent.bankedUpgrades)
+                            let entries = Object.entries(arena ? arena.upgrades : player.ir.shipBattleSaveCurrent.bankedSalvagedUpgrades)
                             let entriesIndex = 0
                             for (let [i, v] of entries) {
                                 entriesIndex++
@@ -1530,7 +1532,7 @@ addLayer("cbs", {
                     ["style-row", [
                         ["style-column", [
                             ["blank", "5.5px"],
-                            ["raw-html", () => {return "Ship Selected: <span style='color:#ffff00'>" + (player.ir.shipBattleSaveCurrent == null ? "<span style='color:#aaa2f2'>None" : (layers.ir.levelables[player.ir.shipBattleSaveCurrent.shipType].title() + " " + (player.ir.shipBattleSaveCurrent.slot === -2 ? "(Latest Run)" : player.ir.shipBattleSaveCurrent.slot === -1 ? "<span style='color:#aaa2f2'>(New Run)" : ("<span style='color:#aaa2f2'>(Slot #" + (player.ir.shipBattleSaveCurrent.slot + 1) + ")"))))}, { "color": "white", "font-size": "16px", "font-family": "monospace" }],
+                            ["raw-html", () => {return "Ship Selected: <span style='color:#ffff00'>" + (player.ir.shipBattleSaveCurrent == null ? "<span style='color:#aaa2f2'>None" : (layers.ir.levelables[player.ir.shipBattleSaveCurrent.type].title() + " " + (player.ir.shipBattleSaveCurrent.slot === -2 ? "(Latest Run)" : player.ir.shipBattleSaveCurrent.slot === -1 ? "<span style='color:#aaa2f2'>(New Run)" : ("<span style='color:#aaa2f2'>(Slot #" + (player.ir.shipBattleSaveCurrent.slot + 1) + ")"))))}, { "color": "white", "font-size": "16px", "font-family": "monospace" }],
                             ["blank", "8.5px"],
                             ["layer-proxy", ["ir", [["clickable", "newRun"]]]],
                         ], {width: "535px"}],
@@ -1560,7 +1562,7 @@ addLayer("cbs", {
                     ["style-row", [
                         ["style-column", [
                             ["blank", "5.5px"],
-                            ["raw-html", () => {return "Ship Selected: <span style='color:#ffff00'>" + (player.ir.shipBattleSaveCurrent == null ? "<span style='color:#aaa2f2'>None" : (layers.ir.levelables[player.ir.shipBattleSaveCurrent.shipType].title() + " " + (player.ir.shipBattleSaveCurrent.slot === -2 ? "(Latest Run)" : player.ir.shipBattleSaveCurrent.slot === -1 ? "<span style='color:#aaa2f2'>(New Run)" : ("<span style='color:#aaa2f2'>(Slot #" + (player.ir.shipBattleSaveCurrent.slot + 1) + ")"))))}, { "color": "white", "font-size": "16px", "font-family": "monospace" }],
+                            ["raw-html", () => {return "Ship Selected: <span style='color:#ffff00'>" + (player.ir.shipBattleSaveCurrent == null ? "<span style='color:#aaa2f2'>None" : (layers.ir.levelables[player.ir.shipBattleSaveCurrent.type].title() + " " + (player.ir.shipBattleSaveCurrent.slot === -2 ? "(Latest Run)" : player.ir.shipBattleSaveCurrent.slot === -1 ? "<span style='color:#aaa2f2'>(New Run)" : ("<span style='color:#aaa2f2'>(Slot #" + (player.ir.shipBattleSaveCurrent.slot + 1) + ")"))))}, { "color": "white", "font-size": "16px", "font-family": "monospace" }],
                             ["blank", "8.5px"],
                             ["layer-proxy", ["ir", [["clickable", "newRun"]]]],
                         ], {width: "535px"}],
@@ -1577,7 +1579,7 @@ addLayer("cbs", {
                                 if (player.ir.shipBattleSaveCurrent == null) return container;
                                 container.push(
                                     ["style-column", [
-                                        ["raw-html", "<i>" + layers.ir.levelables[player.ir.shipBattleSaveCurrent.shipType].lore() + "</i>", { "color": "white", "font-size": "16px", "font-family": "monospace" }],
+                                        ["raw-html", "<i>" + layers.ir.levelables[player.ir.shipBattleSaveCurrent.type].lore() + "</i>", { "color": "white", "font-size": "16px", "font-family": "monospace" }],
                                     ], {width: "508px"}],
                                 )
                                 return container
@@ -1606,7 +1608,7 @@ addLayer("cbs", {
                                         ["style-row", [], {background: "#5e4ee6", width: "232px", height: "3px"}],
                                         ["style-column", [
                                             ["raw-html", (save == null ? "<span style='color:#aaa2f2'>Empty" : (
-                                                layers.ir.levelables[save.shipType].title()
+                                                layers.ir.levelables[save.type].title()
                                                 + "<br><span style='color:#aaa2f2;font-size:12px'>Upgrade Count: " + formatSimple(save.upgradeCount, 2)
                                                 + "<br>Upgrade Score: " + formatSimple(save.upgradeScore, 2)
                                             )), { "color": "yellow", textShadow: "1px 1px 1px black, -1px 1px 1px black, -1px -1px 1px black, 1px -1px 1px black", "font-size": "16px", "font-family": "monospace" }],
@@ -1677,7 +1679,7 @@ addLayer("cbs", {
                                         ["style-row", [], {background: "#5e4ee6", width: "232px", height: "3px"}],
                                         ["style-column", [
                                             ["raw-html", (save == null ? "<span style='color:#aaa2f2'>Empty" : (
-                                                layers.ir.levelables[save.shipType].title()
+                                                layers.ir.levelables[save.type].title()
                                                 + "<br><span style='color:#aaa2f2;font-size:12px'>Upgrade Count: " + formatSimple(save.upgradeCount, 2)
                                                 + "<br>Upgrade Score: " + formatSimple(save.upgradeScore, 2)
                                             )), { "color": "yellow", textShadow: "1px 1px 1px black, -1px 1px 1px black, -1px -1px 1px black, 1px -1px 1px black", "font-size": "16px", "font-family": "monospace" }],
@@ -1752,7 +1754,7 @@ addLayer("cbs", {
         stuff: {
             "Ritual": {
                 buttonStyle() { return { color: "white", borderRadius: "5px" } },
-                unlocked() { return !player.ir.inBattle },
+                unlocked() { return !player.ir.inBattle && false },
                 content: [
                     ["buttonless-microtabs", "stuff2", { 'border-width': '0px' }],
                 ]
@@ -1792,7 +1794,7 @@ addLayer("cbs", {
                     ["raw-html", () => {return player.cbs.pylonBuilt ? "Boosts pet point gain by x" + format(player.cbs.pylonEnergyEffect2) + "." : ""}, {color: "white", fontSize: "12px", fontFamily: "monospace"}],
                     ["raw-html", () => {return player.cbs.pylonBuilt ? "Boosts crate roll chance by x" + format(player.cbs.pylonEnergyEffect3) + "." : ""}, {color: "white", fontSize: "12px", fontFamily: "monospace"}],
                     ["raw-html", () => {return player.cbs.pylonBuilt ? "Boosts base paradox pylon energy gain by +" + format(player.cbs.pylonEnergyEffect4, 3) + "." : ""}, {color: "white", fontSize: "12px", fontFamily: "monospace"}],
-                    ["raw-html", () => {return player.cbs.pylonBuilt ? "Passive effect: Boosts pollinator gain by ^" + format(player.cbs.pylonPassiveEffect) + " (Based on pollinators)" : ""}, {color: "white", fontSize: "12px", fontFamily: "monospace"}],
+                    ["raw-html", () => {return player.cbs.pylonBuilt ? "Passive effect: Boosts pollinator gain by ^" + format(player.cbs.pylonPassiveEffect, 3) + " (Based on pollinators)" : ""}, {color: "white", fontSize: "12px", fontFamily: "monospace"}],
                     ["raw-html", () => {return player.cbs.pylonBuilt ? "Your temporal pylon is tier " + formatWhole(player.cbs.pylonTier) + ", which boosts effective pylon energy and the passive effect by ^" + format(player.cbs.pylonTierEffect) + "." : ""}, {color: "white", fontSize: "12px", fontFamily: "monospace"}],
                     ["blank", "10px"],
                     ["row", [["rounded-ex-buyable", 101], ["blank", "3px", {width: "3px"}], ["rounded-ex-buyable", 102], ["blank", "3px", {width: "3px"}], ["rounded-ex-buyable", 103],]], 

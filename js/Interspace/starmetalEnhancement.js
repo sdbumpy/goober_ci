@@ -66,5 +66,5 @@
         ["microtabs", "stuff", { 'border-width': '0px' }],
         ["blank", "25px"],
     ],
-    layerShown() { return false && player.startedGame == true}
+    layerShown() { return hasMilestone("prj", 601) && player.startedGame == true}
 })

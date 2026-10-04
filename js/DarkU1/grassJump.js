@@ -17,6 +17,7 @@ addLayer("dgj", {
         milestone5Effect: new Decimal(1),
         milestone6Effect: new Decimal(1),
         milestone7Effect: new Decimal(1),
+        milestone8Effect: new Decimal(1),
 
         grassJumpers: new Decimal(0),
         grassJumpersGain: new Decimal(0),
@@ -51,6 +52,7 @@ addLayer("dgj", {
         player.dgj.milestone5Effect = buyableEffect("dgr", 13).mul(levelableEffect("spet", 206)[0]).mul(buyableEffect("st", 102))
         player.dgj.milestone6Effect = Decimal.pow(1.01, player.dgj.grassJump.sub(11).max(0))
         player.dgj.milestone7Effect = Decimal.pow(1.05, player.dgj.grassJump.sub(15).max(0))
+        player.dgj.milestone8Effect = Decimal.pow(1.1, player.dgj.grassJump.sub(23).max(0))
 
         player.dgj.grassJumpersGain = player.dgj.grassJump.div(10).mul(Decimal.pow(1.2, player.dgj.grassJump))
         if (getLevelableTier("pu", 308, true)) player.dgj.grassJumpersGain = player.dgj.grassJumpersGain.mul(levelableEffect("pu", 308)[0])
@@ -381,6 +383,16 @@ addLayer("dgj", {
                 return look
             },
         },
+        18: {
+            effectDescription() { return "Increase twig gain by 10% per grass jump, starting at 24<br>Currently: x" + format(player.dgj.milestone8Effect) + "." },
+            done() { return player.dgj.grassJump.gte(24) },
+            unlocked() { return player.n.nestReset.gt(0) },
+            style() {
+                let look = {width: "500px", minHeight: "75px", color: "white", border: "3px solid #00488F", borderTop: "0px", borderRadius: "0px"}
+                if (hasMilestone("dgj", this.id)) {look.backgroundColor = "#1a3b0f"} else {look.backgroundColor = "#361e1e"}
+                return look
+            },
+        },
     },
     challenges: {},
     microtabs: {
@@ -438,6 +450,12 @@ addLayer("dgj", {
                         ], {backgroundColor: "#002e5c", border: "3px solid #00488F", borderRight: "0px", borderTop: "0px", borderRadius: "0px", width: "75px", height: "75px"}],
                         ["titleless-milestone", 17],
                     ]],
+                    ["style-row", [
+                        ["style-column", [
+                            ["raw-html", "24", {color: "white", fontSize: "32px", fontFamily: "monospace"}],
+                        ], {backgroundColor: "#002e5c", border: "3px solid #00488F", borderRight: "0px", borderTop: "0px", borderRadius: "0px", width: "75px", height: "75px"}],
+                        ["titleless-milestone", 18],
+                    ], () => {return {display: tmp.dgj.milestones[18].unlocked ? "" : "none !important"}}],
                     ["style-row", [
                         ["raw-html", "Grass Jumps are not reset when leaving the dark universe.", {color: "white", fontSize: "16px", fontFamily: "monospace"}],
                     ], {backgroundColor: "#002e5c", border: "3px solid #00488F", borderTop: "0px", borderRadius: "0px 0px 13px 13px", width: "588px", height: "40px"}],

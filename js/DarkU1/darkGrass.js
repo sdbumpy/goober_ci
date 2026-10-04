@@ -514,7 +514,7 @@
             ["raw-html", () => { return player.dgr.grass.gte(1e75) ? "[SOFTCAPPED<sup>4</sup>]" : ""}, {color: "red", fontSize: "18px", fontFamily: "monospace"}],
         ], () => {return player.pet.legPetTimers[0].current.gt(0) ? {display: "none !important"} : {}}],
         ["style-row", [
-            ["raw-html", () => {return "Boosts booster effect by ^" + format(player.dgr.grassEclipseEffect)}, {color: "white", fontSize: "20px", fontFamily: "monospace", paddingRight: "10px"}],
+            ["raw-html", () => {return "Boosts booster effect by ^" + format(player.dgr.grassEclipseEffect, 3)}, {color: "white", fontSize: "20px", fontFamily: "monospace", paddingRight: "10px"}],
         ], () => {return hasUpgrade("dv", 12) && player.pet.legPetTimers[0].current.gt(0) ? {} : {display: "none !important"}}],
         ["raw-html", () => { return player.pet.legPetTimers[0].current.gt(0) ? "ECLIPSE IS ACTIVE: " + formatTime(player.pet.legPetTimers[0].current) + "." : ""}, {color: "#FEEF5F", fontSize: "20px", fontFamily: "monospace"}],
         ["microtabs", "stuff", { 'border-width': '0px' }],

@@ -22,6 +22,7 @@
         lightFountainFocusExtension: new Decimal(1),
         lightWellFocusExtension: new Decimal(1),
         prismFountainFocusExtension: new Decimal(1),
+        starlightFountainFocusExtension: new Decimal(1),
         
         modules: {
             1: {
@@ -80,14 +81,43 @@
                 statReq: new Decimal(1),
                 completionEffect: new Decimal(1),
             },
+            5: {
+                time: new Decimal(0),
+                timeReq: new Decimal(1e9),
+                timeSpeed: new Decimal(1),
+                canAddCompletion: false,
+                completions: new Decimal(0),
+                maxCompletions: new Decimal(0),
+
+                focused: false,
+                automated: false,
+                timeCapsuleReq: new Decimal(1),
+                statReq: new Decimal(1),
+                completionEffect: new Decimal(1),
+            },
+            6: {
+                time: new Decimal(0),
+                timeReq: new Decimal(1e9),
+                timeSpeed: new Decimal(1),
+                canAddCompletion: false,
+                completions: new Decimal(0),
+                maxCompletions: new Decimal(0),
+
+                focused: false,
+                automated: false,
+                timeCapsuleReq: new Decimal(1),
+                statReq: new Decimal(1),
+                completionEffect: new Decimal(1),
+            },
         },
 
         milestone105Effect: new Decimal(1),
         milestone107Effect: new Decimal(1),
         milestone112Effect: new Decimal(1),
+        milestone116Effect: new Decimal(1),
+        milestone118Effect: new Decimal(1),
         milestone207Effect: new Decimal(1),
         milestone210Effect: new Decimal(1),
-        milestone304Effect: new Decimal(1),
 
         pylonEnergyMax: new Decimal(1e6),
         pylonEnergy: new Decimal(0),
@@ -118,6 +148,7 @@
         player.prj.maxFocused = new Decimal(1)
         if (hasMilestone("prj", 102)) player.prj.maxFocused = player.prj.maxFocused.add(1);
         player.prj.maxFocused = player.prj.maxFocused.add(buyableEffect("prj", 11));
+        player.prj.maxFocused = player.prj.maxFocused.add(layers.bum.fountains[2].getCompletionEffect())
 
         player.prj.totalProjectLevels = player.prj.modules[1].completions
         .add(player.prj.modules[2].completions)
@@ -125,13 +156,22 @@
         .add(player.prj.modules[4].completions)
 
         player.prj.projectSpeed = new Decimal(1)
-        player.prj.projectSpeed = player.prj.projectSpeed.mul(player.prj.storedTimeCapsuleEffect)
         if (hasUpgrade("wel", 22)) player.prj.projectSpeed = player.prj.projectSpeed.mul(2);
         if (hasUpgrade("wel", 33)) player.prj.projectSpeed = player.prj.projectSpeed.mul(2);
         player.prj.projectSpeed = player.prj.projectSpeed.mul(player.pri.fountains[9].completionEffect);
+        player.prj.projectSpeed = player.prj.projectSpeed.mul((player.bum.fountains[2].completions.pow(0.75)).pow_base(1.1))
         player.prj.projectSpeed = player.prj.projectSpeed.mul(buyableEffect("sme", 191))
 
         player.prj.storedTimeCapsuleEffect = player.prj.storedTimeCapsules.add(1).log(10).add(1).pow(0.5).sub(1).pow_base(10).pow(2).sub(1).div(2).add(1)
+        
+        if (player.bum.starshines.gt(0)) {
+            player.prj.storedTimeCapsuleEffect = player.prj.storedTimeCapsuleEffect.div(20).add(240)
+
+            player.prj.projectSpeed = player.prj.projectSpeed.div(400);
+            player.prj.projectSpeed = player.prj.projectSpeed.mul(player.wel.lightEffect);
+        }
+        
+        player.prj.projectSpeed = player.prj.projectSpeed.mul(player.prj.storedTimeCapsuleEffect)
 
         player.prj.completedProjects = new Decimal(0)
 
@@ -163,13 +203,17 @@
         player.prj.milestone105Effect = player.prj.projectSpeed.pow(0.2).mul(player.prj.projectSpeed.max(1).log10().mul(0.75)).add(1)
         player.prj.milestone107Effect = player.wel.light.add(1).log(10).add(1).pow(0.75).sub(1).pow_base(10).pow(1.5)
         player.prj.milestone112Effect = player.prj.projectSpeed.sub(1).div(100).add(1)
+        player.prj.milestone116Effect = player.ra.radiation.add(1).log(10).div(100).add(1).pow(4)
+        player.prj.milestone118Effect = player.prj.totalProjectLevels.sub(60).max(0).pow_base(1.1)
         player.prj.milestone207Effect = player.pri.prisms.add(1).log(1e4).floor().pow_base(1.5)
-        player.prj.milestone210Effect = player.bum.starshines.pow_base(1.1).min(100)
-        player.prj.milestone304Effect = player.wel.modules[4].completions.div(1e9).add(1).log10().pow(0.5).pow_base(10).add(1).pow(0.333)
+        player.prj.milestone210Effect = player.bum.starshines.pow_base(1.25).min(1000)
 
         player.prj.lightFountainFocusExtension = player.prj.projectSpeed.pow(0.75)
+        if (hasMilestone("prj", 111)) player.prj.lightFountainFocusExtension = player.prj.lightFountainFocusExtension.mul(2)
         player.prj.lightWellFocusExtension = player.prj.projectSpeed.div(4).pow(0.5)
+        if (hasMilestone("prj", 111)) player.prj.lightWellFocusExtension = player.prj.lightWellFocusExtension.mul(2)
         player.prj.prismFountainFocusExtension = player.prj.projectSpeed.div(100).pow(0.75)
+        if (hasMilestone("prj", 111)) player.prj.prismFountainFocusExtension = player.prj.prismFountainFocusExtension.mul(2)
         // MISC
 
         if (player.prj.projectSpeed.gte(player.prj.bestProjectSpeed)) player.prj.bestProjectSpeed = player.prj.projectSpeed;
@@ -337,11 +381,73 @@
                 return look
             },
         },
+        5: {
+            title() { return "<h3>Focus</h3>" },
+            canClick() { return player.prj.focused.lt(player.prj.maxFocused)
+                && player.prj.storedTimeCapsules.gte(player.prj.modules[this.id].timeCapsuleReq)
+                && layers.prj.projects[this.id].statReqLocation()[layers.prj.projects[this.id].statReqInternalName].gte(player.prj.modules[this.id].statReq)
+                && !player.prj.modules[this.id].focused},
+            unlocked() { return true },
+            onClick() {
+                player.prj.focused = player.prj.focused.add(1)
+                player.prj.storedTimeCapsules = player.prj.storedTimeCapsules.sub(player.prj.modules[this.id].timeCapsuleReq)
+                layers.prj.projects[this.id].statReqLocation()[layers.prj.projects[this.id].statReqInternalName] = layers.prj.projects[this.id].statReqLocation()[layers.prj.projects[this.id].statReqInternalName].sub(player.prj.modules[this.id].statReq)
+                player.prj.modules[this.id].focused = true
+            },
+            style() {
+                let look = {width: "238px", minHeight: "45px", borderRadius: "0px"}
+                if (player.prj.modules[this.id].focused) {
+                    look.backgroundColor = "#4d2548"
+                    look.border = "3px solid #804067"
+                    look.color = "white"
+                } else if (this.canClick()) {
+                    look.backgroundColor = "#dfffdf"
+                    look.border = "3px solid #0000003f"
+                    look.color = "black"
+                } else {
+                    look.background = "#361e1e"
+                    look.border = "3px solid #6633667f"
+                    look.color = "white"
+                }
+                return look
+            },
+        },
+        6: {
+            title() { return "<h3>Focus</h3>" },
+            canClick() { return player.prj.focused.lt(player.prj.maxFocused)
+                && player.prj.storedTimeCapsules.gte(player.prj.modules[this.id].timeCapsuleReq)
+                && layers.prj.projects[this.id].statReqLocation()[layers.prj.projects[this.id].statReqInternalName].gte(player.prj.modules[this.id].statReq)
+                && !player.prj.modules[this.id].focused},
+            unlocked() { return true },
+            onClick() {
+                player.prj.focused = player.prj.focused.add(1)
+                player.prj.storedTimeCapsules = player.prj.storedTimeCapsules.sub(player.prj.modules[this.id].timeCapsuleReq)
+                layers.prj.projects[this.id].statReqLocation()[layers.prj.projects[this.id].statReqInternalName] = layers.prj.projects[this.id].statReqLocation()[layers.prj.projects[this.id].statReqInternalName].sub(player.prj.modules[this.id].statReq)
+                player.prj.modules[this.id].focused = true
+            },
+            style() {
+                let look = {width: "238px", minHeight: "45px", borderRadius: "0px"}
+                if (player.prj.modules[this.id].focused) {
+                    look.backgroundColor = "#4d2548"
+                    look.border = "3px solid #804067"
+                    look.color = "white"
+                } else if (this.canClick()) {
+                    look.backgroundColor = "#dfffdf"
+                    look.border = "3px solid #0000003f"
+                    look.color = "black"
+                } else {
+                    look.background = "#361e1e"
+                    look.border = "3px solid #6633667f"
+                    look.color = "white"
+                }
+                return look
+            },
+        },
         "projects_respecFocus": {
             title() { return "<h3>Respec Focus</h3><br><small>(you won't get your stored time capsules back!)</small>" },
             canClick() {
                 for (let v in player.prj.modules) {
-                    if (player.prj.modules[v].focused || player.prj.modules[v].automated) return true;
+                    if (player.prj.modules[v].focused || player.prj.modules[v].isFocused) return true;
                 }
                 return false
             },
@@ -352,14 +458,14 @@
                         player.prj.projects[i].focused = false
                         player.prj.focused = player.prj.focused.sub(1)
                     }
-                    if (player.prj.projects[i].automated) {
-                        player.prj.projects[i].automated = false
+                    if (player.prj.projects[i].isFocused) {
+                        player.prj.projects[i].isFocused = false
                         player.prj.focused = player.prj.focused.sub(1)
                     }
                 });
             },
             style() {
-                let look = {width: "400px", minHeight: "75px", maxHeight: "75px", borderRadius: "10px"}
+                let look = {width: "512px", minHeight: "60px", maxHeight: "60px", borderRadius: "25px", margin: "3px"}
                 if (this.canClick()) {
                     look.backgroundColor = "#dfffdf"
                     look.border = "3px solid #0000003f"
@@ -572,7 +678,7 @@
         },
         102: {
             requirementDescription() {return formatWhole(this.cycleReq()) + " " + layers.prj.projects[this.projectId()].title + " Project ↻"},
-            effectDescription() { return "<small>x2 light well ↻ gain and unlock 1 punchcard per project ↻ up to 5.</small>" },
+            effectDescription() { return "<small>x2 light well ↻ gain. Unlock 1 punchcard per project ↻ up to 5.</small>" },
             cycleReq() { return new Decimal(2) },
             projectId() { return 1 },
             unlocked() { return true },
@@ -591,7 +697,7 @@
         },
         103: {
             requirementDescription() {return formatWhole(this.cycleReq()) + " " + layers.prj.projects[this.projectId()].title + " Project ↻"},
-            effectDescription() { return "<small>x2 light gain and get a fourth punchcard choice.</small>" },
+            effectDescription() { return "<small>x2 light gain. Get a fourth punchcard choice.</small>" },
             cycleReq() { return new Decimal(3) },
             projectId() { return 1 },
             unlocked() { return true },
@@ -743,10 +849,10 @@
         },
         111: {
             requirementDescription() {return formatWhole(this.cycleReq()) + " " + layers.prj.projects[this.projectId()].title + " Project ↻"},
-            effectDescription() { return "<small>COMING SOON.</small>" },
+            effectDescription() { return "<small>All focus lasts twice as long.</small>" },
             cycleReq() { return new Decimal(11) },
             projectId() { return 1 },
-            unlocked() { return false && hasMilestone(this.layer, this.id - 3) && hasMilestone("prj", 301) },
+            unlocked() { return hasMilestone(this.layer, this.id - 3) && hasMilestone("prj", 301) },
             done() { return player.prj.modules[this.projectId()].completions.gte(this.cycleReq()) },
             style() {
                 let look = {border: "0px", borderRadius: "0px", width: "285px", height: "46px", margin: "0px"}
@@ -762,11 +868,10 @@
         },
         112: {
             requirementDescription() {return formatWhole(this.cycleReq()) + " " + layers.prj.projects[this.projectId()].title + " Project ↻"},
-            //effectDescription() { return "<small>Project speed boosts light gain. (x" + format(player.prj.milestone112Effect) + ")</small>" },
-            effectDescription() { return "<small>COMING SOON.</small>" },
+            effectDescription() { return "<small>Project speed boosts light gain. (x" + format(player.prj.milestone112Effect) + ")</small>" },
             cycleReq() { return new Decimal(13) },
             projectId() { return 1 },
-            unlocked() { return false && hasMilestone(this.layer, this.id - 3) && hasMilestone("prj", 301) },
+            unlocked() { return hasMilestone(this.layer, this.id - 3) && hasMilestone("prj", 301) },
             done() { return player.prj.modules[this.projectId()].completions.gte(this.cycleReq()) },
             style() {
                 let look = {border: "0px", borderRadius: "0px", width: "285px", height: "46px", margin: "0px"}
@@ -782,11 +887,10 @@
         },
         113: {
             requirementDescription() {return formatWhole(this.cycleReq()) + " " + layers.prj.projects[this.projectId()].title + " Project ↻"},
-            //effectDescription() { return "<small>Automate cloud upgrades.</small>" },
-            effectDescription() { return "<small>COMING SOON.</small>" },
+            effectDescription() { return "<small>Automate cloud upgrades.</small>" },
             cycleReq() { return new Decimal(15) },
             projectId() { return 1 },
-            unlocked() { return false && hasMilestone(this.layer, this.id - 3) && hasMilestone("prj", 301) },
+            unlocked() { return hasMilestone(this.layer, this.id - 3) && hasMilestone("prj", 301) },
             done() { return player.prj.modules[this.projectId()].completions.gte(this.cycleReq()) },
             style() {
                 let look = {border: "0px", borderRadius: "0px", width: "285px", height: "46px", margin: "0px"}
@@ -802,10 +906,10 @@
         },
         114: {
             requirementDescription() {return formatWhole(this.cycleReq()) + " " + layers.prj.projects[this.projectId()].title + " Project ↻"},
-            effectDescription() { return "<small>Automate cloud buyables.</small>" },
+            effectDescription() { return "<small>Automate time capsule buyables.</small>" },
             cycleReq() { return new Decimal(16) },
             projectId() { return 1 },
-            unlocked() { return false && hasMilestone(this.layer, this.id - 3) && hasMilestone("prj", 401) },
+            unlocked() { return hasMilestone(this.layer, this.id - 3) && hasMilestone("prj", 401) },
             done() { return player.prj.modules[this.projectId()].completions.gte(this.cycleReq()) },
             style() {
                 let look = {border: "0px", borderRadius: "0px", width: "285px", height: "46px", margin: "0px"}
@@ -821,10 +925,86 @@
         },
         115: {
             requirementDescription() {return formatWhole(this.cycleReq()) + " " + layers.prj.projects[this.projectId()].title + " Project ↻"},
-            effectDescription() { return "<small>COMING SOON.</small>" },
+            effectDescription() { return "<small>Improve the first row of time energy buyables.</small>" },
             cycleReq() { return new Decimal(20) },
             projectId() { return 1 },
-            unlocked() { return false && hasMilestone(this.layer, this.id - 3) && hasMilestone("prj", 401) },
+            unlocked() { return hasMilestone(this.layer, this.id - 3) && hasMilestone("prj", 401) },
+            done() { return player.prj.modules[this.projectId()].completions.gte(this.cycleReq()) },
+            style() {
+                let look = {border: "0px", borderRadius: "0px", width: "285px", height: "46px", margin: "0px"}
+                if (hasMilestone("prj", this.id)) {
+                    look.backgroundColor = "#efffef"
+                    look.color = "#232e23"
+                } else {
+                    look.backgroundColor = "#232e23"
+                    look.color = "#efffef"
+                }
+                return look
+            },
+        },
+        116: {
+            requirementDescription() {return formatWhole(this.cycleReq()) + " " + layers.prj.projects[this.projectId()].title + " Project ↻"},
+            effectDescription() { return "<small>Boost time energy gain based on radiation. (x" + formatSimple(player.prj.milestone116Effect, 2) + ")</small>" },
+            cycleReq() { return new Decimal(21) },
+            projectId() { return 1 },
+            unlocked() { return hasMilestone(this.layer, this.id - 3) && false },
+            done() { return player.prj.modules[this.projectId()].completions.gte(this.cycleReq()) },
+            style() {
+                let look = {border: "0px", borderRadius: "0px", width: "285px", height: "46px", margin: "0px"}
+                if (hasMilestone("prj", this.id)) {
+                    look.backgroundColor = "#efffef"
+                    look.color = "#232e23"
+                } else {
+                    look.backgroundColor = "#232e23"
+                    look.color = "#efffef"
+                }
+                return look
+            },
+        },
+        117: {
+            requirementDescription() {return formatWhole(this.cycleReq()) + " " + layers.prj.projects[this.projectId()].title + " Project ↻"},
+            effectDescription() { return "<small>Passively generate 10%/s of time capsules on reset.</small>" },
+            cycleReq() { return new Decimal(25) },
+            projectId() { return 1 },
+            unlocked() { return hasMilestone(this.layer, this.id - 3) && false },
+            done() { return player.prj.modules[this.projectId()].completions.gte(this.cycleReq()) },
+            style() {
+                let look = {border: "0px", borderRadius: "0px", width: "285px", height: "46px", margin: "0px"}
+                if (hasMilestone("prj", this.id)) {
+                    look.backgroundColor = "#efffef"
+                    look.color = "#232e23"
+                } else {
+                    look.backgroundColor = "#232e23"
+                    look.color = "#efffef"
+                }
+                return look
+            },
+        },
+        118: {
+            requirementDescription() {return formatWhole(this.cycleReq()) + " " + layers.prj.projects[this.projectId()].title + " Project ↻"},
+            effectDescription() { return "<small>Boost ring gain by x1.1 per project ↻ above 60. (x" + formatSimple(player.prj.milestone118Effect, 2) + ")</small>" },
+            cycleReq() { return new Decimal(26) },
+            projectId() { return 1 },
+            unlocked() { return hasMilestone(this.layer, this.id - 3) && hasMilestone("prj", 501) },
+            done() { return player.prj.modules[this.projectId()].completions.gte(this.cycleReq()) },
+            style() {
+                let look = {border: "0px", borderRadius: "0px", width: "285px", height: "46px", margin: "0px"}
+                if (hasMilestone("prj", this.id)) {
+                    look.backgroundColor = "#efffef"
+                    look.color = "#232e23"
+                } else {
+                    look.backgroundColor = "#232e23"
+                    look.color = "#efffef"
+                }
+                return look
+            },
+        },
+        119: {
+            requirementDescription() {return formatWhole(this.cycleReq()) + " " + layers.prj.projects[this.projectId()].title + " Project ↻"},
+            effectDescription() { return "<small>Unlock a new dark OTF.</small>" },
+            cycleReq() { return new Decimal(30) },
+            projectId() { return 1 },
+            unlocked() { return hasMilestone(this.layer, this.id - 3) && hasMilestone("prj", 501) },
             done() { return player.prj.modules[this.projectId()].completions.gte(this.cycleReq()) },
             style() {
                 let look = {border: "0px", borderRadius: "0px", width: "285px", height: "46px", margin: "0px"}
@@ -936,7 +1116,7 @@
         },
         206: {
             requirementDescription() {return formatWhole(this.cycleReq()) + " " + layers.prj.projects[this.projectId()].title + " Project ↻"},
-            effectDescription() { return "<small>Unlock the greenhouse. (in prismatic layer) (COMING SOON.)</small>" },
+            effectDescription() { return "<small>Unlock the greenhouse. (in prismatic layer)</small>" },
             cycleReq() { return new Decimal(6) },
             projectId() { return 2 },
             unlocked() { return hasMilestone(this.layer, this.id - 3) && hasMilestone("prj", 301) },
@@ -955,10 +1135,10 @@
         },
         207: {
             requirementDescription() {return formatWhole(this.cycleReq()) + " " + layers.prj.projects[this.projectId()].title + " Project ↻"},
-            effectDescription() { return "<small>COMING SOON.</small>" },
+            effectDescription() { return "<small>Unlock a second blueshift effect.</small>" },
             cycleReq() { return new Decimal(7) },
             projectId() { return 2 },
-            unlocked() { return false && hasMilestone(this.layer, this.id - 3) && hasMilestone("prj", 301) },
+            unlocked() { return hasMilestone(this.layer, this.id - 3) && hasMilestone("prj", 301) },
             done() { return player.prj.modules[this.projectId()].completions.gte(this.cycleReq()) },
             style() {
                 let look = {border: "0px", borderRadius: "0px", width: "285px", height: "46px", margin: "0px"}
@@ -974,10 +1154,10 @@
         },
         208: {
             requirementDescription() {return formatWhole(this.cycleReq()) + " " + layers.prj.projects[this.projectId()].title + " Project ↻"},
-            effectDescription() { return "<small>COMING SOON.</small>" },
+            effectDescription() { return "<small>Further improve the spiral and arrow prismatic fountains.</small>" },
             cycleReq() { return new Decimal(8) },
             projectId() { return 2 },
-            unlocked() { return false && hasMilestone(this.layer, this.id - 3) && hasMilestone("prj", 301) },
+            unlocked() { return hasMilestone(this.layer, this.id - 3) && hasMilestone("prj", 301) },
             done() { return player.prj.modules[this.projectId()].completions.gte(this.cycleReq()) },
             style() {
                 let look = {border: "0px", borderRadius: "0px", width: "285px", height: "46px", margin: "0px"}
@@ -993,10 +1173,10 @@
         },
         209: {
             requirementDescription() {return formatWhole(this.cycleReq()) + " " + layers.prj.projects[this.projectId()].title + " Project ↻"},
-            effectDescription() { return "<small>COMING SOON.</small>" },
+            effectDescription() { return "<small>Improve the hourglass prismatic fountain.</small>" },
             cycleReq() { return new Decimal(9) },
             projectId() { return 2 },
-            unlocked() { return false && hasMilestone(this.layer, this.id - 3) && hasMilestone("prj", 301) },
+            unlocked() { return hasMilestone(this.layer, this.id - 3) && hasMilestone("prj", 301) },
             done() { return player.prj.modules[this.projectId()].completions.gte(this.cycleReq()) },
             style() {
                 let look = {border: "0px", borderRadius: "0px", width: "285px", height: "46px", margin: "0px"}
@@ -1012,11 +1192,10 @@
         },
         210: {
             requirementDescription() {return formatWhole(this.cycleReq()) + " " + layers.prj.projects[this.projectId()].title + " Project ↻"},
-            effectDescription() { return "<small>I said COMING SOON.</small>" },
-            //effectDescription() { return "<small>x1.1 light gain per starshine done. (x" + format(player.prj.milestone210Effect) + ", caps at x100)</small>" },
+            effectDescription() { return "<small>x1.25 light gain per starshine done. (x" + format(player.prj.milestone210Effect) + ", caps at x1,000)</small>" },
             cycleReq() { return new Decimal(10) },
             projectId() { return 2 },
-            unlocked() { return false && hasMilestone(this.layer, this.id - 3) && hasMilestone("prj", 301) },
+            unlocked() { return hasMilestone(this.layer, this.id - 3) && hasMilestone("prj", 301) },
             done() { return player.prj.modules[this.projectId()].completions.gte(this.cycleReq()) },
             style() {
                 let look = {border: "0px", borderRadius: "0px", width: "285px", height: "46px", margin: "0px"}
@@ -1032,10 +1211,10 @@
         },
         211: {
             requirementDescription() {return formatWhole(this.cycleReq()) + " " + layers.prj.projects[this.projectId()].title + " Project ↻"},
-            effectDescription() { return "<small>COMING SOON.</small>" },
+            effectDescription() { return "<small>Unlock auto-prismatic. Retain focus on blueshift.</small>" },
             cycleReq() { return new Decimal(11) },
             projectId() { return 2 },
-            unlocked() { return false && hasMilestone(this.layer, this.id - 3) && hasMilestone("prj", 401) },
+            unlocked() { return hasMilestone(this.layer, this.id - 3) && hasMilestone("prj", 401) },
             done() { return player.prj.modules[this.projectId()].completions.gte(this.cycleReq()) },
             style() {
                 let look = {border: "0px", borderRadius: "0px", width: "285px", height: "46px", margin: "0px"}
@@ -1051,10 +1230,10 @@
         },
         212: {
             requirementDescription() {return formatWhole(this.cycleReq()) + " " + layers.prj.projects[this.projectId()].title + " Project ↻"},
-            effectDescription() { return "<small>COMING SOON.</small>" },
+            effectDescription() { return "<small>Blueshifts no longer reset best light well ↻.</small>" },
             cycleReq() { return new Decimal(13) },
             projectId() { return 2 },
-            unlocked() { return false && hasMilestone(this.layer, this.id - 3) && hasMilestone("prj", 401) },
+            unlocked() { return hasMilestone(this.layer, this.id - 3) && hasMilestone("prj", 401) },
             done() { return player.prj.modules[this.projectId()].completions.gte(this.cycleReq()) },
             style() {
                 let look = {border: "0px", borderRadius: "0px", width: "285px", height: "46px", margin: "0px"}
@@ -1070,10 +1249,48 @@
         },
         213: {
             requirementDescription() {return formatWhole(this.cycleReq()) + " " + layers.prj.projects[this.projectId()].title + " Project ↻"},
-            effectDescription() { return "<small>COMING SOON.</small>" },
+            effectDescription() { return "<small>x2 starlight gain.</small>" },
             cycleReq() { return new Decimal(15) },
             projectId() { return 2 },
-            unlocked() { return false && hasMilestone(this.layer, this.id - 3) && hasMilestone("prj", 401) },
+            unlocked() { return hasMilestone(this.layer, this.id - 3) && hasMilestone("prj", 401) },
+            done() { return player.prj.modules[this.projectId()].completions.gte(this.cycleReq()) },
+            style() {
+                let look = {border: "0px", borderRadius: "0px", width: "285px", height: "46px", margin: "0px"}
+                if (hasMilestone("prj", this.id)) {
+                    look.backgroundColor = "#efffef"
+                    look.color = "#232e23"
+                } else {
+                    look.backgroundColor = "#232e23"
+                    look.color = "#efffef"
+                }
+                return look
+            },
+        },
+        214: {
+            requirementDescription() {return formatWhole(this.cycleReq()) + " " + layers.prj.projects[this.projectId()].title + " Project ↻"},
+            effectDescription() { return "<small>???.</small>" },
+            cycleReq() { return new Decimal(16) },
+            projectId() { return 2 },
+            unlocked() { return hasMilestone(this.layer, this.id - 3) && false },
+            done() { return player.prj.modules[this.projectId()].completions.gte(this.cycleReq()) },
+            style() {
+                let look = {border: "0px", borderRadius: "0px", width: "285px", height: "46px", margin: "0px"}
+                if (hasMilestone("prj", this.id)) {
+                    look.backgroundColor = "#efffef"
+                    look.color = "#232e23"
+                } else {
+                    look.backgroundColor = "#232e23"
+                    look.color = "#efffef"
+                }
+                return look
+            },
+        },
+        215: {
+            requirementDescription() {return formatWhole(this.cycleReq()) + " " + layers.prj.projects[this.projectId()].title + " Project ↻"},
+            effectDescription() { return "<small>???.</small>" },
+            cycleReq() { return new Decimal(20) },
+            projectId() { return 2 },
+            unlocked() { return hasMilestone(this.layer, this.id - 3) && false },
             done() { return player.prj.modules[this.projectId()].completions.gte(this.cycleReq()) },
             style() {
                 let look = {border: "0px", borderRadius: "0px", width: "285px", height: "46px", margin: "0px"}
@@ -1128,7 +1345,7 @@
         },
         303: {
             requirementDescription() {return formatWhole(this.cycleReq()) + " " + layers.prj.projects[this.projectId()].title + " Project ↻"},
-            effectDescription() { return "<small>Unlock light well δ and ???. (COMING SOON.)</small>" },
+            effectDescription() { return "<small>Unlock light well δ.</small>" },
             cycleReq() { return new Decimal(3) },
             projectId() { return 3 },
             unlocked() { return true },
@@ -1147,11 +1364,10 @@
         },
         304: {
             requirementDescription() {return formatWhole(this.cycleReq()) + " " + layers.prj.projects[this.projectId()].title + " Project ↻"},
-            //effectDescription() { return "<small>δ ↻ boosts light well speed. (x" + format(player.prj.milestone304Effect) + ")</small>" },
-            effectDescription() { return "<small>COMING SOON.</small>" },
+            effectDescription() { return "<small>Unlock a third blueshift effect.</small>" },
             cycleReq() { return new Decimal(4) },
             projectId() { return 3 },
-            unlocked() { return false && hasMilestone(this.layer, this.id - 3) },
+            unlocked() { return hasMilestone(this.layer, this.id - 3) },
             done() { return player.prj.modules[this.projectId()].completions.gte(this.cycleReq()) },
             style() {
                 let look = {border: "0px", borderRadius: "0px", width: "285px", height: "46px", margin: "0px"}
@@ -1167,11 +1383,10 @@
         },
         305: {
             requirementDescription() {return formatWhole(this.cycleReq()) + " " + layers.prj.projects[this.projectId()].title + " Project ↻"},
-            //effectDescription() { return "<small>x2 stored time capsules.</small>" },
-            effectDescription() { return "<small>COMING SOON.</small>" },
+            effectDescription() { return "<small>Light well cooldowns are capped at 30 seconds.</small>" },
             cycleReq() { return new Decimal(5) },
             projectId() { return 3 },
-            unlocked() { return false && hasMilestone(this.layer, this.id - 3) },
+            unlocked() { return hasMilestone(this.layer, this.id - 3) },
             done() { return player.prj.modules[this.projectId()].completions.gte(this.cycleReq()) },
             style() {
                 let look = {border: "0px", borderRadius: "0px", width: "285px", height: "46px", margin: "0px"}
@@ -1187,11 +1402,10 @@
         },
         306: {
             requirementDescription() {return formatWhole(this.cycleReq()) + " " + layers.prj.projects[this.projectId()].title + " Project ↻"},
-            //effectDescription() { return "<small>Unlock auto-blueshift.</small>" },
-            effectDescription() { return "<small>COMING SOON.</small>" },
+            effectDescription() { return "<small>Unlock one blueshift automator per project ↻ up to 9, starting at 6.</small>" },
             cycleReq() { return new Decimal(6) },
             projectId() { return 3 },
-            unlocked() { return false && hasMilestone(this.layer, this.id - 3) },
+            unlocked() { return hasMilestone(this.layer, this.id - 3) && hasMilestone("prj", 401) },
             done() { return player.prj.modules[this.projectId()].completions.gte(this.cycleReq()) },
             style() {
                 let look = {border: "0px", borderRadius: "0px", width: "285px", height: "46px", margin: "0px"}
@@ -1207,10 +1421,10 @@
         },
         307: {
             requirementDescription() {return formatWhole(this.cycleReq()) + " " + layers.prj.projects[this.projectId()].title + " Project ↻"},
-            effectDescription() { return "<small>COMING SOON.</small>" },
+            effectDescription() { return "<small>x2 light well speed.</small>" },
             cycleReq() { return new Decimal(7) },
             projectId() { return 3 },
-            unlocked() { return false && hasMilestone(this.layer, this.id - 3) },
+            unlocked() { return hasMilestone(this.layer, this.id - 3) && hasMilestone("prj", 401) },
             done() { return player.prj.modules[this.projectId()].completions.gte(this.cycleReq()) },
             style() {
                 let look = {border: "0px", borderRadius: "0px", width: "285px", height: "46px", margin: "0px"}
@@ -1226,10 +1440,10 @@
         },
         308: {
             requirementDescription() {return formatWhole(this.cycleReq()) + " " + layers.prj.projects[this.projectId()].title + " Project ↻"},
-            effectDescription() { return "<small>COMING SOON.</small>" },
+            effectDescription() { return "<small>Keep 75% of pyramid fountain ↻ on blueshift.</small>" },
             cycleReq() { return new Decimal(8) },
             projectId() { return 3 },
-            unlocked() { return false && hasMilestone(this.layer, this.id - 3) },
+            unlocked() { return hasMilestone(this.layer, this.id - 3) && hasMilestone("prj", 401) },
             done() { return player.prj.modules[this.projectId()].completions.gte(this.cycleReq()) },
             style() {
                 let look = {border: "0px", borderRadius: "0px", width: "285px", height: "46px", margin: "0px"}
@@ -1245,10 +1459,10 @@
         },
         309: {
             requirementDescription() {return formatWhole(this.cycleReq()) + " " + layers.prj.projects[this.projectId()].title + " Project ↻"},
-            effectDescription() { return "<small>COMING SOON.</small>" },
+            effectDescription() { return "<small>???.</small>" },
             cycleReq() { return new Decimal(9) },
             projectId() { return 3 },
-            unlocked() { return false && hasMilestone(this.layer, this.id - 3) },
+            unlocked() { return hasMilestone(this.layer, this.id - 3) && hasMilestone("prj", 401) },
             done() { return player.prj.modules[this.projectId()].completions.gte(this.cycleReq()) },
             style() {
                 let look = {border: "0px", borderRadius: "0px", width: "285px", height: "46px", margin: "0px"}
@@ -1264,10 +1478,29 @@
         },
         310: {
             requirementDescription() {return formatWhole(this.cycleReq()) + " " + layers.prj.projects[this.projectId()].title + " Project ↻"},
-            effectDescription() { return "<small>Unlock blueshifts for prism wells.</small>" },
+            effectDescription() { return "<small>Keep all pyramid fountain ↻ on blueshift.</small>" },
             cycleReq() { return new Decimal(10) },
             projectId() { return 3 },
-            unlocked() { return false && hasMilestone(this.layer, this.id - 3) },
+            unlocked() { return hasMilestone(this.layer, this.id - 3) && hasMilestone("prj", 401) },
+            done() { return player.prj.modules[this.projectId()].completions.gte(this.cycleReq()) },
+            style() {
+                let look = {border: "0px", borderRadius: "0px", width: "285px", height: "46px", margin: "0px"}
+                if (hasMilestone("prj", this.id)) {
+                    look.backgroundColor = "#efffef"
+                    look.color = "#232e23"
+                } else {
+                    look.backgroundColor = "#232e23"
+                    look.color = "#efffef"
+                }
+                return look
+            },
+        },
+        311: {
+            requirementDescription() {return formatWhole(this.cycleReq()) + " " + layers.prj.projects[this.projectId()].title + " Project ↻"},
+            effectDescription() { return "<small>Unlock blueshifts for prism wells.</small>" },
+            cycleReq() { return new Decimal(11) },
+            projectId() { return 3 },
+            unlocked() { return hasMilestone(this.layer, this.id - 3) && false },
             done() { return player.prj.modules[this.projectId()].completions.gte(this.cycleReq()) },
             style() {
                 let look = {border: "0px", borderRadius: "0px", width: "285px", height: "46px", margin: "0px"}
@@ -1303,7 +1536,7 @@
         },
         402: {
             requirementDescription() {return formatWhole(this.cycleReq()) + " " + layers.prj.projects[this.projectId()].title + " Project ↻"},
-            effectDescription() { return "<small>x2 starlight per project ↻ after 1. Keep fountain unlocks on blueshift.</small>" },
+            effectDescription() { return "<small>Light well focus no longer expires. Keep fountain unlocks on blueshift.</small>" },
             cycleReq() { return new Decimal(2) },
             projectId() { return 4 },
             unlocked() { return true },
@@ -1322,7 +1555,7 @@
         },
         403: {
             requirementDescription() {return formatWhole(this.cycleReq()) + " " + layers.prj.projects[this.projectId()].title + " Project ↻"},
-            effectDescription() { return "<small>x10 light and always generate 10%. Unlock the fifth row of the pyramid.</small>" },
+            effectDescription() { return "<small>Unlock the fifth row of the pyramid.</small>" },
             cycleReq() { return new Decimal(3) },
             projectId() { return 4 },
             unlocked() { return true },
@@ -1341,10 +1574,10 @@
         },
         404: {
             requirementDescription() {return formatWhole(this.cycleReq()) + " " + layers.prj.projects[this.projectId()].title + " Project ↻"},
-            effectDescription() { return "<small>x10 light well ↻ and always generate 1%. Extend the AU2 star trees.</small>" },
+            effectDescription() { return "<small>Extend the AU2 star trees.</small>" },
             cycleReq() { return new Decimal(4) },
             projectId() { return 4 },
-            unlocked() { return true },
+            unlocked() { return hasMilestone(this.layer, this.id - 3) },
             done() { return player.prj.modules[this.projectId()].completions.gte(this.cycleReq()) },
             style() {
                 let look = {border: "0px", borderRadius: "0px", width: "285px", height: "46px", margin: "0px"}
@@ -1360,10 +1593,10 @@
         },
         405: {
             requirementDescription() {return formatWhole(this.cycleReq()) + " " + layers.prj.projects[this.projectId()].title + " Project ↻"},
-            effectDescription() { return "<small>Keep stored SPVs on starshine. Unlock project studies.</small>" },
+            effectDescription() { return "<small>Automate light upgrades. Unlock research projects.</small>" },
             cycleReq() { return new Decimal(5) },
             projectId() { return 4 },
-            unlocked() { return true },
+            unlocked() { return hasMilestone(this.layer, this.id - 3) },
             done() { return player.prj.modules[this.projectId()].completions.gte(this.cycleReq()) },
             style() {
                 let look = {border: "0px", borderRadius: "0px", width: "285px", height: "46px", margin: "0px"}
@@ -1382,7 +1615,7 @@
             effectDescription() { return "<small>Unlock Prism Well ε.</small>" },
             cycleReq() { return new Decimal(6) },
             projectId() { return 4 },
-            unlocked() { return true },
+            unlocked() { return hasMilestone(this.layer, this.id - 3) && false },
             done() { return player.prj.modules[this.projectId()].completions.gte(this.cycleReq()) },
             style() {
                 let look = {border: "0px", borderRadius: "0px", width: "285px", height: "46px", margin: "0px"}
@@ -1401,7 +1634,7 @@
             effectDescription() { return "<small>Unlock the sixth row of the pyramid.</small>" },
             cycleReq() { return new Decimal(7) },
             projectId() { return 4 },
-            unlocked() { return true },
+            unlocked() { return hasMilestone(this.layer, this.id - 3) && false },
             done() { return player.prj.modules[this.projectId()].completions.gte(this.cycleReq()) },
             style() {
                 let look = {border: "0px", borderRadius: "0px", width: "285px", height: "46px", margin: "0px"}
@@ -1420,7 +1653,7 @@
             effectDescription() { return "<small>Halve anti-singularity fragment cost and double goobert point gain.</small>" },
             cycleReq() { return new Decimal(8) },
             projectId() { return 4 },
-            unlocked() { return true },
+            unlocked() { return hasMilestone(this.layer, this.id - 3) && false },
             done() { return player.prj.modules[this.projectId()].completions.gte(this.cycleReq()) },
             style() {
                 let look = {border: "0px", borderRadius: "0px", width: "285px", height: "46px", margin: "0px"}
@@ -1439,7 +1672,7 @@
             effectDescription() { return "<small>Unlock the final pyramid fountain. Improve project ↻ effects.</small>" },
             cycleReq() { return new Decimal(9) },
             projectId() { return 4 },
-            unlocked() { return true },
+            unlocked() { return hasMilestone(this.layer, this.id - 3) && false },
             done() { return player.prj.modules[this.projectId()].completions.gte(this.cycleReq()) },
             style() {
                 let look = {border: "0px", borderRadius: "0px", width: "285px", height: "46px", margin: "0px"}
@@ -1458,7 +1691,199 @@
             effectDescription() { return "<small>x10 light gain. The grind is on.</small>" },
             cycleReq() { return new Decimal(10) },
             projectId() { return 4 },
+            unlocked() { return hasMilestone(this.layer, this.id - 3) && false },
+            done() { return player.prj.modules[this.projectId()].completions.gte(this.cycleReq()) },
+            style() {
+                let look = {border: "0px", borderRadius: "0px", width: "285px", height: "46px", margin: "0px"}
+                if (hasMilestone("prj", this.id)) {
+                    look.backgroundColor = "#efffef"
+                    look.color = "#232e23"
+                } else {
+                    look.backgroundColor = "#232e23"
+                    look.color = "#efffef"
+                }
+                return look
+            },
+        },
+        // CYCLE
+        501: {
+            requirementDescription() {return formatWhole(this.cycleReq()) + " " + layers.prj.projects[this.projectId()].title + " Project ↻"},
+            effectDescription() { return "<small>Power-up the ring.</small>" },
+            cycleReq() { return new Decimal(1) },
+            projectId() { return 5 },
             unlocked() { return true },
+            done() { return player.prj.modules[this.projectId()].completions.gte(this.cycleReq()) },
+            style() {
+                let look = {border: "0px", borderRadius: "0px", width: "285px", height: "46px", margin: "0px"}
+                if (hasMilestone("prj", this.id)) {
+                    look.backgroundColor = "#efffef"
+                    look.color = "#232e23"
+                } else {
+                    look.backgroundColor = "#232e23"
+                    look.color = "#efffef"
+                }
+                return look
+            },
+        },
+        502: {
+            requirementDescription() {return formatWhole(this.cycleReq()) + " " + layers.prj.projects[this.projectId()].title + " Project ↻"},
+            effectDescription() { return "<small>+1 base rings on reset. Remove pre-starshine upgrade conditions.</small>" },
+            cycleReq() { return new Decimal(2) },
+            projectId() { return 5 },
+            unlocked() { return true },
+            done() { return player.prj.modules[this.projectId()].completions.gte(this.cycleReq()) },
+            style() {
+                let look = {border: "0px", borderRadius: "0px", width: "285px", height: "46px", margin: "0px"}
+                if (hasMilestone("prj", this.id)) {
+                    look.backgroundColor = "#efffef"
+                    look.color = "#232e23"
+                } else {
+                    look.backgroundColor = "#232e23"
+                    look.color = "#efffef"
+                }
+                return look
+            },
+        },
+        503: {
+            requirementDescription() {return formatWhole(this.cycleReq()) + " " + layers.prj.projects[this.projectId()].title + " Project ↻"},
+            effectDescription() { return "<small>Unlock planetarium in the cycle. Start cycles with 100 starshines.</small>" },
+            cycleReq() { return new Decimal(3) },
+            projectId() { return 5 },
+            unlocked() { return true },
+            done() { return player.prj.modules[this.projectId()].completions.gte(this.cycleReq()) },
+            style() {
+                let look = {border: "0px", borderRadius: "0px", width: "285px", height: "46px", margin: "0px"}
+                if (hasMilestone("prj", this.id)) {
+                    look.backgroundColor = "#efffef"
+                    look.color = "#232e23"
+                } else {
+                    look.backgroundColor = "#232e23"
+                    look.color = "#efffef"
+                }
+                return look
+            },
+        },
+        504: {
+            requirementDescription() {return formatWhole(this.cycleReq()) + " " + layers.prj.projects[this.projectId()].title + " Project ↻"},
+            effectDescription() { return "<small>x3 light well speed. Remove pre-cycle upgrade conditions.</small>" },
+            cycleReq() { return new Decimal(4) },
+            projectId() { return 5 },
+            unlocked() { return true || hasMilestone(this.layer, this.id - 3) },
+            done() { return player.prj.modules[this.projectId()].completions.gte(this.cycleReq()) },
+            style() {
+                let look = {border: "0px", borderRadius: "0px", width: "285px", height: "46px", margin: "0px"}
+                if (hasMilestone("prj", this.id)) {
+                    look.backgroundColor = "#efffef"
+                    look.color = "#232e23"
+                } else {
+                    look.backgroundColor = "#232e23"
+                    look.color = "#efffef"
+                }
+                return look
+            },
+        },
+        505: {
+            requirementDescription() {return formatWhole(this.cycleReq()) + " " + layers.prj.projects[this.projectId()].title + " Project ↻"},
+            effectDescription() { return "<small>Reveal new ring upgrades. Unlock more planetarium content.</small>" },
+            cycleReq() { return new Decimal(5) },
+            projectId() { return 5 },
+            unlocked() { return true || hasMilestone(this.layer, this.id - 3) },
+            done() { return player.prj.modules[this.projectId()].completions.gte(this.cycleReq()) },
+            style() {
+                let look = {border: "0px", borderRadius: "0px", width: "285px", height: "46px", margin: "0px"}
+                if (hasMilestone("prj", this.id)) {
+                    look.backgroundColor = "#efffef"
+                    look.color = "#232e23"
+                } else {
+                    look.backgroundColor = "#232e23"
+                    look.color = "#efffef"
+                }
+                return look
+            },
+        },
+        // STARMETAL ENHANCEMENT
+        601: {
+            requirementDescription() {return formatWhole(this.cycleReq()) + " " + layers.prj.projects[this.projectId()].title + " Project ↻"},
+            effectDescription() { return "<small>Unlock the starmetal armory.</small>" },
+            cycleReq() { return new Decimal(1) },
+            projectId() { return 6 },
+            unlocked() { return true },
+            done() { return player.prj.modules[this.projectId()].completions.gte(this.cycleReq()) },
+            style() {
+                let look = {border: "0px", borderRadius: "0px", width: "285px", height: "46px", margin: "0px"}
+                if (hasMilestone("prj", this.id)) {
+                    look.backgroundColor = "#efffef"
+                    look.color = "#232e23"
+                } else {
+                    look.backgroundColor = "#232e23"
+                    look.color = "#efffef"
+                }
+                return look
+            },
+        },
+        602: {
+            requirementDescription() {return formatWhole(this.cycleReq()) + " " + layers.prj.projects[this.projectId()].title + " Project ↻"},
+            effectDescription() { return "<small>Unlock more Interspace-related SME buyables.</small>" },
+            cycleReq() { return new Decimal(2) },
+            projectId() { return 6 },
+            unlocked() { return true },
+            done() { return player.prj.modules[this.projectId()].completions.gte(this.cycleReq()) },
+            style() {
+                let look = {border: "0px", borderRadius: "0px", width: "285px", height: "46px", margin: "0px"}
+                if (hasMilestone("prj", this.id)) {
+                    look.backgroundColor = "#efffef"
+                    look.color = "#232e23"
+                } else {
+                    look.backgroundColor = "#232e23"
+                    look.color = "#efffef"
+                }
+                return look
+            },
+        },
+        603: {
+            requirementDescription() {return formatWhole(this.cycleReq()) + " " + layers.prj.projects[this.projectId()].title + " Project ↻"},
+            effectDescription() { return "<small>Unlock more foraging content.</small>" },
+            cycleReq() { return new Decimal(3) },
+            projectId() { return 6 },
+            unlocked() { return true },
+            done() { return player.prj.modules[this.projectId()].completions.gte(this.cycleReq()) },
+            style() {
+                let look = {border: "0px", borderRadius: "0px", width: "285px", height: "46px", margin: "0px"}
+                if (hasMilestone("prj", this.id)) {
+                    look.backgroundColor = "#efffef"
+                    look.color = "#232e23"
+                } else {
+                    look.backgroundColor = "#232e23"
+                    look.color = "#efffef"
+                }
+                return look
+            },
+        },
+        604: {
+            requirementDescription() {return formatWhole(this.cycleReq()) + " " + layers.prj.projects[this.projectId()].title + " Project ↻"},
+            effectDescription() { return "<small>-1% negative depth scaling.</small>" },
+            cycleReq() { return new Decimal(4) },
+            projectId() { return 6 },
+            unlocked() { return true || hasMilestone(this.layer, this.id - 3) },
+            done() { return player.prj.modules[this.projectId()].completions.gte(this.cycleReq()) },
+            style() {
+                let look = {border: "0px", borderRadius: "0px", width: "285px", height: "46px", margin: "0px"}
+                if (hasMilestone("prj", this.id)) {
+                    look.backgroundColor = "#efffef"
+                    look.color = "#232e23"
+                } else {
+                    look.backgroundColor = "#232e23"
+                    look.color = "#efffef"
+                }
+                return look
+            },
+        },
+        605: {
+            requirementDescription() {return formatWhole(this.cycleReq()) + " " + layers.prj.projects[this.projectId()].title + " Project ↻"},
+            effectDescription() { return "<small>Reveal new ring upgrades. Unlock epic armory loot.</small>" },
+            cycleReq() { return new Decimal(5) },
+            projectId() { return 6 },
+            unlocked() { return true || hasMilestone(this.layer, this.id - 3) },
             done() { return player.prj.modules[this.projectId()].completions.gte(this.cycleReq()) },
             style() {
                 let look = {border: "0px", borderRadius: "0px", width: "285px", height: "46px", margin: "0px"}
@@ -1497,6 +1922,8 @@
 
                 s = s.mul(completions.add(1).pow(2))
                 s = s.mul(completions.div(5).floor().pow_base(4))
+                
+                if (completions.gte(15)) s = s.pow(1.25);
 
                 return s
             },
@@ -1505,6 +1932,8 @@
                 let s = completions
                 
                 s = s.add(completions.sub(5).max(0).pow(1.5)).mul(completions.div(5).floor().pow_base(8))
+
+                if (completions.gte(15)) s = s.pow(1.25);
 
                 return s.floor()
             },
@@ -1524,7 +1953,7 @@
 
                 return s
             },
-            milestones: [101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115],
+            milestones: [101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119],
         },
         2: {
             title: "Prismatic",
@@ -1548,6 +1977,8 @@
                 s = s.mul(completions.add(1).mul(completions).div(2).add(1))
                 s = s.mul(completions.div(5).floor().pow_base(6))
 
+                if (completions.gte(10)) s = s.pow(1.2);
+
                 return s
             },
             getTimeCapsuleReq() {
@@ -1555,6 +1986,8 @@
                 let s = completions.add(1).pow(2).mul(5)
                 
                 s = s.add(completions.sub(5).max(0).pow(1.5)).mul(completions.div(5).floor().pow_base(12))
+
+                if (completions.gte(10)) s = s.pow(1.2);
 
                 return s.floor()
             },
@@ -1574,14 +2007,14 @@
 
                 return s
             },
-            milestones: [201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213],
+            milestones: [201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215],
         },
         3: {
             title: "Blueshift",
             completionEffectStat: "Starmetal Essence",
             statReqName: "Blueshifts",
             statReqLocation() {return player.blu},
-            statReqInternalName: "totalBlueshifts",
+            statReqInternalName: "effectiveBlueshifts",
             getCompletionEffect() {
                 let completions = player.prj.modules[3].completions
 
@@ -1598,13 +2031,17 @@
                 s = s.mul(completions.add(1).mul(completions.pow(2)).div(2).add(1))
                 s = s.mul(completions.div(5).floor().pow_base(8))
 
+                if (completions.gte(5)) s = s.pow(1.15);
+
                 return s
             },
             getTimeCapsuleReq() {
                 let completions = player.prj.modules[3].completions
-                let s = completions.add(1).pow(2).mul(200)
+                let s = completions.add(1).pow(3).mul(200)
                 
                 s = s.add(completions.sub(5).max(0).pow(2)).mul(completions.div(5).floor().pow_base(16))
+
+                if (completions.gte(5)) s = s.pow(1.15);
 
                 return s.floor()
             },
@@ -1624,7 +2061,7 @@
 
                 return s
             },
-            milestones: [301, 302, 303, 304, 305, 306, 307, 308, 309, 310],
+            milestones: [301, 302, 303, 304, 305, 306, 307, 308, 309, 310, 311],
         },
         4: {
             title: "Starshine",
@@ -1645,6 +2082,54 @@
                 let completions = player.prj.modules[4].completions
                 let s = new Decimal(4e6)
 
+                s = s.mul(completions.add(1).mul(completions.pow(4)).div(2).add(1))
+                s = s.mul(completions.div(5).floor().pow_base(10))
+
+                return s
+            },
+            getTimeCapsuleReq() {
+                let completions = player.prj.modules[4].completions
+                let s = completions.add(1).pow(3).mul(1e5)
+                
+                s = s.add(completions.sub(5).max(0).pow(4)).mul(completions.div(5).floor().pow_base(20))
+
+                return s.floor()
+            },
+            getStatReq() {
+                let completions = player.prj.modules[4].completions
+                if (completions.eq(0)) return new Decimal(0);
+                let s = new Decimal(10)
+
+                s = s.mul(completions.sub(1).pow_base(completions.add(1).div(5).ceil().pow_base(10)))
+
+                return s
+            },
+            getTimeSpeed() {
+                let s = new Decimal(1)
+
+                s = s.mul(player.prj.projectSpeed)
+
+                return s
+            },
+            milestones: [401, 402, 403, 404, 405, 406, 407, 408, 409, 410],
+        },
+        5: {
+            title: "The Ring",
+            completionEffectStat: "Eclipse Shards",
+            statReqName: "Rings",
+            statReqLocation() {return player.cer},
+            statReqInternalName: "rings",
+            getCompletionEffect() {
+                let completions = player.prj.modules[5].completions
+
+                s = completions.pow(0.85).pow_base(1.15)
+
+                return s
+            },
+            getTimeReq() {
+                let completions = player.prj.modules[4].completions
+                let s = new Decimal(31560000)
+
                 s = s.mul(completions.add(1).mul(completions.pow(3)).div(2).add(1))
                 s = s.mul(completions.div(5).floor().pow_base(10))
 
@@ -1652,9 +2137,9 @@
             },
             getTimeCapsuleReq() {
                 let completions = player.prj.modules[4].completions
-                let s = completions.add(1).pow(4).mul(1e4)
+                let s = completions.add(1).pow(5).mul(1e6)
                 
-                s = s.add(completions.sub(5).max(0).pow(4)).mul(completions.div(5).floor().pow_base(20))
+                s = s.add(completions.sub(5).max(0).pow(5)).mul(completions.div(5).floor().pow_base(20))
 
                 return s.floor()
             },
@@ -1674,17 +2159,63 @@
 
                 return s
             },
-            milestones: [401, 402, 403, 404, 405, 406, 407, 408, 409, 410],
+            milestones: [501, 502, 503, 504, 505,],
         },
-        // 5, Eclipse Shards,
-        // 6, Pylon Energy generation (NOT multiplier),
+        6: {
+            title: "Starmetal Enhancement",
+            completionEffectStat: "all Pylon Energy generation",
+            statReqName: "Rings",
+            statReqLocation() {return player.cer},
+            statReqInternalName: "rings",
+            getCompletionEffect() {
+                let completions = player.prj.modules[6].completions
+
+                s = completions.pow(0.75).pow_base(1.5)
+
+                return s
+            },
+            getTimeReq() {
+                let completions = player.prj.modules[4].completions
+                let s = new Decimal(1e10)
+
+                s = s.mul(completions.add(1).mul(completions.pow(3)).div(2).add(1))
+                s = s.mul(completions.div(5).floor().pow_base(10))
+
+                return s
+            },
+            getTimeCapsuleReq() {
+                let completions = player.prj.modules[4].completions
+                let s = completions.add(1).pow(5).mul(1e9)
+                
+                s = s.add(completions.sub(5).max(0).pow(5)).mul(completions.div(5).floor().pow_base(20))
+
+                return s.floor()
+            },
+            getStatReq() {
+                let completions = player.prj.modules[4].completions
+                if (completions.eq(0)) return new Decimal(0);
+                let s = new Decimal(10)
+
+                s = s.mul(completions.sub(1).pow_base(completions.add(1).div(5).ceil().pow(1.25).pow_base(10)))
+
+                return s
+            },
+            getTimeSpeed() {
+                let s = new Decimal(1)
+
+                s = s.mul(player.prj.projectSpeed)
+
+                return s
+            },
+            milestones: [601, 602, 603, 604, 605,],
+        },
         // 7, Singularities,
         // 8, I see you, no spoilers for what this boosts lmao,
     },
     microtabs: {
-        stuff: {
-            "Projects": {
-                buttonStyle() { return { color: "white", borderRadius: "8px"} },
+        floors: {
+            "Floor 1": {
+                buttonStyle() { return { color: "white", borderWidth: "2px", borderRadius: "20px"} },
                 unlocked() { return true },
                 content() {
                     // #663366
@@ -1692,18 +2223,6 @@
                     // #ffa8d3
                     // #dfffdf
                     let look = [
-                        ["blank", "25px"],
-                        ["raw-html", "You have <h3>" + formatWhole(player.prj.storedTimeCapsules) + "</h3> stored time capsules. (From Dark Universe Eclipse)", {color: "white", fontSize: "18px", fontFamily: "monospace"}],
-                        ["raw-html", "Boosts project speed by x" + formatSimple(player.prj.storedTimeCapsuleEffect, 2), {color: "white", fontSize: "18px", fontFamily: "monospace"}],
-                        ["blank", "25px"],
-                        ["raw-html", "You are gaining <h3>" + formatSimple(player.prj.projectSpeed, 2) + "</h3> project progress /s.", {color: "white", fontSize: "18px", fontFamily: "monospace"}],
-                        ["raw-html", "You are using " + formatWhole(player.prj.focused) + "/" + formatWhole(player.prj.maxFocused) + " focus.", {color: "white", fontSize: "18px", fontFamily: "monospace"}],
-                        ["blank", "9px"],
-                        ["style-row", [
-                            ["rounded-ex-buyable", 11],
-                        ]],
-                        ["blank", "9px"],
-                        ["raw-html", "You have a total of <h3>" + formatWhole(player.prj.completedProjects) + "</h3> project ↻.", {color: "white", fontSize: "18px", fontFamily: "monospace"}],
                         ["blank", "15px"],
                         ["style-row", [
                             makeProject(1),
@@ -1716,7 +2235,67 @@
                             ["blank", "6px", {width: "6px"}],
                             hasUpgrade("wel", 44) ? makeProject(4) : null,
                         ]],
+                    ]
+                    return look
+                },
+            },/*
+            "Floor 2": {
+                buttonStyle() { return { color: "white", borderWidth: "2px", borderRadius: "20px"} },
+                unlocked() { return true },
+                content() {
+                    // #4d2548
+                    // #804067
+                    // #ffa8d3
+                    // #dfffdf
+                    let look = [
+                        ["blank", "15px"],
+                        ["style-row", [
+                            makeProject(5, {
+                                primaryColor: "#4d2548",
+                                secondaryColor: "#804067",
+                            }),
+                            ["blank", "6px", {width: "6px"}],
+                            hasUpgrade("wel", 24) ? makeProject(6, {
+                                primaryColor: "#4d2548",
+                                secondaryColor: "#804067",
+                            }) : null,
+                        ]],
+                        ["blank", "6px", {width: "6px"}],
+                        ["style-row", [
+                            //hasUpgrade("wel", 34) ? makeProject(7) : null,
+                            ["blank", "6px", {width: "6px"}],
+                            //hasUpgrade("wel", 44) ? makeProject(8) : null,
+                        ]],
+                    ]
+                    return look
+                },
+            },*/
+        },
+        stuff: {
+            "Projects": {
+                buttonStyle() { return { color: "white", borderWidth: "2px", borderRadius: "20px"} },
+                unlocked() { return true },
+                content() {
+                    // #663366
+                    // #994d86
+                    // #ffa8d3
+                    // #dfffdf
+                    let look = [
+                        ["blank", "25px"],
+                        ["raw-html", "You have <h3>" + formatWhole(player.prj.storedTimeCapsules) + "</h3> stored time capsules. (From Dark Universe Eclipse)", {color: "white", fontSize: "18px", fontFamily: "monospace"}],
+                        ["blank", "25px"],
+                        ["raw-html", "Projects operate at <h3>x" + formatSimple(player.prj.projectSpeed, 2) + "</h3> speed.", {color: "white", fontSize: "18px", fontFamily: "monospace"}],
+                        ["raw-html", "<small>Stored time capsules speed up projects by x" + formatSimple(player.prj.storedTimeCapsuleEffect, 2), {color: "white", fontSize: "18px", fontFamily: "monospace"}],
+                        ["blank", "9px"],
+                        ["style-row", [
+                            ["rounded-ex-buyable", 11],
+                        ]],
+                        ["blank", "9px"],
+                        ["raw-html", "You are using " + formatWhole(player.prj.focused) + "/" + formatWhole(player.prj.maxFocused) + " focus.", {color: "white", fontSize: "18px", fontFamily: "monospace"}],
+                        ["raw-html", "You have a total of <h3>" + formatWhole(player.prj.completedProjects) + "</h3> project ↻.", {color: "white", fontSize: "18px", fontFamily: "monospace"}],
                         ["blank", "12px"],
+                        ["microtabs", "floors", {border: "0"}],
+                        ["blank", "6px"],
                         ["clickable", "projects_respecFocus"],
                         ["blank", "25px"],
                     ]
@@ -1766,6 +2345,9 @@
                 switch (player.tab) {
                     case "wel": {
                         switch (player.subtabs.wel.stuff) {
+                            case "Wells":
+                                clickClickable("wel", "lightWells_respecFocus")
+                                break
                             case "Fountains":
                                 clickClickable("wel", "lightFountains_respecFocus")
                                 break
@@ -1795,7 +2377,11 @@
     ]
 })
 
-const makeProject = function (id) {
+const makeProject = function (id, data = {}) {
+    if (!data.primaryColor) data.primaryColor = "#663366"
+    if (!data.secondaryColor) data.secondaryColor = "#994d86"
+    if (!data.progressFrontColor) data.progressFrontColor = "#dfffdf"
+    if (!data.progressBackColor) data.progressBackColor = "#1a001a"
     let thisProject =
         ["style-column", [
             ["style-row", [
@@ -1808,35 +2394,35 @@ const makeProject = function (id) {
                     ["style-column", [
                         ["raw-html", player.prj.modules[id].timeCapsuleReq.eq(0) ? "Your first cycle is free!" : "-" + formatWhole(player.prj.modules[id].timeCapsuleReq) + " Time Capsules", {color: "white", fontSize: "16px", fontFamily: "monospace"}],
                         ["raw-html", player.prj.modules[id].statReq.eq(0) ? "" : "-" + formatWhole(player.prj.modules[id].statReq) + " " + layers.prj.projects[id].statReqName, {color: "white", fontSize: "16px", fontFamily: "monospace"}],
-                    ], {background: "#994d86", borderRadius: "10px 10px 0px 0px", width: "238px", height: "41px"}],
+                    ], {background: data.secondaryColor, borderRadius: "10px 10px 0px 0px", width: "238px", height: "41px"}],
                     ["blank", "3px"],
                     ["clickable", id],
-                ], {background: "#663366", border: "3px solid #663366", borderRadius: "16px 0px 0px 0px", width: "238px", height: "166px"}],
+                ], {background: data.primaryColor, border: "3px solid " + data.primaryColor, borderRadius: "16px 0px 0px 0px", width: "238px", height: "166px"}],
                 ["style-column", [
                     ["style-column", [
                         ["style-column", [
                             ["style-column", [
                                 ["raw-html", player.prj.modules[id].time.gte(player.prj.modules[id].timeReq) ? "0%" : formatSimple(player.prj.modules[id].time.div(player.prj.modules[id].timeReq).min(1).max(0).mul(100), 0) + "%", {color: "white", fontSize: "24px", fontFamily: "monospace"}],
-                            ], {background: "#994d86", border: "3px solid #663366", borderRadius: "100px", width: "75px", height:"75px"}]
-                        ], {borderRadius: "50%", width: "125px", height:"125px", border: "3px solid #663366", margin: "-3px", marginTop: "75px",
+                            ], {background: data.secondaryColor, border: "3px solid " + data.primaryColor, borderRadius: "100px", width: "75px", height:"75px"}]
+                        ], {borderRadius: "50%", width: "125px", height:"125px", border: "3px solid " + data.primaryColor, margin: "-3px", marginTop: "75px",
                             background: player.prj.modules[id].time.lt(player.prj.modules[id].timeReq) ?
-                            "conic-gradient(#dfffdf " + (player.prj.modules[id].time.div(player.prj.modules[id].timeReq)).min(1).max(0) * 360 + "deg, #1a001a 0deg)" : "#1a001a"
+                            "conic-gradient(" + data.progressFrontColor + " " + (player.prj.modules[id].time.div(player.prj.modules[id].timeReq)).min(1).max(0) * 360 + "deg, " + data.progressBackColor + " 0deg)" : data.progressBackColor
                         }],
-                    ], {background: "#663366", borderRadius: "0px 81px 0px 0px", width: "153px", height: "78px"}],
-                    ["style-column", [], {background: "#994d86", height: "94px"}],
-                ], {border: "3px solid #663366", borderBottom: "0px", borderLeft: "0px", borderRadius: "0px 81px 0px 0px", padding: "-3px", width: "153px", height: "169px"}],
+                    ], {background: data.primaryColor, borderRadius: "0px 81px 0px 0px", width: "153px", height: "78px"}],
+                    ["style-column", [], {background: data.secondaryColor, height: "94px"}],
+                ], {border: "3px solid " + data.primaryColor, borderBottom: "0px", borderLeft: "0px", borderRadius: "0px 81px 0px 0px", padding: "-3px", width: "153px", height: "169px"}],
             ], {verticalAlign: "bottom"}],
             ["style-column", [
                     ["style-column", [
                     ["raw-html", formatWhole(player.prj.modules[id].completions) + " ↻<br><small>(x" + formatSimple(layers.prj.projects[id].getCompletionEffect(), 2) + " " + layers.prj.projects[id].completionEffectStat + ")</small>", {color: "white", fontSize: "16px", fontFamily: "monospace", lineHeight: "18px", display: "block", lineHeight: "1"}],
-                ], {background: "#663366", border: "3px solid #994d86", borderRadius: "0px", width: "388px", height: "44px"}],
-            ], {background: "#994d86", border: "3px solid #663366", borderRadius: "0px", borderTop: "0px", height: "50px"}],
+                ], {background: data.primaryColor, border: "3px solid " + data.secondaryColor, borderRadius: "0px", width: "388px", height: "44px"}],
+            ], {background: data.secondaryColor, border: "3px solid " + data.primaryColor, borderRadius: "0px", borderTop: "0px", height: "50px"}],
             ["style-column", [
                 ["always-scroll-column", [
                     ["style-row", [], {backgroundColor: "#485e48", width: "379px", height: "3px"}]
                     // MILESTONES
                 ], {width: "394px", height: "150px"}],
-            ], {background: "#485e48", border: "3px solid #663366", borderTop: "0px", height: "150px"}],
+            ], {background: "#485e48", border: "3px solid " + data.primaryColor, borderTop: "0px", height: "150px"}],
         ], {width: "400px"}]
     for (let i = 0; i < layers.prj.projects[id].milestones.length; i++) {
         let milestoneId = layers.prj.projects[id].milestones[i]

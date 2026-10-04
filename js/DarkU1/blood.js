@@ -119,8 +119,8 @@
     bars: {},
     clickables: {
         11: {
-            title() { return player.ir.timers[player.ir.shipType].current.lte(0) ? "<h2>Enter Blood Battle" : "<h2>Cooldown: " + formatTime(player.ir.timers[player.ir.shipType].current)},
-            canClick() { return player.ir.timers[player.ir.shipType].current.lte(0) },
+            title() { return player.ir.timers[player.ir.type].current.lte(0) ? "<h2>Enter Blood Battle" : "<h2>Cooldown: " + formatTime(player.ir.timers[player.ir.type].current)},
+            canClick() { return player.ir.timers[player.ir.type].current.lte(0) },
             unlocked() { return true },
             tooltip() { return "Blood... The elixir of humanity." },
             onClick() {
@@ -157,7 +157,7 @@
                 }
                 localStorage.setItem('arenaActive', 'false');
 
-                player.ir.timers[player.ir.shipType].current = player.ir.timers[player.ir.shipType].max
+                player.ir.timers[player.ir.type].current = player.ir.timers[player.ir.type].max
 
                 player.ir.battleXP = new Decimal(0)
                 player.ir.battleLevel = new Decimal(1)
@@ -879,7 +879,7 @@
                         ["always-scroll-column", [
                             ["top-column", function () {
                                 let container = [["style-row", [], {width: player.ir.inBattle ? "782px" : "514px", marginRight: "24px"}]]
-                                if (player.ir.shipBattleSaveCurrent == null || player.ir.shipType == 0) return container;
+                                if (player.ir.shipBattleSaveCurrent == null || player.ir.type == 0) return container;
                                 for (let [i, v] of Object.entries(SB_zones)) {
                                     if (!v.location || !v.unlocked() || (v.location && v.location != "space")) continue;
                                     let element = ["style-column", [
@@ -922,7 +922,7 @@
                         ["always-scroll-column", [
                             ["top-column", function () {
                                 let container = [["style-row", [], {width: player.ir.inBattle ? "782px" : "514px", marginRight: "24px"}]]
-                                if (player.ir.shipBattleSaveCurrent == null || player.ir.shipType == 0) return container;
+                                if (player.ir.shipBattleSaveCurrent == null || player.ir.type == 0) return container;
                                 for (let [i, v] of Object.entries(SB_zones)) {
                                     if (!v.location || !v.unlocked() || (v.location && v.location != "blood")) continue;
                                     let element = ["style-column", [
@@ -968,9 +968,9 @@
                         ["always-scroll-column", [
                             ["top-column", function () {
                                 let container = []
-                                if (player.ir.shipBattleSaveCurrent == null || player.ir.shipType == 0) return container;
+                                if (player.ir.shipBattleSaveCurrent == null || player.ir.type == 0) return container;
                                 let shipStats = SB_getUpgradedShipStats(arena ? arena.upgrades : player.ir.shipBattleSaveCurrent.upgrades)
-                                let baseStats = SB_ships[SB_shipNames[player.ir.shipBattleSaveCurrent.shipType]].baseStats
+                                let baseStats = SB_ships[player.ir.shipBattleSaveCurrent.type].baseStats
                                 for (let [i, v] of Object.entries(shipStats)) {
                                     let statFormat = SHIP_STAT_FORMATTING[i]
                                     let prefix = statFormat.valuePrefix
@@ -1023,7 +1023,7 @@
                             ["top-column", function () {
                             let container = []
                             if (player.ir.shipBattleSaveCurrent == null) return container;
-                            let shipStats = SB_ships[SB_shipNames[player.ir.shipBattleSaveCurrent.shipType]].baseStats
+                            let shipStats = SB_ships[player.ir.shipBattleSaveCurrent.type].baseStats
                             for (let [i, v] of Object.entries(SB_getDefaultShipStats())) {
                                 v = shipStats[i]
                                 let statFormat = SHIP_STAT_FORMATTING[i]
@@ -1157,7 +1157,7 @@
                             ["top-column", function () {
                             let container = []
                             if (player.ir.shipBattleSaveCurrent == null) return container;
-                            let entries = Object.entries(arena ? arena.upgrades : player.ir.shipBattleSaveCurrent.bankedUpgrades)
+                            let entries = Object.entries(arena ? arena.upgrades : player.ir.shipBattleSaveCurrent.bankedSalvagedUpgrades)
                             let entriesIndex = 0
                             for (let [i, v] of entries) {
                                 entriesIndex++
@@ -1194,7 +1194,7 @@
                     ["style-row", [
                         ["style-column", [
                             ["blank", "5.5px"],
-                            ["raw-html", () => {return "Ship Selected: <span style='color:#ffff00'>" + (player.ir.shipBattleSaveCurrent == null ? "<span style='color:#aaa2f2'>None" : (layers.ir.levelables[player.ir.shipBattleSaveCurrent.shipType].title() + " " + (player.ir.shipBattleSaveCurrent.slot === -2 ? "(Latest Run)" : player.ir.shipBattleSaveCurrent.slot === -1 ? "<span style='color:#aaa2f2'>(New Run)" : ("<span style='color:#aaa2f2'>(Slot #" + (player.ir.shipBattleSaveCurrent.slot + 1) + ")"))))}, { "color": "white", "font-size": "16px", "font-family": "monospace" }],
+                            ["raw-html", () => {return "Ship Selected: <span style='color:#ffff00'>" + (player.ir.shipBattleSaveCurrent == null ? "<span style='color:#aaa2f2'>None" : (layers.ir.levelables[player.ir.shipBattleSaveCurrent.type].title() + " " + (player.ir.shipBattleSaveCurrent.slot === -2 ? "(Latest Run)" : player.ir.shipBattleSaveCurrent.slot === -1 ? "<span style='color:#aaa2f2'>(New Run)" : ("<span style='color:#aaa2f2'>(Slot #" + (player.ir.shipBattleSaveCurrent.slot + 1) + ")"))))}, { "color": "white", "font-size": "16px", "font-family": "monospace" }],
                             ["blank", "8.5px"],
                             ["layer-proxy", ["ir", [["clickable", "newRun"]]]],
                         ], {width: "535px"}],
@@ -1224,7 +1224,7 @@
                     ["style-row", [
                         ["style-column", [
                             ["blank", "5.5px"],
-                            ["raw-html", () => {return "Ship Selected: <span style='color:#ffff00'>" + (player.ir.shipBattleSaveCurrent == null ? "<span style='color:#aaa2f2'>None" : (layers.ir.levelables[player.ir.shipBattleSaveCurrent.shipType].title() + " " + (player.ir.shipBattleSaveCurrent.slot === -2 ? "(Latest Run)" : player.ir.shipBattleSaveCurrent.slot === -1 ? "<span style='color:#aaa2f2'>(New Run)" : ("<span style='color:#aaa2f2'>(Slot #" + (player.ir.shipBattleSaveCurrent.slot + 1) + ")"))))}, { "color": "white", "font-size": "16px", "font-family": "monospace" }],
+                            ["raw-html", () => {return "Ship Selected: <span style='color:#ffff00'>" + (player.ir.shipBattleSaveCurrent == null ? "<span style='color:#aaa2f2'>None" : (layers.ir.levelables[player.ir.shipBattleSaveCurrent.type].title() + " " + (player.ir.shipBattleSaveCurrent.slot === -2 ? "(Latest Run)" : player.ir.shipBattleSaveCurrent.slot === -1 ? "<span style='color:#aaa2f2'>(New Run)" : ("<span style='color:#aaa2f2'>(Slot #" + (player.ir.shipBattleSaveCurrent.slot + 1) + ")"))))}, { "color": "white", "font-size": "16px", "font-family": "monospace" }],
                             ["blank", "8.5px"],
                             ["layer-proxy", ["ir", [["clickable", "newRun"]]]],
                         ], {width: "535px"}],
@@ -1241,7 +1241,7 @@
                                 if (player.ir.shipBattleSaveCurrent == null) return container;
                                 container.push(
                                     ["style-column", [
-                                        ["raw-html", "<i>" + layers.ir.levelables[player.ir.shipBattleSaveCurrent.shipType].lore() + "</i>", { "color": "white", "font-size": "16px", "font-family": "monospace" }],
+                                        ["raw-html", "<i>" + layers.ir.levelables[player.ir.shipBattleSaveCurrent.type].lore() + "</i>", { "color": "white", "font-size": "16px", "font-family": "monospace" }],
                                     ], {width: "508px"}],
                                 )
                                 return container
@@ -1270,7 +1270,7 @@
                                         ["style-row", [], {background: "#5e4ee6", width: "232px", height: "3px"}],
                                         ["style-column", [
                                             ["raw-html", (save == null ? "<span style='color:#aaa2f2'>Empty" : (
-                                                layers.ir.levelables[save.shipType].title()
+                                                layers.ir.levelables[save.type].title()
                                                 + "<br><span style='color:#aaa2f2;font-size:12px'>Upgrade Count: " + formatSimple(save.upgradeCount, 2)
                                                 + "<br>Upgrade Score: " + formatSimple(save.upgradeScore, 2)
                                             )), { "color": "yellow", textShadow: "1px 1px 1px black, -1px 1px 1px black, -1px -1px 1px black, 1px -1px 1px black", "font-size": "16px", "font-family": "monospace" }],
@@ -1341,7 +1341,7 @@
                                         ["style-row", [], {background: "#5e4ee6", width: "232px", height: "3px"}],
                                         ["style-column", [
                                             ["raw-html", (save == null ? "<span style='color:#aaa2f2'>Empty" : (
-                                                layers.ir.levelables[save.shipType].title()
+                                                layers.ir.levelables[save.type].title()
                                                 + "<br><span style='color:#aaa2f2;font-size:12px'>Upgrade Count: " + formatSimple(save.upgradeCount, 2)
                                                 + "<br>Upgrade Score: " + formatSimple(save.upgradeScore, 2)
                                             )), { "color": "yellow", textShadow: "1px 1px 1px black, -1px 1px 1px black, -1px -1px 1px black, 1px -1px 1px black", "font-size": "16px", "font-family": "monospace" }],
@@ -1457,7 +1457,7 @@
             },
             "Blood Battle": {
                 buttonStyle() { return { border: "2px solid #f57171", borderRadius: "10px" } },
-                unlocked() { return !player.ir.inBattle },
+                unlocked() { return !player.ir.inBattle && false},
                 content: [
                     ["buttonless-microtabs", "stuff", { 'border-width': '0px' }],
                 ]

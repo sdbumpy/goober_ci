@@ -351,6 +351,111 @@
             style: { width: '250px', height: '150px', color: "black", background: "#279ccf" },
             progressColor: "#279ccf7f",
         },
+        18: {
+            costBase() { return new Decimal(1e15) },
+            costGrowth() { return new Decimal(10) },
+            purchaseLimit() { return new Decimal(50) },
+            currency() { return player.pl.spaceDust},
+            pay(amt) { player.pl.spaceDust = this.currency().sub(amt) },
+            effect(x) { return getBuyableAmount(this.layer, this.id).mul(0.05).add(1) },
+            unlocked() { return hasMilestone("evolutionField", 11) },
+            cost(x) { return this.costGrowth().pow(x || getBuyableAmount(this.layer, this.id)).mul(this.costBase()) },
+            canAfford() { return this.currency().gte(this.cost()) },
+            title() {
+                return "CRC Increaser"
+            },
+            display() {
+                return "which are boosting crate roll chance by x" + format(tmp[this.layer].buyables[this.id].effect) + ".\n\
+                    Cost: " + format(tmp[this.layer].buyables[this.id].cost) + " Space Dust"
+            },
+            buy(mult) {
+                if (mult != true) {
+                    let buyonecost = new Decimal(this.costGrowth()).pow(getBuyableAmount(this.layer, this.id)).mul(this.costBase())
+                    this.pay(buyonecost)
+
+                    setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+                } else {
+                    let max = Decimal.affordGeometricSeries(this.currency(), this.costBase(), this.costGrowth(), getBuyableAmount(this.layer, this.id))
+                    if (max.gt(this.purchaseLimit().sub(getBuyableAmount(this.layer, this.id)))) { max = this.purchaseLimit().sub(getBuyableAmount(this.layer, this.id)) }
+                    let cost = Decimal.sumGeometricSeries(max, this.costBase(), this.costGrowth(), getBuyableAmount(this.layer, this.id))
+                    this.pay(cost)
+
+                    setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(max))
+                }
+            },
+            style: { width: '250px', height: '150px', color: "black", background: "#279ccf" },
+            progressColor: "#279ccf7f",
+        },
+        19: {
+            costBase() { return new Decimal(1e18) },
+            costGrowth() { return new Decimal(50) },
+            purchaseLimit() { return new Decimal(50) },
+            currency() { return player.pl.spaceDust},
+            pay(amt) { player.pl.spaceDust = this.currency().sub(amt) },
+            effect(x) { return getBuyableAmount(this.layer, this.id).mul(0.2).add(1) },
+            unlocked() { return hasMilestone("evolutionField", 11) },
+            cost(x) { return this.costGrowth().pow(x || getBuyableAmount(this.layer, this.id)).mul(this.costBase()) },
+            canAfford() { return this.currency().gte(this.cost()) },
+            title() {
+                return "Coin Dust Increaser"
+            },
+            display() {
+                return "which are boosting coin dust gain by x" + format(tmp[this.layer].buyables[this.id].effect) + ".\n\
+                    Cost: " + format(tmp[this.layer].buyables[this.id].cost) + " Space Dust"
+            },
+            buy(mult) {
+                if (mult != true) {
+                    let buyonecost = new Decimal(this.costGrowth()).pow(getBuyableAmount(this.layer, this.id)).mul(this.costBase())
+                    this.pay(buyonecost)
+
+                    setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+                } else {
+                    let max = Decimal.affordGeometricSeries(this.currency(), this.costBase(), this.costGrowth(), getBuyableAmount(this.layer, this.id))
+                    if (max.gt(this.purchaseLimit().sub(getBuyableAmount(this.layer, this.id)))) { max = this.purchaseLimit().sub(getBuyableAmount(this.layer, this.id)) }
+                    let cost = Decimal.sumGeometricSeries(max, this.costBase(), this.costGrowth(), getBuyableAmount(this.layer, this.id))
+                    this.pay(cost)
+
+                    setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(max))
+                }
+            },
+            style: { width: '250px', height: '150px', color: "black", background: "#279ccf" },
+            progressColor: "#279ccf7f",
+        },
+        20: {
+            costBase() { return new Decimal(1e21) },
+            costGrowth() { return new Decimal(20) },
+            purchaseLimit() { return new Decimal(50) },
+            currency() { return player.pl.spaceDust},
+            pay(amt) { player.pl.spaceDust = this.currency().sub(amt) },
+            effect(x) { return getBuyableAmount(this.layer, this.id).mul(0.02).add(1) },
+            unlocked() { return hasMilestone("evolutionField", 11) },
+            cost(x) { return this.costGrowth().pow(x || getBuyableAmount(this.layer, this.id)).mul(this.costBase()) },
+            canAfford() { return this.currency().gte(this.cost()) },
+            title() {
+                return "Orb Increaser"
+            },
+            display() {
+                return "which are boosting orb gain by x" + format(tmp[this.layer].buyables[this.id].effect) + ".\n\
+                    Cost: " + format(tmp[this.layer].buyables[this.id].cost) + " Space Dust"
+            },
+            buy(mult) {
+                if (mult != true) {
+                    let buyonecost = new Decimal(this.costGrowth()).pow(getBuyableAmount(this.layer, this.id)).mul(this.costBase())
+                    this.pay(buyonecost)
+
+                    setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+                } else {
+                    let max = Decimal.affordGeometricSeries(this.currency(), this.costBase(), this.costGrowth(), getBuyableAmount(this.layer, this.id))
+                    if (max.gt(this.purchaseLimit().sub(getBuyableAmount(this.layer, this.id)))) { max = this.purchaseLimit().sub(getBuyableAmount(this.layer, this.id)) }
+                    let cost = Decimal.sumGeometricSeries(max, this.costBase(), this.costGrowth(), getBuyableAmount(this.layer, this.id))
+                    this.pay(cost)
+
+                    setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(max))
+                }
+            },
+            style: { width: '250px', height: '150px', color: "black", background: "#279ccf" },
+            progressColor: "#279ccf7f",
+        },
     },
     milestones: {},
     challenges: {},
@@ -402,6 +507,14 @@
                         ["rounded-ex-buyable", 16],
                         ["style-row", [], {width: "3px"}],
                         ["rounded-ex-buyable", 17], 
+                    ]],
+                    ["style-row", [], {height: "3px"}],
+                    ["row", [
+                        ["rounded-ex-buyable", 18],
+                        ["style-row", [], {width: "3px"}],
+                        ["rounded-ex-buyable", 19],
+                        ["style-row", [], {width: "3px"}],
+                        ["rounded-ex-buyable", 20], 
                     ]],
                 ]
             },

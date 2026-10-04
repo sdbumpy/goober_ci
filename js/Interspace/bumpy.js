@@ -10,12 +10,15 @@
         starshines: new Decimal(0),
         starshinesToGet: new Decimal(0),
         totalStarshines: new Decimal(0),
+        bestLight: new Decimal(0),
 
         starlight: new Decimal(0),
         starlightToGet: new Decimal(0),
         totalStarlight: new Decimal(0),
+        bestStarlightInOneReset: new Decimal(0),
 
         fountainSpeed: new Decimal(1),
+        starlightToInvest: new Decimal(0),
         
         fountains: {
             1: {
@@ -32,6 +35,8 @@
                 focusTimer: new Decimal(0),
                 focusTimerMax: new Decimal(2),
                 statReq: new Decimal(1),
+                statInvested: new Decimal(0),
+                minStatToInvest: new Decimal(1),
             },
             2: {
                 time: new Decimal(0),
@@ -47,6 +52,8 @@
                 focusTimer: new Decimal(0),
                 focusTimerMax: new Decimal(2),
                 statReq: new Decimal(1),
+                statInvested: new Decimal(0),
+                minStatToInvest: new Decimal(1),
             },
             3: {
                 time: new Decimal(0),
@@ -62,6 +69,8 @@
                 focusTimer: new Decimal(0),
                 focusTimerMax: new Decimal(2),
                 statReq: new Decimal(1),
+                statInvested: new Decimal(0),
+                minStatToInvest: new Decimal(1),
             },
             4: {
                 time: new Decimal(0),
@@ -77,6 +86,8 @@
                 focusTimer: new Decimal(0),
                 focusTimerMax: new Decimal(2),
                 statReq: new Decimal(1),
+                statInvested: new Decimal(0),
+                minStatToInvest: new Decimal(1),
             },
             5: {
                 time: new Decimal(0),
@@ -92,6 +103,8 @@
                 focusTimer: new Decimal(0),
                 focusTimerMax: new Decimal(2),
                 statReq: new Decimal(1),
+                statInvested: new Decimal(0),
+                minStatToInvest: new Decimal(1),
             },
             6: {
                 time: new Decimal(0),
@@ -107,8 +120,26 @@
                 focusTimer: new Decimal(0),
                 focusTimerMax: new Decimal(2),
                 statReq: new Decimal(1),
+                statInvested: new Decimal(0),
+                minStatToInvest: new Decimal(1),
             },
         },
+
+        upgrade13Condition: false,
+        upgrade14Condition: false,
+        upgrade21Condition: false,
+        upgrade22Condition: false,
+        upgrade23Condition: false,
+        upgrade24Condition: false,
+        upgrade31Condition: false,
+        upgrade32Condition: false,
+        upgrade33Condition: false,
+        upgrade34Condition: false,
+        upgrade41Condition: false,
+        upgrade42Condition: false,
+        upgrade43Condition: false,
+        upgrade44Condition: false,
+
     }},
     automate() {},
     nodeStyle() {
@@ -123,48 +154,97 @@
     color: "#dfffdf",
     update(delta) {
 
-        // STARLIGHT
-        player.bum.starlightToGet = player.wel.light.add(1).log(10).sub(75).div(6).pow_base(2)
-        if (hasAchievement("achievements", 1221)) player.bum.starlightToGet = player.bum.starlightToGet.mul(1.2)
-        player.bum.starlightToGet = player.bum.starlightToGet.floor()
+        // UPGRADE CONDITIONS
+        if (!player.prj.upgrade13Condition && player.wel.bestLight.gte(1e100)) player.prj.upgrade13Condition = true;
+        if (!player.prj.upgrade14Condition && player.prj.projectSpeed.gte(1.2e5)) player.prj.upgrade14Condition = true;
+        if (!player.prj.upgrade21Condition && player.bum.bestStarlightInOneReset.gte(400)) player.prj.upgrade21Condition = true;
+        if (!player.prj.upgrade22Condition && player.blu.totalBlueshifts.add(player.blu.extraBlueshifts).gte(20)) player.prj.upgrade22Condition = true;
+        if (!player.prj.upgrade23Condition && player.au2.stars.gte(1e40)) player.prj.upgrade23Condition = true;
+        if (!player.prj.upgrade24Condition && player.pri.fountains[12].completions.gte(1)) player.prj.upgrade24Condition = true;
+        if (!player.prj.upgrade33Condition && player.tw.twigs.gte(1e18)) player.prj.upgrade33Condition = true;
 
-        if (player.bum.starshines.lte(0)) player.bum.starlightToGet = player.bum.starlightToGet.min(1);
+        // STARLIGHT
+        player.bum.starlightToGet = player.wel.light.add(1).log(10).sub(90).div(8).pow_base(2)
+        if (hasMilestone("prj", 213)) player.bum.starlightToGet = player.bum.starlightToGet.mul(2)
+        //if (hasAchievement("achievements", 1221)) player.bum.starlightToGet = player.bum.starlightToGet.mul(1.2)
+        player.bum.starlightToGet = player.bum.starlightToGet.mul(3).floor()
+
+        if (player.bum.starshines.lte(0)) player.bum.starlightToGet = player.bum.starlightToGet.min(3);
 
         // STARSHINES
         player.bum.starshinesToGet = new Decimal(1)
         
+        // STARLIGHT INVESTMENT
+        if (player.bum.starlightToInvest.lt(0)) player.bum.starlightToInvest = new Decimal(0)
+        if (player.bum.starlightToInvest.gt(player.bum.starlight)) player.bum.starlightToInvest = player.bum.starlight
+
         // FOUNTAIN SPEED
-        player.bum.fountainSpeed = player.bum.totalStarlight.pow(2).div(10)
-        player.bum.fountainSpeed = player.bum.fountainSpeed.mul(player.prj.projectSpeed)
+        player.bum.fountainSpeed = new Decimal(1)
 
         // FOUNTAIN PROGRESS
         Object.keys(layers.bum.fountains).forEach(i => {
             let module = player.bum.fountains[i]
             let fountain = layers.bum.fountains[i]
-            module.timeSpeed = fountain.getTimeSpeed()
+            module.timeSpeed = fountain.getTimeSpeed(adder = 0)
             module.timeReq = fountain.getTimeReq()
-            module.starlightReq = fountain.getStatReq()
+            module.statReq = fountain.getStatReq()
             module.completionEffect = fountain.getCompletionEffect()
 
-            if (module.focused) {
-                module.time = module.time.add(module.timeSpeed.mul(delta))
-                if (module.time.gte(module.timeReq)) {
-                    module.focused = false
-                    module.completions = module.completions.add(1)
-                    module.time = new Decimal(0)
+            module.pourSafety = false
+            module.focusSafety = false
+            player.bum.fountains[i].focusTimerMax = player.prj.starlightFountainFocusExtension.mul(60).div(Math.pow(2, i - 1))
+            if (player.bum.fountains[i].isFocused) {
+                player.bum.fountains[i].focusTimer = player.bum.fountains[i].focusTimer.sub(delta)
+                if (player.bum.starlight.gte(module.statReq) && module.timeSpeed.gt(0)) module.time = module.time.add(module.timeSpeed.mul(delta));
+                if (player.bum.fountains[i].focusTimer.lte(0)) {
+                    player.bum.fountains[i].isFocused = false
+                    player.bum.fountains[i].focusTimer = player.bum.fountains[i].focusTimerMax
                     player.prj.focused = player.prj.focused.sub(1)
                 }
+            } else {
+                player.bum.fountains[i].focusTimer = player.bum.fountains[i].focusTimerMax
+            }
+            if (module.focused) {
+                module.time = module.time.add(module.timeSpeed.mul(delta))
+            }
+            if (module.time.gte(module.timeReq)) {
+                /*
+                    if (module.focused) {
+                        player.prj.focused = player.prj.focused.sub(1);
+                        module.focused = false
+                    }
+                */
+                module.completions = module.completions.add(1)
+                module.time = new Decimal(0)
             }
         });
+
+        // UPGRADE EFFECTS
+
     },
     starlightReset(isRewarded) {
-        return;
         if (isRewarded) {
             player.bum.starlight = player.bum.starlight.add(player.bum.starlightToGet)
+            player.bum.totalStarlight = player.bum.totalStarlight.add(player.bum.starlightToGet)
             player.bum.starshines = player.bum.starshines.add(player.bum.starshinesToGet)
-            if (!hasAchievement("achievements", 1216)) completeAchievement("achievements", 1216);
+            if (!hasAchievement("achievements", 1217)) completeAchievement("achievements", 1217);
+            player.bum.bestStarlightInOneReset = player.bum.bestStarlightInOneReset.max(player.bum.starlightToGet)
         }
+
+        clickClickable("prj", "projects_respecFocus")
+        clickClickable("wel", "lightWells_respecFocus")
+        clickClickable("wel", "lightFountains_respecFocus")
+        clickClickable("pri", "prismFountains_respecFocus")
+        
         layers.blu.blueshiftReset(false)
+
+        player.wel.upgrades = []
+        player.wel.upgrades.push(11)
+        player.wel.upgrades.push(21)
+        player.wel.upgrades.push(24)
+        player.wel.upgrades.push(33)
+        player.wel.upgrades.push(34)
+        player.wel.upgrades.push(44)
 
         Object.keys(player.blu.blueshifts).forEach(i => {
             let module = player.blu.blueshifts[i]
@@ -174,15 +254,197 @@
         });
         player.blu.totalBlueshifts = new Decimal(0)
         player.blu.blueshiftEffect = new Decimal(1)
+        player.blu.blueshiftEffect2 = new Decimal(1)
+        player.blu.blueshiftEffect3 = new Decimal(1)
+        player.blu.bestPrisms = new Decimal(0)
+
+        Object.keys(player.bum.fountains).forEach(i => {
+            let module = player.bum.fountains[i]
+            module.completions = new Decimal(0)
+            module.time = new Decimal(0)
+            module.timeSpeed = new Decimal(1)
+        });
+
+        if (!hasMilestone('prj', 405)) {
+            
+            if (player.wel.fountains[1].focused) {
+                player.wel.fountains[1].focused = false
+                player.prj.focused = player.prj.focused.sub(1)
+            }
+            if (player.wel.fountains[1].isFocused) {
+                player.wel.fountains[1].isFocused = false
+                player.prj.focused = player.prj.focused.sub(1)
+            }
+            if (player.wel.fountains[2].focused) {
+                player.wel.fountains[2].focused = false
+                player.prj.focused = player.prj.focused.sub(1)
+            }
+            if (player.wel.fountains[2].isFocused) {
+                player.wel.fountains[2].isFocused = false
+                player.prj.focused = player.prj.focused.sub(1)
+            }
+            if (player.wel.fountains[3].focused) {
+                player.wel.fountains[3].focused = false
+                player.prj.focused = player.prj.focused.sub(1)
+            }
+            if (player.wel.fountains[3].isFocused) {
+                player.wel.fountains[3].isFocused = false
+                player.prj.focused = player.prj.focused.sub(1)
+            }
+            if (player.wel.fountains[4].focused) {
+                player.wel.fountains[4].focused = false
+                player.prj.focused = player.prj.focused.sub(1)
+            }
+            if (player.wel.fountains[4].isFocused) {
+                player.wel.fountains[4].isFocused = false
+                player.prj.focused = player.prj.focused.sub(1)
+            }
+
+            if (player.pri.fountains[1].focused) {
+                player.pri.fountains[1].focused = false
+                player.prj.focused = player.prj.focused.sub(1)
+            }
+            if (player.pri.fountains[1].isFocused) {
+                player.pri.fountains[1].isFocused = false
+                player.prj.focused = player.prj.focused.sub(1)
+            }
+
+            if (player.pri.fountains[2].focused) {
+                player.pri.fountains[2].focused = false
+                player.prj.focused = player.prj.focused.sub(1)
+            }
+            if (player.pri.fountains[2].isFocused) {
+                player.pri.fountains[2].isFocused = false
+                player.prj.focused = player.prj.focused.sub(1)
+            }
+
+            if (player.pri.fountains[3].focused) {
+                player.pri.fountains[3].focused = false
+                player.prj.focused = player.prj.focused.sub(1)
+            }
+            if (player.pri.fountains[3].isFocused) {
+                player.pri.fountains[3].isFocused = false
+                player.prj.focused = player.prj.focused.sub(1)
+            }
+
+            if (player.pri.fountains[4].focused) {
+                player.pri.fountains[4].focused = false
+                player.prj.focused = player.prj.focused.sub(1)
+            }
+            if (player.pri.fountains[4].isFocused) {
+                player.pri.fountains[4].isFocused = false
+                player.prj.focused = player.prj.focused.sub(1)
+            }
+
+            if (player.pri.fountains[5].focused) {
+                player.pri.fountains[5].focused = false
+                player.prj.focused = player.prj.focused.sub(1)
+            }
+            if (player.pri.fountains[5].isFocused) {
+                player.pri.fountains[5].isFocused = false
+                player.prj.focused = player.prj.focused.sub(1)
+            }
+
+            if (player.pri.fountains[6].focused) {
+                player.pri.fountains[6].focused = false
+                player.prj.focused = player.prj.focused.sub(1)
+            }
+            if (player.pri.fountains[6].isFocused) {
+                player.pri.fountains[6].isFocused = false
+                player.prj.focused = player.prj.focused.sub(1)
+            }
+
+            if (player.pri.fountains[7].focused) {
+                player.pri.fountains[7].focused = false
+                player.prj.focused = player.prj.focused.sub(1)
+            }
+            if (player.pri.fountains[7].isFocused) {
+                player.pri.fountains[7].isFocused = false
+                player.prj.focused = player.prj.focused.sub(1)
+            }
+
+            if (player.pri.fountains[8].focused) {
+                player.pri.fountains[8].focused = false
+                player.prj.focused = player.prj.focused.sub(1)
+            }
+            if (player.pri.fountains[8].isFocused) {
+                player.pri.fountains[8].isFocused = false
+                player.prj.focused = player.prj.focused.sub(1)
+            }
+
+            if (player.pri.fountains[9].focused) {
+                player.pri.fountains[9].focused = false
+                player.prj.focused = player.prj.focused.sub(1)
+            }
+            if (player.pri.fountains[9].isFocused) {
+                player.pri.fountains[9].isFocused = false
+                player.prj.focused = player.prj.focused.sub(1)
+            }
+            
+            if (player.pri.fountains[10].focused) {
+                player.pri.fountains[10].focused = false
+                player.prj.focused = player.prj.focused.sub(1)
+            }
+            if (player.pri.fountains[10].isFocused) {
+                player.pri.fountains[10].isFocused = false
+                player.prj.focused = player.prj.focused.sub(1)
+            }
+            
+            if (player.pri.fountains[11].focused) {
+                player.pri.fountains[11].focused = false
+                player.prj.focused = player.prj.focused.sub(1)
+            }
+            if (player.pri.fountains[11].isFocused) {
+                player.pri.fountains[11].isFocused = false
+                player.prj.focused = player.prj.focused.sub(1)
+            }
+            
+            if (player.pri.fountains[12].focused) {
+                player.pri.fountains[12].focused = false
+                player.prj.focused = player.prj.focused.sub(1)
+            }
+            if (player.pri.fountains[12].isFocused) {
+                player.pri.fountains[12].isFocused = false
+                player.prj.focused = player.prj.focused.sub(1)
+            }
+        
+        }
+
+        /*
 
         player.prj.projectSpeed = new Decimal(1)
         player.prj.storedTimeCapsules = new Decimal(0)
+
+        player.prj.modules[1].completions = new Decimal(0)
+        player.prj.modules[2].completions = new Decimal(0)
+        player.prj.modules[3].completions = new Decimal(0)
+
+        setBuyableAmount("prj", 11, new Decimal(0))
+
+        // TIME CAPSULES
+        for (let i = 0; i < 13; i++) {
+            let index = player.prj.milestones.indexOf(String(i + 101))
+            if (index > -1) player.prj.milestones.splice(index, 1)
+        }
+        // PRISMATIC
+        for (let i = 0; i < 10; i++) {
+            let index = player.prj.milestones.indexOf(String(i + 201))
+            if (index > -1) player.prj.milestones.splice(index, 1)
+        }
+        // BLUESHIFT
+        for (let i = 0; i < 5; i++) {
+            let index = player.prj.milestones.indexOf(String(i + 301))
+            if (index > -1) player.prj.milestones.splice(index, 1)
+        }
+        
+            */
+
     },
     branches: ["prj"],
     clickables: {
         "starshineReset": {
-            title() { return "<h2>Focus your light into starlight.</h2><br>Req: 1e75 Light" },
-            canClick() { return player.wel.light.gte(1e75)},
+            title() { return "<h2>Focus your light into starlight.</h2><br>Req: 1e90 Light" },
+            canClick() { return player.wel.light.gte(1e90)},
             unlocked() { return true },
             onClick() {
                 layers.bum.starlightReset(true)
@@ -201,39 +463,110 @@
                 return look
             },
         },
-        "fountainPour_1": createPourClickable("pri", 1, {
+        "invest_1": {
+            title() { return "<h2>1%" },
+            canClick() { return true },
+            unlocked() { return true },
+            onClick() {
+                player.bum.starlightToInvest = player.bum.starlight.mul(0.01).ceil()
+            },
+            style: { width: "128px", minHeight: "40px", margin: "3px", borderRadius: "15px", color: "#000000", borderRadius: "0 0 0 22px", border: "3px solid #4d394d7f"},
+        },
+        "invest_10": {
+            title() { return "<h2>10%" },
+            canClick() { return true },
+            unlocked() { return true },
+            onClick() {
+                player.bum.starlightToInvest = player.bum.starlight.mul(0.1).ceil()
+            },
+            style: { width: "128px", minHeight: "40px", margin: "3px", borderRadius: "15px", color: "#000000", borderRadius: "0", border: "3px solid #4d394d7f"},
+        },
+        "invest_50": {
+            title() { return "<h2>50%" },
+            canClick() { return true },
+            unlocked() { return true },
+            onClick() {
+                player.bum.starlightToInvest = player.bum.starlight.mul(0.5).ceil()
+            },
+            style: { width: "128px", minHeight: "40px", margin: "3px", borderRadius: "15px", color: "#000000", borderRadius: "0", border: "3px solid #4d394d7f"},
+        },
+        "invest_100": {
+            title() { return "<h2>100%" },
+            canClick() { return true },
+            unlocked() { return true },
+            onClick() {
+                player.bum.starlightToInvest = player.bum.starlight
+            },
+            style: { width: "128px", minHeight: "40px", margin: "3px", borderRadius: "15px", color: "#000000", borderRadius: "0 0 22px 0", border: "3px solid #4d394d7f"},
+        },
+        "fountainPour_1": createSpecPourClickable("bum", 1, {
             primaryColor: "#806080",
             secondaryColor: "#4d394d",
             progressFrontColor: "#ffd6ff",
             textColor: "#ffffff",
         }),
-        "fountainFocus_1": createFountainFocusClickable("pri", 1, {
+        "fountainFocus_1": createFountainFocusClickable("bum", 1, {
             primaryColor: "#806080",
             secondaryColor: "#4d394d",
             textColor: "#ffffff",
         }),
-        "fountainPour_2": createPourClickable("pri", 2, {
-            primaryColor: "#806080",
-            secondaryColor: "#4d394d",
-            progressFrontColor: "#ffd6ff",
-            textColor: "#ffffff",
-        }),
-        "fountainFocus_2": createFountainFocusClickable("pri", 2, {
-            primaryColor: "#806080",
-            secondaryColor: "#4d394d",
-            textColor: "#ffffff",
-        }),
-        "fountainPour_3": createPourClickable("pri", 3, {
+        "fountainPour_2": createSpecPourClickable("bum", 2, {
             primaryColor: "#806080",
             secondaryColor: "#4d394d",
             progressFrontColor: "#ffd6ff",
             textColor: "#ffffff",
         }),
-        "fountainFocus_3": createFountainFocusClickable("pri", 3, {
+        "fountainFocus_2": createFountainFocusClickable("bum", 2, {
             primaryColor: "#806080",
             secondaryColor: "#4d394d",
             textColor: "#ffffff",
         }),
+        "fountainPour_3": createSpecPourClickable("bum", 3, {
+            primaryColor: "#806080",
+            secondaryColor: "#4d394d",
+            progressFrontColor: "#ffd6ff",
+            textColor: "#ffffff",
+        }),
+        "fountainFocus_3": createFountainFocusClickable("bum", 3, {
+            primaryColor: "#806080",
+            secondaryColor: "#4d394d",
+            textColor: "#ffffff",
+        }),
+        "starlightFountains_respecFocus": {
+            title() { return "<h3>Respec Focus</h3>" },
+            canClick() {
+                for (let v in player.bum.fountains) {
+                    if (player.bum.fountains[v].focused || player.bum.fountains[v].isFocused) return true;
+                }
+                return false
+            },
+            unlocked() { return true },
+            onClick() {
+                Object.keys(player.bum.fountains).forEach(i => {
+                    if (player.bum.fountains[i].focused) {
+                        player.bum.fountains[i].focused = false
+                        player.prj.focused = player.prj.focused.sub(1)
+                    }
+                    if (player.bum.fountains[i].isFocused) {
+                        player.bum.fountains[i].isFocused = false
+                        player.prj.focused = player.prj.focused.sub(1)
+                    }
+                });
+            },
+            style() {
+                let look = {width: "250px", minHeight: "60px", maxHeight: "60px", borderRadius: "25px", margin: "3px"}
+                if (this.canClick()) {
+                    look.backgroundColor = "#dfffdf"
+                    look.border = "3px solid #0000003f"
+                    look.color = "black"
+                } else {
+                    look.background = "#361e1e"
+                    look.border = "3px solid #663737"
+                    look.color = "white"
+                }
+                return look
+            },
+        },
         11: {
             title() { return "<h2>BU</h2>" },
             canClick() { return false},
@@ -323,23 +656,23 @@
     upgrades: {
         11: {
             unlocked() { return true },
-            condition() { return true || player.bum.starshines.gte(4) },
+            condition() { return true },
             fullDisplay() {
                 let s = "<h2>"
                 if (hasUpgrade(this.layer, this.id) || this.condition()) {
-                    s += "Improve the formulas for pyramid fountain reqs, and bulk complete them.</h2><br><br><h3>Cost: " + formatWhole(this.cost) + " " + this.currencyDisplayName + "</h3>"
+                    s += "Pyramid fountain focus no longer expires on rows 1 through 4.</h2><br><br><h3>Cost: " + formatWhole(this.cost) + " " + this.currencyDisplayName + "</h3>"
                 } else {
-                    s += "???</h2><br><h3>Req: 4 starshines done</h3>"
+                    s += "???</h2><br><h3>Req: Nothing</h3>"
                 }
                 return s
             },
-            cost: new Decimal(3),
+            cost: new Decimal(2),
             currencyLocation() { return player.bum },
             currencyDisplayName: "Starlight",
             currencyInternalName: "starlight",
-            canAfford() { return true },
+            canAfford() { return this.condition() },
             style() {
-                let look = {width: "200px", borderRadius: "8px 0 0 0", border: "3px solid #0000007f", color: "#000000df", padding: "8px", margin: "1.5px"}
+                let look = {width: "200px", borderRadius: "25px 0 0 0", border: "3px solid #0000007f", color: "#000000df", padding: "8px", margin: "3px"}
                 if (hasUpgrade(this.layer, this.id)) {
                     look.backgroundColor = "#806080"
                     look.border = "3px solid #4d394d"
@@ -359,17 +692,17 @@
         },
         12: {
             unlocked() { return true },
-            condition() { return true || player.bum.starshines.gte(4) },
+            condition() { return true },
             fullDisplay() {
                 let s = "<h2>"
                 if (hasUpgrade(this.layer, this.id) || this.condition()) {
-                    s += "Start blueshifts with your total prisms ^0.5. Retain focus on blueshift.</h2><br><br><h3>Cost: " + formatWhole(this.cost) + " " + this.currencyDisplayName + "</h3>"
+                    s += "Start blueshifts with your best prisms this starshine ^0.25.</h2><br><br><h3>Cost: " + formatWhole(this.cost) + " " + this.currencyDisplayName + "</h3>"
                 } else {
-                    s += "???</h2><br><h3>Req: 4 starshines done</h3>"
+                    s += "???</h2><br><h3>Req: Nothing</h3>"
                 }
                 return s
             },
-            cost: new Decimal(3),
+            cost: new Decimal(2),
             currencyLocation() { return player.bum },
             currencyDisplayName: "Starlight",
             currencyInternalName: "starlight",
@@ -377,7 +710,7 @@
                 return this.condition()
             },
             style() {
-                let look = {width: "200px", borderRadius: "0px", border: "3px solid #0000007f", color: "#000000df", padding: "8px", margin: "1.5px"}
+                let look = {width: "200px", borderRadius: "0px", border: "3px solid #0000007f", color: "#000000df", padding: "8px", margin: "3px"}
                 if (hasUpgrade(this.layer, this.id)) {
                     look.backgroundColor = "#806080"
                     look.border = "3px solid #4d394d"
@@ -396,14 +729,14 @@
             },
         },
         13: {
-            unlocked() { return true },
-            condition() { return true || false },
+            unlocked() { return hasUpgrade("bum", 11) && hasUpgrade("bum", 12) },
+            condition() { return player.prj.upgrade13Condition },
             fullDisplay() {
                 let s = "<h2>"
                 if (hasUpgrade(this.layer, this.id) || this.condition()) {
                     s += "Extend fragmentation content.</h2><br><br><h3>Cost: " + formatWhole(this.cost) + " " + this.currencyDisplayName + "</h3>"
                 } else {
-                    s += "???</h2><br><h3>Req: 1,000,000 time capsules stored in one run</h3>"
+                    s += "???</h2><br><h3>Req: 1e100 Light</h3>"
                 }
                 return s
             },
@@ -414,8 +747,11 @@
             canAfford() {
                 return this.condition()
             },
+            onPurchase() {
+                if (!hasAchievement("achievements", 1217)) completeAchievement("achievements", 1217);
+            },
             style() {
-                let look = {width: "200px", borderRadius: "0px", border: "3px solid #0000007f", color: "#000000df", padding: "8px", margin: "1.5px"}
+                let look = {width: "200px", borderRadius: "0px", border: "3px solid #0000007f", color: "#000000df", padding: "8px", margin: "3px"}
                 if (hasUpgrade(this.layer, this.id)) {
                     look.backgroundColor = "#806080"
                     look.border = "3px solid #4d394d"
@@ -434,18 +770,18 @@
             },
         },
         14: {
-            unlocked() { return true },
-            condition() { return true || player.prj.projectSpeed.gte(1e4) },
+            unlocked() { return hasUpgrade("bum", 11) && hasUpgrade("bum", 12) },
+            condition() { return player.prj.upgrade14Condition },
             fullDisplay() {
                 let s = "<h2>"
                 if (hasUpgrade(this.layer, this.id) || this.condition()) {
-                    s += "Blueshifts are 6.25% stronger per starlight upgrade bought.</h2><br><br><h3>Cost: " + formatWhole(this.cost) + " " + this.currencyDisplayName + "</h3>"
+                    s += "Improve the third blueshift effect by ^1.5.</h2><br><br><h3>Cost: " + formatWhole(this.cost) + " " + this.currencyDisplayName + "</h3>"
                 } else {
-                    s += "???</h2><br><h3>Req: 10,000 project speed.</h3>"
+                    s += "???</h2><br><h3>Req: 120,000 Project Speed.</h3>"
                 }
                 return s
             },
-            cost: new Decimal(24),
+            cost: new Decimal(48),
             currencyLocation() { return player.bum },
             currencyDisplayName: "Starlight",
             currencyInternalName: "starlight",
@@ -453,7 +789,7 @@
                 return this.condition()
             },
             style() {
-                let look = {width: "200px", borderRadius: "0px 8px 0 0", border: "3px solid #0000007f", color: "#000000df", padding: "8px", margin: "1.5px"}
+                let look = {width: "200px", borderRadius: "0 25px 0 0", border: "3px solid #0000007f", color: "#000000df", padding: "8px", margin: "3px"}
                 if (hasUpgrade(this.layer, this.id)) {
                     look.backgroundColor = "#806080"
                     look.border = "3px solid #4d394d"
@@ -472,24 +808,24 @@
             },
         },
         21: {
-            unlocked() { return true },
-            condition() { return true },
+            unlocked() { return hasUpgrade("bum", 14) },
+            condition() { return player.prj.upgrade21Condition },
             fullDisplay() {
                 let s = "<h2>"
                 if (hasUpgrade(this.layer, this.id) || this.condition()) {
-                    s += "Multiply light gain by starlight.</h2><br><br><h3>Cost: " + formatWhole(this.cost) + " " + this.currencyDisplayName + "</h3>"
+                    s += "Multiply light gain by 10% of your starlight.<br>(x" + formatSimple(player.bum.starlight.mul(0.1).add(1)) + ")</h2><br><br><h3>Cost: " + formatWhole(this.cost) + " " + this.currencyDisplayName + "</h3>"
                 } else {
-                    s += "???</h2><br><h3>Req: ???</h3>"
+                    s += "???</h2><br><h3>Req: Gain 400 Starlight in one reset</h3>"
                 }
                 return s
             },
-            cost: new Decimal(60),
+            cost: new Decimal(401), // someone is going to hate me for this
             currencyLocation() { return player.bum },
             currencyDisplayName: "Starlight",
             currencyInternalName: "starlight",
-            canAfford() { return true },
+            canAfford() { return this.condition() },
             style() {
-                let look = {width: "200px", borderRadius: "0px", border: "3px solid #0000007f", color: "#000000df", padding: "8px", margin: "1.5px"}
+                let look = {width: "200px", borderRadius: "0px", border: "3px solid #0000007f", color: "#000000df", padding: "8px", margin: "3px"}
                 if (hasUpgrade(this.layer, this.id)) {
                     look.backgroundColor = "#806080"
                     look.border = "3px solid #4d394d"
@@ -508,24 +844,24 @@
             },
         },
         22: {
-            unlocked() { return true },
-            condition() { return true },
+            unlocked() { return hasUpgrade("bum", 14) },
+            condition() { return player.prj.upgrade22Condition },
             fullDisplay() {
                 let s = "<h2>"
                 if (hasUpgrade(this.layer, this.id) || this.condition()) {
-                    s += "+x0.1 light well speed per focus.</h2><br><br><h3>Cost: " + formatWhole(this.cost) + " " + this.currencyDisplayName + "</h3>"
+                    s += "Dectuple starlight fountain speed.</h2><br><br><h3>Cost: " + formatWhole(this.cost) + " " + this.currencyDisplayName + "</h3>"
                 } else {
-                    s += "???</h2><br><h3>Req: ???</h3>"
+                    s += "???</h2><br><h3>Req: 20 effective Blueshifts</h3>"
                 }
                 return s
             },
-            cost: new Decimal(300),
+            cost: new Decimal(1e3),
             currencyLocation() { return player.bum },
             currencyDisplayName: "Starlight",
             currencyInternalName: "starlight",
-            canAfford() { return true },
+            canAfford() { return this.condition() },
             style() {
-                let look = {width: "200px", borderRadius: "0px", border: "3px solid #0000007f", color: "#000000df", padding: "8px", margin: "1.5px"}
+                let look = {width: "200px", borderRadius: "0px", border: "3px solid #0000007f", color: "#000000df", padding: "8px", margin: "3px"}
                 if (hasUpgrade(this.layer, this.id)) {
                     look.backgroundColor = "#806080"
                     look.border = "3px solid #4d394d"
@@ -544,24 +880,24 @@
             },
         },
         23: {
-            unlocked() { return true },
-            condition() { return true },
+            unlocked() { return hasUpgrade("bum", 21) && hasUpgrade("bum", 22) },
+            condition() { return player.prj.upgrade23Condition },
             fullDisplay() {
                 let s = "<h2>"
                 if (hasUpgrade(this.layer, this.id) || this.condition()) {
                     s += "Unlock a new iridite upgrade.</h2><br><br><h3>Cost: " + formatWhole(this.cost) + " " + this.currencyDisplayName + "</h3>"
                 } else {
-                    s += "???</h2><br><h3>Req: ???</h3>"
+                    s += "???</h2><br><h3>Req: 1e40 Stars</h3>"
                 }
                 return s
             },
-            cost: new Decimal(400),
+            cost: new Decimal(4e3),
             currencyLocation() { return player.bum },
             currencyDisplayName: "Starlight",
             currencyInternalName: "starlight",
-            canAfford() { return true },
+            canAfford() { return this.condition() },
             style() {
-                let look = {width: "200px", borderRadius: "0px", border: "3px solid #0000007f", color: "#000000df", padding: "8px", margin: "1.5px"}
+                let look = {width: "200px", borderRadius: "0px", border: "3px solid #0000007f", color: "#000000df", padding: "8px", margin: "3px"}
                 if (hasUpgrade(this.layer, this.id)) {
                     look.backgroundColor = "#806080"
                     look.border = "3px solid #4d394d"
@@ -580,24 +916,24 @@
             },
         },
         24: {
-            unlocked() { return true },
-            condition() { return true },
+            unlocked() { return hasUpgrade("bum", 21) && hasUpgrade("bum", 22) },
+            condition() { return player.prj.upgrade24Condition },
             fullDisplay() {
                 let s = "<h2>"
                 if (hasUpgrade(this.layer, this.id) || this.condition()) {
-                    s += "Blueshifts no longer reset prismatic content. Double project speed.</h2><br><br><h3>Cost: " + formatWhole(this.cost) + " " + this.currencyDisplayName + "</h3>"
+                    s += "Unlock the second row of starlight fountains.</h2><br><br><h3>Cost: " + formatWhole(this.cost) + " " + this.currencyDisplayName + "</h3>"
                 } else {
-                    s += "???</h2><br><h3>Req: ???</h3>"
+                    s += "???</h2><br><h3>Req: 1 Star ↻</h3>"
                 }
                 return s
             },
-            cost: new Decimal(4e3),
+            cost: new Decimal(1e5),
             currencyLocation() { return player.bum },
             currencyDisplayName: "Starlight",
             currencyInternalName: "starlight",
-            canAfford() { return true },
+            canAfford() { return this.condition() },
             style() {
-                let look = {width: "200px", borderRadius: "0px", border: "3px solid #0000007f", color: "#000000df", padding: "8px", margin: "1.5px"}
+                let look = {width: "200px", borderRadius: "0px", border: "3px solid #0000007f", color: "#000000df", padding: "8px", margin: "3px"}
                 if (hasUpgrade(this.layer, this.id)) {
                     look.backgroundColor = "#806080"
                     look.border = "3px solid #4d394d"
@@ -616,24 +952,24 @@
             },
         },
         31: {
-            unlocked() { return true },
-            condition() { return true },
+            unlocked() { return hasMilestone("prj", 405) },
+            condition() { return player.prj.upgrade31Condition },
             fullDisplay() {
                 let s = "<h2>"
                 if (hasUpgrade(this.layer, this.id) || this.condition()) {
                     s += "Improve the Arrow effect.</h2><br><br><h3>Cost: " + formatWhole(this.cost) + " " + this.currencyDisplayName + "</h3>"
                 } else {
-                    s += "???</h2><br><h3>Req: ???</h3>"
+                    s += "???</h2><br><h3>Req: 4 Star Research I ↻</h3>"
                 }
                 return s
             },
-            cost: new Decimal(1e5),
+            cost: new Decimal(2.5e5),
             currencyLocation() { return player.bum },
             currencyDisplayName: "Starlight",
             currencyInternalName: "starlight",
-            canAfford() { return true },
+            canAfford() { return this.condition() },
             style() {
-                let look = {width: "200px", borderRadius: "0px", border: "3px solid #0000007f", color: "#000000df", padding: "8px", margin: "1.5px"}
+                let look = {width: "200px", borderRadius: "0px", border: "3px solid #0000007f", color: "#000000df", padding: "8px", margin: "3px"}
                 if (hasUpgrade(this.layer, this.id)) {
                     look.backgroundColor = "#806080"
                     look.border = "3px solid #4d394d"
@@ -652,14 +988,14 @@
             },
         },
         32: {
-            unlocked() { return true },
-            condition() { return true },
+            unlocked() { return hasMilestone("prj", 405) },
+            condition() { return player.prj.upgrade32Condition },
             fullDisplay() {
                 let s = "<h2>"
                 if (hasUpgrade(this.layer, this.id) || this.condition()) {
                     s += "Improve the Spiral effect.</h2><br><br><h3>Cost: " + formatWhole(this.cost) + " " + this.currencyDisplayName + "</h3>"
                 } else {
-                    s += "???</h2><br><h3>Req: ???</h3>"
+                    s += "???</h2><br><h3>Req: 8 Star Research II ↻</h3>"
                 }
                 return s
             },
@@ -667,9 +1003,9 @@
             currencyLocation() { return player.bum },
             currencyDisplayName: "Starlight",
             currencyInternalName: "starlight",
-            canAfford() { return true },
+            canAfford() { return this.condition() },
             style() {
-                let look = {width: "200px", borderRadius: "0px", border: "3px solid #0000007f", color: "#000000df", padding: "8px", margin: "1.5px"}
+                let look = {width: "200px", borderRadius: "0px", border: "3px solid #0000007f", color: "#000000df", padding: "8px", margin: "3px"}
                 if (hasUpgrade(this.layer, this.id)) {
                     look.backgroundColor = "#806080"
                     look.border = "3px solid #4d394d"
@@ -688,14 +1024,14 @@
             },
         },
         33: {
-            unlocked() { return true },
-            condition() { return true },
+            unlocked() { return hasMilestone("prj", 405) },
+            condition() { return player.prj.upgrade33Condition },
             fullDisplay() {
                 let s = "<h2>"
                 if (hasUpgrade(this.layer, this.id) || this.condition()) {
-                    s += "Unlock Bumpy as a fighting character.</h2><br><br><h3>Cost: " + formatWhole(this.cost) + " " + this.currencyDisplayName + "</h3>"
+                    s += "Extend greenhouse content.</h2><br><br><h3>Cost: " + formatWhole(this.cost) + " " + this.currencyDisplayName + "</h3>"
                 } else {
-                    s += "???</h2><br><h3>Req: ???</h3>"
+                    s += "???</h2><br><h3>Req: 1e18 Twigs</h3>"
                 }
                 return s
             },
@@ -703,9 +1039,9 @@
             currencyLocation() { return player.bum },
             currencyDisplayName: "Starlight",
             currencyInternalName: "starlight",
-            canAfford() { return true },
+            canAfford() { return this.condition() },
             style() {
-                let look = {width: "200px", borderRadius: "0px", border: "3px solid #0000007f", color: "#000000df", padding: "8px", margin: "1.5px"}
+                let look = {width: "200px", borderRadius: "0px", border: "3px solid #0000007f", color: "#000000df", padding: "8px", margin: "3px"}
                 if (hasUpgrade(this.layer, this.id)) {
                     look.backgroundColor = "#806080"
                     look.border = "3px solid #4d394d"
@@ -724,14 +1060,14 @@
             },
         },
         34: {
-            unlocked() { return true },
-            condition() { return true },
+            unlocked() { return hasMilestone("prj", 406) },
+            condition() { return player.prj.upgrade34Condition },
             fullDisplay() {
                 let s = "<h2>"
                 if (hasUpgrade(this.layer, this.id) || this.condition()) {
                     s += "Unlock more light fountains. Starshines no longer reset project content.</h2><br><br><h3>Cost: " + formatWhole(this.cost) + " " + this.currencyDisplayName + "</h3>"
                 } else {
-                    s += "???</h2><br><h3>Req: ???</h3>"
+                    s += "???</h2><br><h3>Req: 1,000 ε ↻</h3>"
                 }
                 return s
             },
@@ -739,9 +1075,9 @@
             currencyLocation() { return player.bum },
             currencyDisplayName: "Starlight",
             currencyInternalName: "starlight",
-            canAfford() { return true },
+            canAfford() { return this.condition() },
             style() {
-                let look = {width: "200px", borderRadius: "0px", border: "3px solid #0000007f", color: "#000000df", padding: "8px", margin: "1.5px"}
+                let look = {width: "200px", borderRadius: "0px", border: "3px solid #0000007f", color: "#000000df", padding: "8px", margin: "3px"}
                 if (hasUpgrade(this.layer, this.id)) {
                     look.backgroundColor = "#806080"
                     look.border = "3px solid #4d394d"
@@ -760,14 +1096,14 @@
             },
         },
         41: {
-            unlocked() { return true },
-            condition() { return true },
+            unlocked() { return hasUpgrade("bum", 34) },
+            condition() { return player.prj.upgrade41Condition },
             fullDisplay() {
                 let s = "<h2>"
                 if (hasUpgrade(this.layer, this.id) || this.condition()) {
                     s += "Double prism well speed and ↻ gain.</h2><br><br><h3>Cost: " + formatWhole(this.cost) + " " + this.currencyDisplayName + "</h3>"
                 } else {
-                    s += "???</h2><br><h3>Req: ???</h3>"
+                    s += "???</h2><br><h3>Req: 32 non-free Blueshifts</h3>"
                 }
                 return s
             },
@@ -775,9 +1111,9 @@
             currencyLocation() { return player.bum },
             currencyDisplayName: "Starlight",
             currencyInternalName: "starlight",
-            canAfford() { return true },
+            canAfford() { return this.condition() },
             style() {
-                let look = {width: "200px", borderRadius: "0 0 0 8px", border: "3px solid #0000007f", color: "#000000df", padding: "8px", margin: "1.5px"}
+                let look = {width: "200px", borderRadius: "0 0 0 25px", border: "3px solid #0000007f", color: "#000000df", padding: "8px", margin: "3px"}
                 if (hasUpgrade(this.layer, this.id)) {
                     look.backgroundColor = "#806080"
                     look.border = "3px solid #4d394d"
@@ -796,14 +1132,14 @@
             },
         },
         42: {
-            unlocked() { return true },
-            condition() { return true },
+            unlocked() { return hasUpgrade("bum", 34) },
+            condition() { return player.prj.upgrade42Condition },
             fullDisplay() {
                 let s = "<h2>"
                 if (hasUpgrade(this.layer, this.id) || this.condition()) {
-                    s += "Unlock focus studies in blueshift layer.</h2><br><br><h3>Cost: " + formatWhole(this.cost) + " " + this.currencyDisplayName + "</h3>"
+                    s += "Reduce pyramid fountain requirements by /1,000.</h2><br><br><h3>Cost: " + formatWhole(this.cost) + " " + this.currencyDisplayName + "</h3>"
                 } else {
-                    s += "???</h2><br><h3>Req: ???</h3>"
+                    s += "???</h2><br><h3>Req: 36 non-free Blueshifts</h3>"
                 }
                 return s
             },
@@ -811,9 +1147,9 @@
             currencyLocation() { return player.bum },
             currencyDisplayName: "Starlight",
             currencyInternalName: "starlight",
-            canAfford() { return true },
+            canAfford() { return this.condition() },
             style() {
-                let look = {width: "200px", borderRadius: "0px", border: "3px solid #0000007f", color: "#000000df", padding: "8px", margin: "1.5px"}
+                let look = {width: "200px", borderRadius: "0px", border: "3px solid #0000007f", color: "#000000df", padding: "8px", margin: "3px"}
                 if (hasUpgrade(this.layer, this.id)) {
                     look.backgroundColor = "#806080"
                     look.border = "3px solid #4d394d"
@@ -832,14 +1168,14 @@
             },
         },
         43: {
-            unlocked() { return true },
-            condition() { return true },
+            unlocked() { return hasUpgrade("bum", 34) },
+            condition() { return player.prj.upgrade43Condition },
             fullDisplay() {
                 let s = "<h2>"
                 if (hasUpgrade(this.layer, this.id) || this.condition()) {
-                    s += "Unlock the technological pylon.</h2><br><br><h3>Cost: " + formatWhole(this.cost) + " " + this.currencyDisplayName + "</h3>"
+                    s += "Unlock the final challenge.</h2><br><br><h3>Cost: " + formatWhole(this.cost) + " " + this.currencyDisplayName + "</h3>"
                 } else {
-                    s += "???</h2><br><h3>Req: ???</h3>"
+                    s += "???</h2><br><h3>Req: 40 non-free Blueshifts</h3>"
                 }
                 return s
             },
@@ -847,9 +1183,9 @@
             currencyLocation() { return player.bum },
             currencyDisplayName: "Starlight",
             currencyInternalName: "starlight",
-            canAfford() { return true },
+            canAfford() { return this.condition() },
             style() {
-                let look = {width: "200px", borderRadius: "0px", border: "3px solid #0000007f", color: "#000000df", padding: "8px", margin: "1.5px"}
+                let look = {width: "200px", borderRadius: "0px", border: "3px solid #0000007f", color: "#000000df", padding: "8px", margin: "3px"}
                 if (hasUpgrade(this.layer, this.id)) {
                     look.backgroundColor = "#806080"
                     look.border = "3px solid #4d394d"
@@ -868,14 +1204,14 @@
             },
         },
         44: {
-            unlocked() { return true },
-            condition() { return true },
+            unlocked() { return hasUpgrade("bum", 43) },
+            condition() { return player.prj.upgrade44Condition },
             fullDisplay() {
                 let s = "<h2>"
                 if (hasUpgrade(this.layer, this.id) || this.condition()) {
                     s += "Unlock the fifth project.</h2><br><br><h3>Cost: " + formatWhole(this.cost) + " " + this.currencyDisplayName + "</h3>"
                 } else {
-                    s += "???</h2><br><h3>Req: ???</h3>"
+                    s += "???</h2><br><h3>Req: 60 total Project ↻</h3>"
                 }
                 return s
             },
@@ -883,9 +1219,9 @@
             currencyLocation() { return player.bum },
             currencyDisplayName: "Starlight",
             currencyInternalName: "starlight",
-            canAfford() { return true },
+            canAfford() { return this.condition() },
             style() {
-                let look = {width: "200px", borderRadius: "0 0 8px 0", border: "3px solid #0000007f", color: "#000000df", padding: "8px", margin: "1.5px"}
+                let look = {width: "200px", borderRadius: "0 0 25px 0", border: "3px solid #0000007f", color: "#000000df", padding: "8px", margin: "3px"}
                 if (hasUpgrade(this.layer, this.id)) {
                     look.backgroundColor = "#806080"
                     look.border = "3px solid #4d394d"
@@ -910,7 +1246,7 @@
     infoboxes: {},
     fountains: {
         1: {
-            title: "Light Fountain III",
+            title: "Ultraviolet Fountain",
             unlocked() { return true },
             conditionDisplay() { return "This should always be unlocked... why are you seeing this??"},
             condition() { return true },
@@ -919,11 +1255,12 @@
             effectDisplay() { return "Boosts light gain by x" + formatSimple(layers.bum.fountains[1].getCompletionEffect(), 2) + ", based on project speed"},
             currencyLocation() { return player.bum },
             currencyInternalName: "starlight",
+            currencyInvestInternalName: "starlightToInvest",
             currencyDisplayName: "Starlight",
             getCompletionEffect() {
                 let completions = player.bum.fountains[1].completions
 
-                s = player.prj.projectSpeed.add(1).log(10).add(1).pow(0.5).sub(1).pow_base(10).pow(completions.pow(0.5))
+                s = player.prj.projectSpeed.add(1).log(10).add(1).pow(0.5).sub(1).pow_base(10).pow(completions.pow(0.5).mul(0.3333))
 
                 return s
             },
@@ -932,10 +1269,7 @@
                 let s = new Decimal(60)
 
                 s = s.mul(completions.add(1))
-                s = s.mul(completions.pow_base(2))
-                if (completions.gte(10)) {
-                    s = s.pow(10)
-                }
+                s = s.mul(completions.pow_base(1.05))
 
                 return s
             },
@@ -949,38 +1283,36 @@
 
                 return s.floor()
             },
-            getTimeSpeed() {
+            getTimeSpeed(adder = 0) {
                 let s = new Decimal(1)
 
-                s = s.mul(player.prj.projectSpeed)
-                s = s.mul(player.bum.fountainSpeed)
+                s = s.mul(player.bum.fountains[1].statInvested.add(adder).pow(2))
+                if (hasUpgrade("bum", 22)) s = s.mul(10);
 
                 return s
             },
         },
         2: {
-            title: "Focus Fountain",
+            title: "Faded Green Fountain",
             unlocked() { return true },
             conditionDisplay() { return "This should always be unlocked... why are you seeing this??"},
             condition() { return true },
             canAuto() { return false },
             infiniteAuto() { return false },
-            effectDisplay() { return "Increases focus cap by +" + formatSimple(layers.bum.fountains[2].getCompletionEffect(), 2)},
+            effectDisplay() { return "Boosts focus cap by +" + formatSimple(layers.bum.fountains[2].getCompletionEffect(), 2) + ", project speed by x" + formatSimple((player.bum.fountains[2].completions.pow(0.75)).pow_base(1.1), 2)},
             currencyLocation() { return player.bum },
             currencyInternalName: "starlight",
+            currencyInvestInternalName: "starlightToInvest",
             currencyDisplayName: "Starlight",
             getCompletionEffect() {
-                return player.bum.fountains[2].completions
+                return player.bum.fountains[2].completions.pow(0.5).floor()
             },
             getTimeReq() {
                 let completions = player.bum.fountains[2].completions
-                let s = new Decimal(3)
+                let s = new Decimal(60)
 
                 s = s.mul(completions.add(1))
-                s = s.mul(completions.pow_base(2))
-                if (completions.gte(10)) {
-                    s = s.pow(10)
-                }
+                s = s.mul(completions.pow_base(1.5))
 
                 return s
             },
@@ -996,38 +1328,36 @@
 
                 return s.floor()
             },
-            getTimeSpeed() {
+            getTimeSpeed(adder = 0) {
                 let s = new Decimal(1)
 
-                s = s.mul(player.prj.projectSpeed)
-                s = s.mul(player.bum.fountainSpeed)
+                s = s.mul(player.bum.fountains[2].statInvested.add(adder).pow(2))
+                if (hasUpgrade("bum", 22)) s = s.mul(10);
 
                 return s
             },
         },
         3: {
-            title: "Prism Fountain",
+            title: "Vivid Blue Fountain",
             unlocked() { return true },
             conditionDisplay() { return "This should always be unlocked... why are you seeing this??"},
             condition() { return true },
             canAuto() { return false },
             infiniteAuto() { return false },
-            effectDisplay() { return "Boosts prism gain by x" + formatSimple(layers.bum.fountains[3].getCompletionEffect(), 2)},
+            effectDisplay() { return "Boosts effective blueshifts by +" + formatSimple(layers.bum.fountains[3].getCompletionEffect())},
             currencyLocation() { return player.bum },
             currencyInternalName: "starlight",
+            currencyInvestInternalName: "starlightToInvest",
             currencyDisplayName: "Starlight",
             getCompletionEffect() {
-                return player.bum.fountains[3].completions.pow(0.5).pow_base(1.5)
+                return player.bum.fountains[3].completions.mul(0.2)
             },
             getTimeReq() {
                 let completions = player.bum.fountains[3].completions
-                let s = new Decimal(3)
+                let s = new Decimal(60)
 
                 s = s.mul(completions.add(1))
-                s = s.mul(completions.pow_base(2))
-                if (completions.gte(10)) {
-                    s = s.pow(10)
-                }
+                s = s.mul(completions.pow_base(1.3))
 
                 return s
             },
@@ -1043,17 +1373,17 @@
 
                 return s.floor()
             },
-            getTimeSpeed() {
+            getTimeSpeed(adder = 0) {
                 let s = new Decimal(1)
 
-                s = s.mul(player.prj.projectSpeed)
-                s = s.mul(player.bum.fountainSpeed)
+                s = s.mul(player.bum.fountains[3].statInvested.add(adder).pow(2))
+                if (hasUpgrade("bum", 22)) s = s.mul(10);
 
                 return s
             },
         },
         4: {
-            title: "Speed Fountain II",
+            title: "Brilliant Cyan Fountain",
             completionEffectPrefix: "x",
             completionEffectStat: "Light Well Speed",
             condition() {
@@ -1089,17 +1419,17 @@
 
                 return s.floor()
             },
-            getTimeSpeed() {
+            getTimeSpeed(adder = 0) {
                 let s = new Decimal(1)
 
-                s = s.mul(player.prj.projectSpeed)
-                s = s.mul(player.bum.fountainSpeed)
+                s = s.mul(player.bum.fountains[4].statInvested.add(adder).pow(2))
+                if (hasUpgrade("bum", 22)) s = s.mul(10);
 
                 return s
             },
         },
         5: {
-            title: "Project Fountain",
+            title: "Hot Pink Fountain",
             completionEffectPrefix: "x",
             completionEffectStat: "Project Speed",
             condition() {
@@ -1135,17 +1465,17 @@
 
                 return s.floor()
             },
-            getTimeSpeed() {
+            getTimeSpeed(adder = 0) {
                 let s = new Decimal(1)
 
-                s = s.mul(player.prj.projectSpeed)
-                s = s.mul(player.bum.fountainSpeed)
+                s = s.mul(player.bum.fountains[5].statInvested.add(adder).pow(2))
+                if (hasUpgrade("bum", 22)) s = s.mul(10);
 
                 return s
             },
         },
         6: {
-            title: "Speed Fountain III",
+            title: "Prismatic Cyan Fountain",
             completionEffectPrefix: "x",
             completionEffectStat: "Prism Well Speed",
             condition() {
@@ -1181,11 +1511,11 @@
 
                 return s.floor()
             },
-            getTimeSpeed() {
+            getTimeSpeed(adder = 0) {
                 let s = new Decimal(1)
 
-                s = s.mul(player.prj.projectSpeed)
-                s = s.mul(player.bum.fountainSpeed)
+                s = s.mul(player.bum.fountains[6].statInvested.add(adder).pow(2))
+                if (hasUpgrade("bum", 22)) s = s.mul(10);
 
                 return s
             },
@@ -1194,7 +1524,7 @@
     microtabs: {
         stuff: {
             "Upgrades": {
-                buttonStyle() { return { color: "white", borderRadius: "8px"} },
+                buttonStyle() { return { color: "white", borderWidth: "2px", borderRadius: "20px"} },
                 unlocked() { return true },
                 content() {
                     let look = [
@@ -1220,51 +1550,8 @@
                     return look
                 },
             },
-            "Fountains": {
-                buttonStyle() { return { color: "white", borderRadius: "8px"} },
-                unlocked() { return true },
-                content() {
-                    let look = [
-                        ["blank", "25px"],
-                        ["style-row", [
-                            component_fountain("bum", 1, {
-                                primaryColor: "#806080",
-                                secondaryColor: "#4d394d",
-                                progressFrontColor: "#ffd6ff",
-                                progressBackColor: "#332633",
-                                textColor: "#ffffff",
-                                rightAdjacent: true,
-                                bottomAdjacent: false,
-                            }),
-                            component_fountain("bum", 2, {
-                                primaryColor: "#806080",
-                                secondaryColor: "#4d394d",
-                                progressFrontColor: "#ffd6ff",
-                                progressBackColor: "#332633",
-                                textColor: "#ffffff",
-                                rightAdjacent: true,
-                                bottomAdjacent: false,
-                                leftAdjacent: true,
-                            }),
-                            component_fountain("bum", 3, {
-                                primaryColor: "#806080",
-                                secondaryColor: "#4d394d",
-                                progressFrontColor: "#ffd6ff",
-                                progressBackColor: "#332633",
-                                textColor: "#ffffff",
-                                bottomAdjacent: false,
-                                leftAdjacent: true,
-                            }),
-                        ]],
-                        ["style-row", [
-                        ]],
-                        ["blank", "25px"],
-                    ]
-                    return look
-                }
-            },
             "Journal": {
-                buttonStyle() { return { color: "white", borderRadius: "8px"} },
+                buttonStyle() { return { color: "white", borderWidth: "2px", borderRadius: "20px"} },
                 unlocked() { return true },
                 content() {
                     let look = [
@@ -1328,6 +1615,69 @@
                     return look
                 }
             },
+            "Fountains": {
+                buttonStyle() { return { color: "white", borderWidth: "2px", borderRadius: "20px"} },
+                unlocked() { return hasUpgrade("bum", 11) || hasUpgrade("bum", 12) },
+                content() {
+                    let look = [
+                        ["blank", "25px"],
+                        ["raw-html", "You are using " + formatWhole(player.prj.focused) + "/" + formatWhole(player.prj.maxFocused) + " focus.", {color: "white", fontSize: "18px", fontFamily: "monospace"}],
+                        ["blank", "12px"],
+                        ["style-column", [
+                            ["blank", "3px"],
+                            ["style-column", [
+                                ["raw-html", "Starlight to convert to power:", {color: "#ffffff", fontSize: "16px", fontFamily: "monospace"}],
+                                ["raw-html", formatSimple(player.bum.starlightToInvest), {color: "#ffffff", fontSize: "24px", fontFamily: "monospace"}],
+                            ], {background: "#332633", borderRadius: "70px 70px 0 0", width: "530px", height: "70px"}],
+                            ["blank", "6px"],
+                            ["text-input", "starlightToInvest", {width: "512px", height: "34px", backgroundColor: "#000000", color: "#ffffff", fontSize: "28px", textAlign: "left", padding: "0 6px", borderRadius: "0 0 0 0", border: "3px solid #4d394d7f",}],
+                            ["blank", "3px"],
+                            ["style-row", [
+                                ["clickable", "invest_1"],
+                                ["clickable", "invest_10"],
+                                ["clickable", "invest_50"],
+                                ["clickable", "invest_100"],
+                            ], {}],
+                        ], {background: "#4d394d", borderRadius: "73px 73px 25px 25px", padding: "3px", width: "536px", height: "166px"}],
+                        ["blank", "9px"],
+                        ["style-row", [
+                            component_specFountain("bum", 1, {
+                                primaryColor: "#806080",
+                                secondaryColor: "#4d394d",
+                                progressFrontColor: "#ffd6ff",
+                                progressBackColor: "#332633",
+                                textColor: "#ffffff",
+                                rightAdjacent: true,
+                                bottomAdjacent: false,
+                            }),
+                            component_specFountain("bum", 3, {
+                                primaryColor: "#806080",
+                                secondaryColor: "#4d394d",
+                                progressFrontColor: "#ffd6ff",
+                                progressBackColor: "#332633",
+                                textColor: "#ffffff",
+                                rightAdjacent: true,
+                                bottomAdjacent: false,
+                                leftAdjacent: true,
+                            }),
+                            component_specFountain("bum", 2, {
+                                primaryColor: "#806080",
+                                secondaryColor: "#4d394d",
+                                progressFrontColor: "#ffd6ff",
+                                progressBackColor: "#332633",
+                                textColor: "#ffffff",
+                                bottomAdjacent: false,
+                                leftAdjacent: true,
+                            }),
+                        ]],
+                        ["style-row", [
+                        ]],
+                        ["clickable", "starlightFountains_respecFocus"],
+                        ["blank", "25px"],
+                    ]
+                    return look
+                }
+            },
         }
     },
     tabFormat: [
@@ -1336,16 +1686,29 @@
             ["raw-html", () => { return "You have <h3>" + formatWhole(player.bum.starlight) + "</h3> starlight." }, {color: "#dfffdf", fontSize: "24px", fontFamily: "monospace"}],
             ["raw-html", () => {return "(+" + formatWhole(player.bum.starlightToGet) + ")"}, () => {
                 let look = {fontSize: "24px", fontFamily: "monospace", marginLeft: "10px"}
-                if (player.bum.starlightToGet.gte(1)) {look.color = "#dfffdf"} else {look.color = "gray"}
+                if (player.bum.starlightToGet.gte(3)) {look.color = "#dfffdf"} else {look.color = "gray"}
                 return look
             }],
         ]],
+        ["raw-html", () => {return "(" + formatSimple(player.bum.totalStarlight) + " total)"}, {color: "#dfffdf", fontSize: "18px", fontFamily: "monospace"}],
+        ["blank", "15px"],
+        ["raw-html", () => {return "You have starshined " + formatSimple(player.bum.starshines) + " times."}, {color: "#dfffdf", fontSize: "18px", fontFamily: "monospace"}],
         ["blank", "15px"],
         ["clickable", "starshineReset"],
-        ["blank", "15px"],
-        ["microtabs", "stuff", { 'border-width': '0px' }],
+        ["blank", "25px"],
+        ["style-column", [
+            ["raw-html", 
+                "<small>Starshine resets everything blueshift does as well as blueshifts and most light upgrades. That includes stored time capsules. Maximize your starlight gain, but don't forget to ↻-up projects; they will remain important.</small>"
+            , {color: "white", fontSize: "18px", fontFamily: "monospace"}],
+        ], {background: "linear-gradient(90deg, transparent, #dfffdf3f, transparent)", border: "3px solid #dfffdf7f", borderRadius: "25px", padding: "12px", width: "600px"}],
+        ["blank", "25px"],
+        ["style-column", [
+            ["microtabs", "stuff", { 'border-width': '0px' }],
+        ], () => {
+            return {display: player.bum.totalStarlight.gt(0) ? "" : "none !important"}
+        }],
     ],
-    layerShown() { return false && player.startedGame == true && hasMilestone("prj", 303)},
+    layerShown() { return hasMilestone("prj", 401) && player.startedGame == true},
     hotkeys: [
         {
             key: "s", 
@@ -1356,3 +1719,126 @@
         },
 	]
 })
+
+const component_specFountain = function (layer, id, data = {}) {
+    if (!data.primaryColor) data.primaryColor = "#999999"
+    if (!data.secondaryColor) data.secondaryColor = "#666666"
+    if (!data.progressFrontColor) data.progressFrontColor = "#ffffff"
+    if (!data.progressBackColor) data.progressBackColor = "#171717"
+    if (!data.textColor) data.textColor = "#ffffff"
+    if (!data.unaffordableTextColor) data.unaffordableTextColor = "#ffff00"
+    if (!data.topAdjacent) data.topAdjacent = false
+    if (!data.rightAdjacent) data.rightAdjacent = false
+    if (!data.bottomAdjacent) data.bottomAdjacent = false
+    if (!data.leftAdjacent) data.leftAdjacent = false
+
+    let layerFountain = layers[layer].fountains[id]
+    let playerFountain = player[layer].fountains[id]
+    let container
+
+    if (layerFountain.unlocked()) {
+        if (layerFountain.condition()) {
+            let currencyLocation = layerFountain.currencyLocation()
+            let currency = currencyLocation[layerFountain.currencyInvestInternalName]
+
+            let pourBarText = currency.add(playerFountain.statInvested).lte(0) ? "<span style='color:#ffff00'>Empty" : formatSimpleTime(playerFountain.timeReq.sub(playerFountain.time).div(layerFountain.getTimeSpeed(currency)), 2)
+            let pourBarTextUnaffordable = "<span style='color:" + data.progressBackColor + "'>" + (currency.add(playerFountain.statInvested).lte(0) ? "Empty" : formatSimpleTime(playerFountain.timeReq.sub(playerFountain.time).div(layerFountain.getTimeSpeed(currency)), 2))
+            let focusBarText = layerFountain.infiniteAuto() ? "<h2>∞" : formatSimpleTime(playerFountain.focusTimer)
+            container = ["style-row", [
+                ["style-column", [
+                    ["style-column", [
+                        ["blank", "6px"],
+                        ["raw-html", layerFountain.title, {color: "white", fontSize: "16px", fontFamily: "monospace"}],
+                        ["raw-html", , {color: "white", fontSize: "14px", fontFamily: "monospace"}],
+                        ["tooltip-row", [
+                            ["raw-html", formatWhole(playerFountain.completions) + " ↻", {color: "white", fontSize: "16px", fontFamily: "monospace", lineHeight: "18px", display: "block"}],
+                            ["raw-html", "<div class='bottomTooltip'>Best: " + formatShortWhole(playerFountain.bestCompletions) + " ↻</div>"],
+                        ]],
+                        ["blank", "6px"],
+                        ["style-column", [
+                            ["raw-html", formatSimple(playerFountain.statInvested, 3) + " " + layerFountain.currencyDisplayName + " Power", {color: "white", fontSize: "14px", fontFamily: "monospace"}],
+                        ], {background: data.primaryColor, borderRadius: (data.leftAdjacent ? "0" : "25px") + " " + (data.rightAdjacent ? "0" : "25px") + " 0 0", width: "259px", height: "25px"}],
+                        ["blank", "3px"],
+                        ["style-column", [
+                            ["style-row", [
+                                ["hoverless-clickable", "fountainPour_" + id],
+                                ["blank", "3px", {width: "3px"}],
+                                ["tooltip-row", [
+                                    ["style-column", [
+                                        ["style-column", [
+                                            ["left-row", [
+                                                ["left-row", [
+                                                ], {background: data.progressFrontColor, borderRadius: "0", width: (playerFountain.time.div(playerFountain.timeReq).min(1).max(0).mul(175).toNumber()) + "px", height: "24px", marginLeft: "3px"}],
+                                            ], {background: data.progressBackColor, borderRadius: "0", width: "181px", height: "30px"}],
+                                        ], {width: "181px", height: "0"}],
+                                        ["style-column", [
+                                            ["left-row", [
+                                            ], {border: "3px solid " + data.primaryColor, borderRadius: "0", width: "175px", height: "24px"}],
+                                        ], {width: "181px", height: "0"}],
+                                        ["left-row", [
+                                            ["style-row", [
+                                                ["raw-html", pourBarText, {color: data.progressFrontColor, fontSize: "16px", fontFamily: "monospace", lineHeight: "18px", display: "block", marginLeft: "3px"}],
+                                            ], {width: "175px"}],
+                                        ], {width: "175px", height: "0"}],
+                                        ["left-row", [
+                                            ["left-row", [
+                                                ["style-row", [
+                                                    ["raw-html", pourBarTextUnaffordable, {color: data.progressBackColor, fontSize: "16px", fontFamily: "monospace", lineHeight: "18px", display: "block", marginLeft: "3px"}],
+                                                ], {width: "175px"}],
+                                            ], {width: (playerFountain.time.div(playerFountain.timeReq).min(1).max(0).mul(175).toNumber()) + "px", overflow: "hidden"}],
+                                        ], {width: "175px", height: "0"}],
+                                    ], {height: "30px"}],
+                                    ["raw-html", "<div class='bottomTooltip'>" + (playerFountain.focused ? "/ " + formatSimpleTime(playerFountain.timeReq.div(playerFountain.timeSpeed), 2) + "<br>" : "") + "<small>(" + format(playerFountain.time, 1) + " / " + format(playerFountain.timeReq, 1) + ")</div>"],
+                                ]],
+                            ]],
+                            ["style-row", [
+                                ["blank", "3px", {width: "3px"}],
+                            ], {display: layerFountain.canAuto() ? "" : "none !important"}],
+                            ["style-row", [
+                                ["hoverless-clickable", "fountainFocus_" + id],
+                                ["blank", "3px", {width: "3px"}],
+                                ["style-column", [
+                                    ["style-column", [
+                                        ["left-row", [
+                                            ["left-row", [
+                                            ], {background: "#dfffdf", borderRadius: "0", width: (layerFountain.infiniteAuto() ? "175" : playerFountain.focusTimer.div(playerFountain.focusTimerMax).min(1).max(0).mul(175)) + "px", height: "24px", marginLeft: "3px"}],
+                                        ], {background: data.progressBackColor, borderRadius: "0", width: "181px", height: "30px"}],
+                                    ], {width: "181px", height: "0"}],
+                                    ["style-column", [
+                                        ["left-row", [
+                                        ], {border: "3px solid " + data.primaryColor, borderRadius: "0", width: "175px", height: "24px"}],
+                                    ], {width: "181px", height: "0"}],
+                                    ["left-row", [
+                                        ["style-row", [
+                                            ["raw-html", focusBarText, {color: "#dfffdf", fontSize: "16px", fontFamily: "monospace", lineHeight: "18px", display: "block", marginLeft: "3px"}],
+                                        ], {width: "175px"}],
+                                    ], {width: "175px", height: "0"}],
+                                    ["left-row", [
+                                        ["left-row", [
+                                            ["style-row", [
+                                                ["raw-html", focusBarText, {color: data.progressBackColor, fontSize: "16px", fontFamily: "monospace", lineHeight: "18px", display: "block", marginLeft: "3px"}],
+                                            ], {width: "175px"}],
+                                        ], {width: (layerFountain.infiniteAuto() ? "175" : playerFountain.focusTimer.div(playerFountain.focusTimerMax).min(1).max(0).mul(175).toNumber()) + "px", overflow: "hidden"}],
+                                    ], {width: "175px", height: "0"}],
+                                ]],
+                            ], {display: layerFountain.canAuto() ? "" : "none !important"}],
+                        ], {}]
+                    ], {background: data.secondaryColor, border: "3px solid " + data.secondaryColor, borderRadius: (data.topAdjacent || data.leftAdjacent ? "0" : "25px") + " " + (data.topAdjacent || data.rightAdjacent ? "0" : "25px") + " 0 0", width: "259px"}],
+                    ["style-column", [
+                        ["style-column", [
+                            ["raw-html", layerFountain.effectDisplay(), {color: "white", fontSize: "14px", fontFamily: "monospace", display: "block", lineHeight: "1"}],
+                        ], {background: data.secondaryColor, border: "3px solid " + data.primaryColor, borderRadius: "0 0 " + (data.bottomAdjacent || data.rightAdjacent ? "0" : "22px") + " " + (data.bottomAdjacent || data.leftAdjacent ? "0" : "22px"), width: "241px", height: "44px", paddingLeft: "6px", paddingRight: "6px"}],
+                    ], {background: data.primaryColor, border: "3px solid " + data.secondaryColor, borderRadius: "0 0 " + (data.bottomAdjacent || data.rightAdjacent ? "0" : "25px") + " " + (data.bottomAdjacent || data.leftAdjacent ? "0" : "25px"), borderTop: "0", height: "50px"}],
+                ], {width: "265px", margin: "3px"}]
+            ]]
+        } else {
+            container = ["style-column", [
+                ["raw-html", layerFountain.title, {color: "white", fontSize: "16px", fontFamily: "monospace"}],
+                ["raw-html", "<small>Req: " + layerFountain.conditionDisplay(), {color: "white", fontSize: "16px", fontFamily: "monospace"}],
+            ], {background: "black", border: "3px solid #663737", borderRadius: (data.topAdjacent || data.leftAdjacent ? "0" : "25px") + " " + (data.topAdjacent || data.rightAdjacent ? "0" : "25px") + " " + (data.bottomAdjacent || data.rightAdjacent ? "0" : "25px") + " " + (data.bottomAdjacent || data.leftAdjacent ? "0" : "25px"), height: "160px", width: "259px", margin: "3px"}]
+        }
+    } else {
+        container = ["style-row", []]
+    }
+    return container
+}

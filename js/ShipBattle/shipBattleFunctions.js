@@ -262,7 +262,7 @@ function SB_getUpgradeMultis(upgrades) {
     shipStats.moveSpeed *= 1 + 0.25 * upgrades.moveSpeedLegendary
 
     shipStats.bulletSize = 1
-    if (player.ir.shipType == 3 || player.ir.shipType == 7 || player.ir.shipType == 8) {
+    if (player.ir.type == 3 || player.ir.type == 7 || player.ir.type == 8) {
         shipStats.maxHp *= 1 + 0.1 * upgrades.bulletSizeRare
     } else {
         shipStats.bulletSize *= 1 + 0.1 * upgrades.bulletSizeRare
@@ -311,13 +311,13 @@ function SB_getUpgradeMultis(upgrades) {
 
 function SB_getUpgradedShipStats(upgrades) {
     let shipStats = SB_getDefaultShipStats()
-    shipStats.attackDamage = SB_ships[SB_shipNames[player.ir.shipBattleSaveCurrent.shipType]].baseStats.attackDamage
+    shipStats.attackDamage = SB_ships[player.ir.shipBattleSaveCurrent.type].baseStats.attackDamage
     shipStats.attackDamage *= 1 + 0.05 * (upgrades.attackDamageCommon || 0)
     shipStats.attackDamage *= 1 + 0.1 * (upgrades.attackDamageUncommon || 0)
     shipStats.attackDamage *= 1 + 0.15 * (upgrades.attackDamageRare || 0)
     shipStats.attackDamage *= 1 + 0.15 * (upgrades.attackEpic || 0)
     shipStats.attackDamage *= 1 + 0.3 * (upgrades.attackLegendary || 0)
-    shipStats.attackDamage *= levelableEffect("ir", player.ir.shipType)[2].toNumber()
+    shipStats.attackDamage *= levelableEffect("ir", player.ir.type)[2].toNumber()
     if (hasMilestone("spaceZone1", 12)) shipStats.attackDamage *= 1.25;
     if (hasMilestone("spaceZone1", 14)) shipStats.attackDamage *= 1.15;
     if (hasUpgrade("ir", 22)) shipStats.attackDamage *= upgradeEffect("ir", 22).toNumber();
@@ -339,7 +339,7 @@ function SB_getUpgradedShipStats(upgrades) {
     shipStats.healthRegen *= 1 + 0.2 * (upgrades.defenseLegendary || 0)
     shipStats.healthRegen *= getBuyableAmount("bl", 13).div(50).add(1).toNumber()
     shipStats.bulletSize = 1
-    if (player.ir.shipType == 3 || player.ir.shipType == 7 || player.ir.shipType == 8) {
+    if (player.ir.type == 3 || player.ir.type == 7 || player.ir.type == 8) {
         shipStats.maxHp *= 1 + 0.1 * (upgrades.bulletSizeRare || 0)
     } else {
         shipStats.bulletSize *= 1 + 0.1 * (upgrades.bulletSizeRare || 0)
@@ -421,7 +421,10 @@ function SB_exitRun() {
     options.fullscreen = false
     player.ir.savedRun = false
 
-    player.ir.timers[player.ir.shipType].current = player.ir.timers[player.ir.shipType].max
+    // TEMP
+    player.ir.timers[player.ir.type].current = new Decimal(0.1)
+    
+    //player.ir.timers[player.ir.type].current = player.ir.timers[player.ir.type].max
     if (player.ir.shipBattleSaveCurrent.slot > -1) player.ir.saveTimers[player.ir.shipBattleSaveCurrent.slot].current = player.ir.saveTimers[player.ir.shipBattleSaveCurrent.slot].max
     player.ir.battleXP = new Decimal(0)
     player.ir.battleLevel = new Decimal(1)
@@ -443,32 +446,36 @@ function SB_exitRun() {
         arena = null;
     }
     localStorage.setItem('arenaActive', 'false');
+
+    SB_locations[player.shipBattle.locationId].onExit()
 }
 
-function SB_enterRun(zoneId, data = {}) {
+function SB_enterRun(zoneId = "spaceZone1", dimensions = [800, 800, 3200, 3200], data = {}) {
     player.ir.inBattle = true
     options.fullscreen = true
     player.ir.battleStage = zoneId
+    player.ir.menu = 0
 
     player.ir.shipHealth = player.ir.shipHealthMax
     player.ir.battleLevel = player[player.ir.battleStage] && player[player.ir.battleStage].selectedStageStart ? player[player.ir.battleStage].selectedStageStart.add(1) : new Decimal(1)
-
+    
     if (player.tab == "ir") {
-        player.subtabs["ir"]['stuff'] = 'Battle'
         pauseUniverseAll(["A2", "SB"], "pause", true)
     }
     if (player.tab == "bl") {
-        player.subtabs["bl"]['stuff'] = 'Battle'
+        //
     }
     if (player.tab == "cbs") {
-        player.subtabs["cbs"]['stuff'] = 'Battle'
         pauseUniverseAll(["A2", "SB", "DS"], "pause", true)
     }
+
+    player.tab = 'shipBattle'
+    player.subtabs["shipBattle"]['stuff'] = 'Battle'
     
     player.ir.primaryColor = SB_zones[zoneId].primaryColor
     player.ir.secondaryColor = SB_zones[zoneId].secondaryColor
 
-    arena = new SpaceArena(800, 800, 3200, 3200);
+    arena = new SpaceArena(...dimensions);
     arena.spawnArena();
     for (const [i, v] of Object.entries(player.ir.shipBattleSaveCurrent.upgrades)) {
         arena.upgrades[i] = v

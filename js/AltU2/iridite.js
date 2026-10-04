@@ -61,23 +61,6 @@ let rerollBuyableShipUpgrades = function(luck) {
     }
 }
 
-let getDefaultShipSave = function (data = {}) {
-    let save = {
-        shipType: 1,
-        slot: -1,
-        upgrades: {},
-        bankedUpgrades: {},
-        upgradeMultis: {},
-        upgradeScore: 0,
-        upgradeCount: 0,
-        perZoneHighestLevels: {},
-        perZoneUpgrades: {},
-    }
-    for (const [i, v] of Object.entries(data)) {
-        save[i] = v
-    }
-    return save
-}
 
 const SB_AUTO_DATA = {//player.ir.shipBattleSaves[0].shipType = 8
     0: {
@@ -222,6 +205,58 @@ const SB_AUTO_DATA = {//player.ir.shipBattleSaves[0].shipType = 8
         },
         statDisplay() {return "Space Junk"},
     },
+    "bloodspear": {
+        mult: new Decimal(4),
+        max: new Decimal(3600),
+        getBaseStatMult() { return player.cb.baseESC },
+        onClick(baseGain) {
+            // 1 / 3600s = 1 / 1h
+            player.cb.evolutionShards = player.cb.evolutionShards.add(baseGain.mul(Math.random() + 1).floor())
+        },
+        getFinalMult(baseGain) {
+            return baseGain.mul(this.mult)
+        },
+        statDisplay() {return "Evolution Shards"},
+    },
+    "spinner": {
+        mult: new Decimal(4),
+        max: new Decimal(3600),
+        getBaseStatMult() { return player.cb.baseESC },
+        onClick(baseGain) {
+            // 1 / 3600s = 1 / 1h
+            player.cb.evolutionShards = player.cb.evolutionShards.add(baseGain.mul(Math.random() + 1).floor())
+        },
+        getFinalMult(baseGain) {
+            return baseGain.mul(this.mult)
+        },
+        statDisplay() {return "Evolution Shards"},
+    },
+    "phantom": {
+        mult: new Decimal(4),
+        max: new Decimal(3600),
+        getBaseStatMult() { return player.cb.baseESC },
+        onClick(baseGain) {
+            // 1 / 3600s = 1 / 1h
+            player.cb.evolutionShards = player.cb.evolutionShards.add(baseGain.mul(Math.random() + 1).floor())
+        },
+        getFinalMult(baseGain) {
+            return baseGain.mul(this.mult)
+        },
+        statDisplay() {return "Evolution Shards"},
+    },
+    "charger": {
+        mult: new Decimal(4),
+        max: new Decimal(3600),
+        getBaseStatMult() { return player.cb.baseESC },
+        onClick(baseGain) {
+            // 1 / 3600s = 1 / 1h
+            player.cb.evolutionShards = player.cb.evolutionShards.add(baseGain.mul(Math.random() + 1).floor())
+        },
+        getFinalMult(baseGain) {
+            return baseGain.mul(this.mult)
+        },
+        statDisplay() {return "Evolution Shards"},
+    },
 }
 
 addLayer("ir", {
@@ -342,6 +377,22 @@ addLayer("ir", {
                 current: new Decimal(0),
                 max: new Decimal(1800),
             },
+            "bloodspear": {
+                current: new Decimal(0),
+                max: new Decimal(1800),
+            },
+            "spinner": {
+                current: new Decimal(0),
+                max: new Decimal(1800),
+            },
+            "phantom": {
+                current: new Decimal(0),
+                max: new Decimal(1800),
+            },
+            "charger": {
+                current: new Decimal(0),
+                max: new Decimal(1800),
+            },
         },
         timerMaxDivisior: new Decimal(1),
 
@@ -388,7 +439,7 @@ addLayer("ir", {
             }
         }
 
-        player.ir.shipType = player.ir.shipBattleSaveCurrent == null ? 0 : player.ir.shipBattleSaveCurrent.shipType
+        player.ir.shipType = player.ir.shipBattleSaveCurrent == null ? 0 : player.ir.shipBattleSaveCurrent.type
 
         if (arena && arena.upgrades && arena.shipStats) {
             arena.shipStats = SB_getUpgradedShipStats(arena.upgrades)
@@ -1360,6 +1411,306 @@ addLayer("ir", {
                 return look
             },
         },
+        "bloodspear": {
+            image() { return tmp[this.layer].levelables[this.id].condition ? "resources/ships/cruiser.png" : "resources/secret.png"},
+            title() { return "Bloodspear" },
+            description() {
+                return "^" + format(this.effect()[0], 3) + " to dark celestial points.<br>x" + format(this.effect()[1]) + " to light.<br>x" + format(this.effect()[2]) + " to ship damage.<br>x" + format(this.effect()[3]) + " to ship health.<br>"
+            },
+            display() {
+                return this.condition() ? "<h2>" + this.title() + "</h2><br><span style='color:" + player.shipBattle.theme.secondaryTextColor + "'>" + this.description() : "Unlocks with an Iridite upgrade."
+            },
+            lore() {
+                return "???"
+            },
+            levelLimit() { return Decimal.add(50, levelableEffect("ir", 8)[1])},
+            effect() { 
+                return [
+                    getLevelableAmount(this.layer, this.id).pow(0.3).mul(0.01).add(1), // dark celestial points
+                    getLevelableAmount(this.layer, this.id).pow(1.5).mul(0.25).add(1), // light
+                    getLevelableAmount(this.layer, this.id).mul(0.02).add(1), // damage
+                    getLevelableAmount(this.layer, this.id).mul(0.02).add(1), // health
+                ]
+            },
+            sacValue() { return new Decimal(1)},
+            // CLICK CODE
+            unlocked() { return hasUpgrade("bum", 23) },
+            condition() { return (getLevelableXP(this.layer, this.id).gt(0) || getLevelableAmount(this.layer, this.id).gt(0)) || hasUpgrade("ir", 37) },
+            // BUTTONS
+            levelableButtons: [
+                {
+                    title() {return "Level Up"},
+                    unlocked() {return tmp.ir.levelables[this.id].condition && !player.ir.selectingShip},
+                    canClick() {return tmp.ir.levelables[this.id].canBuy},
+                    complete() {return getLevelableAmount(this.layer, this.id).gte(this.levelLimit)},
+                    onClick: function () {
+                        buyLevelable(this.layer, this.id)
+                    },
+                },
+                {
+                    title() {return player.ir.timers[this.id].current.lte(0) ? "Select" : ("On Cooldown: " + formatTime(player.ir.timers[this.id].current))},
+                    unlocked() {return tmp.ir.levelables[this.id].condition && player.ir.selectingShip},
+                    canClick() {return player.ir.timers[this.id].current.lte(0)},
+                    complete() {return false},
+                    onClick: function () {
+                        player.ir.shipBattleSaveCurrent = getDefaultShipSave({
+                            shipType: this.id,
+                        })
+                        player.ir.selectingShip = false
+                    },
+                },
+            ],
+            levelableButtonStyle(i) {
+                let button = layers[this.layer].levelables[this.id].levelableButtons[i]
+                let look = {}
+                look.background = i == 1 ? button.canClick.apply(tmp[this.layer].levelables[this.id], []) ? "#545400" : "#402424" : button.complete.apply(tmp[this.layer].levelables[this.id], []) ? "#1a3b0f" : button.canClick.apply(tmp[this.layer].levelables[this.id], []) ? player.shipBattle.theme.secondaryColor : "#402424"
+                look.borderColor = i == 1 && button.canClick.apply(tmp[this.layer].levelables[this.id], []) ? "#7f7f00" : player.shipBattle.theme.primaryColor + "7f"
+                return look
+            },
+            // BUY CODE
+            pay(amt) { setLevelableXP(this.layer, this.id, getLevelableXP(this.layer, this.id).sub(amt)) },
+            canAfford() { return getLevelableXP(this.layer, this.id).gte(this.xpReq()) },
+            xpReq() { return getLevelableAmount(this.layer, this.id).add(10).mul(10).add(getLevelableAmount(this.layer, this.id).pow(3)).pow(getLevelableAmount(this.layer, this.id).mul(0.005).add(1)) },  
+            currency() { return getLevelableXP(this.layer, this.id) },
+            buy() {
+                this.pay(this.xpReq())
+                setLevelableAmount(this.layer, this.id, getLevelableAmount(this.layer, this.id).add(1))
+            },
+            // STYLE
+            barStyle() { return {backgroundColor: getLevelableAmount(this.layer, this.id).gte(this.levelLimit()) ? "#7f7f00" : "#0000bf"}},
+            style() {
+                let look = {width: "384px", minHeight: "150px", borderRadius: "15px", margin: "3px"}
+                look.backgroundColor = this.condition() ? player.shipBattle.theme.backgroundColor : "#222222"
+                look.borderColor = this.condition() ? player.shipBattle.theme.primaryColor : "#444444"
+                layers[this.layer].levelables.index == this.id ? look.outline = "3px solid white" : look.outline = "0px solid white"
+                return look
+            },
+        },
+        "spinner": {
+            image() { return tmp[this.layer].levelables[this.id].condition ? "resources/ships/cruiser.png" : "resources/secret.png"},
+            title() { return "Spinner" },
+            description() {
+                return "^" + format(this.effect()[0], 3) + " to dark celestial points.<br>x" + format(this.effect()[1]) + " to light.<br>x" + format(this.effect()[2]) + " to ship damage.<br>x" + format(this.effect()[3]) + " to ship health.<br>"
+            },
+            display() {
+                return this.condition() ? "<h2>" + this.title() + "</h2><br><span style='color:" + player.shipBattle.theme.secondaryTextColor + "'>" + this.description() : "Unlocks with an Iridite upgrade."
+            },
+            lore() {
+                return "???"
+            },
+            levelLimit() { return Decimal.add(50, levelableEffect("ir", 8)[1])},
+            effect() { 
+                return [
+                    getLevelableAmount(this.layer, this.id).pow(0.3).mul(0.01).add(1), // dark celestial points
+                    getLevelableAmount(this.layer, this.id).pow(1.5).mul(0.25).add(1), // light
+                    getLevelableAmount(this.layer, this.id).mul(0.02).add(1), // damage
+                    getLevelableAmount(this.layer, this.id).mul(0.02).add(1), // health
+                ]
+            },
+            sacValue() { return new Decimal(1)},
+            // CLICK CODE
+            unlocked() { return hasUpgrade("bum", 23) },
+            condition() { return (getLevelableXP(this.layer, this.id).gt(0) || getLevelableAmount(this.layer, this.id).gt(0)) || hasUpgrade("ir", 37) },
+            // BUTTONS
+            levelableButtons: [
+                {
+                    title() {return "Level Up"},
+                    unlocked() {return tmp.ir.levelables[this.id].condition && !player.ir.selectingShip},
+                    canClick() {return tmp.ir.levelables[this.id].canBuy},
+                    complete() {return getLevelableAmount(this.layer, this.id).gte(this.levelLimit)},
+                    onClick: function () {
+                        buyLevelable(this.layer, this.id)
+                    },
+                },
+                {
+                    title() {return player.ir.timers[this.id].current.lte(0) ? "Select" : ("On Cooldown: " + formatTime(player.ir.timers[this.id].current))},
+                    unlocked() {return tmp.ir.levelables[this.id].condition && player.ir.selectingShip},
+                    canClick() {return player.ir.timers[this.id].current.lte(0)},
+                    complete() {return false},
+                    onClick: function () {
+                        player.ir.shipBattleSaveCurrent = getDefaultShipSave({
+                            shipType: this.id,
+                        })
+                        player.ir.selectingShip = false
+                    },
+                },
+            ],
+            levelableButtonStyle(i) {
+                let button = layers[this.layer].levelables[this.id].levelableButtons[i]
+                let look = {}
+                look.background = i == 1 ? button.canClick.apply(tmp[this.layer].levelables[this.id], []) ? "#545400" : "#402424" : button.complete.apply(tmp[this.layer].levelables[this.id], []) ? "#1a3b0f" : button.canClick.apply(tmp[this.layer].levelables[this.id], []) ? player.shipBattle.theme.secondaryColor : "#402424"
+                look.borderColor = i == 1 && button.canClick.apply(tmp[this.layer].levelables[this.id], []) ? "#7f7f00" : player.shipBattle.theme.primaryColor + "7f"
+                return look
+            },
+            // BUY CODE
+            pay(amt) { setLevelableXP(this.layer, this.id, getLevelableXP(this.layer, this.id).sub(amt)) },
+            canAfford() { return getLevelableXP(this.layer, this.id).gte(this.xpReq()) },
+            xpReq() { return getLevelableAmount(this.layer, this.id).add(10).mul(10).add(getLevelableAmount(this.layer, this.id).pow(3)).pow(getLevelableAmount(this.layer, this.id).mul(0.005).add(1)) },  
+            currency() { return getLevelableXP(this.layer, this.id) },
+            buy() {
+                this.pay(this.xpReq())
+                setLevelableAmount(this.layer, this.id, getLevelableAmount(this.layer, this.id).add(1))
+            },
+            // STYLE
+            barStyle() { return {backgroundColor: getLevelableAmount(this.layer, this.id).gte(this.levelLimit()) ? "#7f7f00" : "#0000bf"}},
+            style() {
+                let look = {width: "384px", minHeight: "150px", borderRadius: "15px", margin: "3px"}
+                look.backgroundColor = this.condition() ? player.shipBattle.theme.backgroundColor : "#222222"
+                look.borderColor = this.condition() ? player.shipBattle.theme.primaryColor : "#444444"
+                layers[this.layer].levelables.index == this.id ? look.outline = "3px solid white" : look.outline = "0px solid white"
+                return look
+            },
+        },
+        "phantom": {
+            image() { return tmp[this.layer].levelables[this.id].condition ? "resources/ships/cruiser.png" : "resources/secret.png"},
+            title() { return "Phantom" },
+            description() {
+                return "^" + format(this.effect()[0], 3) + " to dark celestial points.<br>x" + format(this.effect()[1]) + " to light.<br>x" + format(this.effect()[2]) + " to ship damage.<br>x" + format(this.effect()[3]) + " to ship health.<br>"
+            },
+            display() {
+                return this.condition() ? "<h2>" + this.title() + "</h2><br><span style='color:" + player.shipBattle.theme.secondaryTextColor + "'>" + this.description() : "Unlocks with an Iridite upgrade."
+            },
+            lore() {
+                return "???"
+            },
+            levelLimit() { return Decimal.add(50, levelableEffect("ir", 8)[1])},
+            effect() { 
+                return [
+                    getLevelableAmount(this.layer, this.id).pow(0.3).mul(0.01).add(1), // dark celestial points
+                    getLevelableAmount(this.layer, this.id).pow(1.5).mul(0.25).add(1), // light
+                    getLevelableAmount(this.layer, this.id).mul(0.02).add(1), // damage
+                    getLevelableAmount(this.layer, this.id).mul(0.02).add(1), // health
+                ]
+            },
+            sacValue() { return new Decimal(1)},
+            // CLICK CODE
+            unlocked() { return hasUpgrade("bum", 23) },
+            condition() { return (getLevelableXP(this.layer, this.id).gt(0) || getLevelableAmount(this.layer, this.id).gt(0)) || hasUpgrade("ir", 37) },
+            // BUTTONS
+            levelableButtons: [
+                {
+                    title() {return "Level Up"},
+                    unlocked() {return tmp.ir.levelables[this.id].condition && !player.ir.selectingShip},
+                    canClick() {return tmp.ir.levelables[this.id].canBuy},
+                    complete() {return getLevelableAmount(this.layer, this.id).gte(this.levelLimit)},
+                    onClick: function () {
+                        buyLevelable(this.layer, this.id)
+                    },
+                },
+                {
+                    title() {return player.ir.timers[this.id].current.lte(0) ? "Select" : ("On Cooldown: " + formatTime(player.ir.timers[this.id].current))},
+                    unlocked() {return tmp.ir.levelables[this.id].condition && player.ir.selectingShip},
+                    canClick() {return player.ir.timers[this.id].current.lte(0)},
+                    complete() {return false},
+                    onClick: function () {
+                        player.ir.shipBattleSaveCurrent = getDefaultShipSave({
+                            shipType: this.id,
+                        })
+                        player.ir.selectingShip = false
+                    },
+                },
+            ],
+            levelableButtonStyle(i) {
+                let button = layers[this.layer].levelables[this.id].levelableButtons[i]
+                let look = {}
+                look.background = i == 1 ? button.canClick.apply(tmp[this.layer].levelables[this.id], []) ? "#545400" : "#402424" : button.complete.apply(tmp[this.layer].levelables[this.id], []) ? "#1a3b0f" : button.canClick.apply(tmp[this.layer].levelables[this.id], []) ? player.shipBattle.theme.secondaryColor : "#402424"
+                look.borderColor = i == 1 && button.canClick.apply(tmp[this.layer].levelables[this.id], []) ? "#7f7f00" : player.shipBattle.theme.primaryColor + "7f"
+                return look
+            },
+            // BUY CODE
+            pay(amt) { setLevelableXP(this.layer, this.id, getLevelableXP(this.layer, this.id).sub(amt)) },
+            canAfford() { return getLevelableXP(this.layer, this.id).gte(this.xpReq()) },
+            xpReq() { return getLevelableAmount(this.layer, this.id).add(10).mul(10).add(getLevelableAmount(this.layer, this.id).pow(3)).pow(getLevelableAmount(this.layer, this.id).mul(0.005).add(1)) },  
+            currency() { return getLevelableXP(this.layer, this.id) },
+            buy() {
+                this.pay(this.xpReq())
+                setLevelableAmount(this.layer, this.id, getLevelableAmount(this.layer, this.id).add(1))
+            },
+            // STYLE
+            barStyle() { return {backgroundColor: getLevelableAmount(this.layer, this.id).gte(this.levelLimit()) ? "#7f7f00" : "#0000bf"}},
+            style() {
+                let look = {width: "384px", minHeight: "150px", borderRadius: "15px", margin: "3px"}
+                look.backgroundColor = this.condition() ? player.shipBattle.theme.backgroundColor : "#222222"
+                look.borderColor = this.condition() ? player.shipBattle.theme.primaryColor : "#444444"
+                layers[this.layer].levelables.index == this.id ? look.outline = "3px solid white" : look.outline = "0px solid white"
+                return look
+            },
+        },
+        "charger": {
+            image() { return tmp[this.layer].levelables[this.id].condition ? "resources/ships/cruiser.png" : "resources/secret.png"},
+            title() { return "Charger" },
+            description() {
+                return "^" + format(this.effect()[0], 3) + " to dark celestial points.<br>x" + format(this.effect()[1]) + " to light.<br>x" + format(this.effect()[2]) + " to ship damage.<br>x" + format(this.effect()[3]) + " to ship health.<br>"
+            },
+            display() {
+                return this.condition() ? "<h2>" + this.title() + "</h2><br><span style='color:" + player.shipBattle.theme.secondaryTextColor + "'>" + this.description() : "Unlocks with an Iridite upgrade."
+            },
+            lore() {
+                return "???"
+            },
+            levelLimit() { return Decimal.add(50, levelableEffect("ir", 8)[1])},
+            effect() { 
+                return [
+                    getLevelableAmount(this.layer, this.id).pow(0.3).mul(0.01).add(1), // dark celestial points
+                    getLevelableAmount(this.layer, this.id).pow(1.5).mul(0.25).add(1), // light
+                    getLevelableAmount(this.layer, this.id).mul(0.02).add(1), // damage
+                    getLevelableAmount(this.layer, this.id).mul(0.02).add(1), // health
+                ]
+            },
+            sacValue() { return new Decimal(1)},
+            // CLICK CODE
+            unlocked() { return hasUpgrade("bum", 23) },
+            condition() { return (getLevelableXP(this.layer, this.id).gt(0) || getLevelableAmount(this.layer, this.id).gt(0)) || hasUpgrade("ir", 37) },
+            // BUTTONS
+            levelableButtons: [
+                {
+                    title() {return "Level Up"},
+                    unlocked() {return tmp.ir.levelables[this.id].condition && !player.ir.selectingShip},
+                    canClick() {return tmp.ir.levelables[this.id].canBuy},
+                    complete() {return getLevelableAmount(this.layer, this.id).gte(this.levelLimit)},
+                    onClick: function () {
+                        buyLevelable(this.layer, this.id)
+                    },
+                },
+                {
+                    title() {return player.ir.timers[this.id].current.lte(0) ? "Select" : ("On Cooldown: " + formatTime(player.ir.timers[this.id].current))},
+                    unlocked() {return tmp.ir.levelables[this.id].condition && player.ir.selectingShip},
+                    canClick() {return player.ir.timers[this.id].current.lte(0)},
+                    complete() {return false},
+                    onClick: function () {
+                        player.ir.shipBattleSaveCurrent = getDefaultShipSave({
+                            shipType: this.id,
+                        })
+                        player.ir.selectingShip = false
+                    },
+                },
+            ],
+            levelableButtonStyle(i) {
+                let button = layers[this.layer].levelables[this.id].levelableButtons[i]
+                let look = {}
+                look.background = i == 1 ? button.canClick.apply(tmp[this.layer].levelables[this.id], []) ? "#545400" : "#402424" : button.complete.apply(tmp[this.layer].levelables[this.id], []) ? "#1a3b0f" : button.canClick.apply(tmp[this.layer].levelables[this.id], []) ? player.shipBattle.theme.secondaryColor : "#402424"
+                look.borderColor = i == 1 && button.canClick.apply(tmp[this.layer].levelables[this.id], []) ? "#7f7f00" : player.shipBattle.theme.primaryColor + "7f"
+                return look
+            },
+            // BUY CODE
+            pay(amt) { setLevelableXP(this.layer, this.id, getLevelableXP(this.layer, this.id).sub(amt)) },
+            canAfford() { return getLevelableXP(this.layer, this.id).gte(this.xpReq()) },
+            xpReq() { return getLevelableAmount(this.layer, this.id).add(10).mul(10).add(getLevelableAmount(this.layer, this.id).pow(3)).pow(getLevelableAmount(this.layer, this.id).mul(0.005).add(1)) },  
+            currency() { return getLevelableXP(this.layer, this.id) },
+            buy() {
+                this.pay(this.xpReq())
+                setLevelableAmount(this.layer, this.id, getLevelableAmount(this.layer, this.id).add(1))
+            },
+            // STYLE
+            barStyle() { return {backgroundColor: getLevelableAmount(this.layer, this.id).gte(this.levelLimit()) ? "#7f7f00" : "#0000bf"}},
+            style() {
+                let look = {width: "384px", minHeight: "150px", borderRadius: "15px", margin: "3px"}
+                look.backgroundColor = this.condition() ? player.shipBattle.theme.backgroundColor : "#222222"
+                look.borderColor = this.condition() ? player.shipBattle.theme.primaryColor : "#444444"
+                layers[this.layer].levelables.index == this.id ? look.outline = "3px solid white" : look.outline = "0px solid white"
+                return look
+            },
+        },
     },
     clickables: {
         "newRun": {
@@ -1520,7 +1871,7 @@ addLayer("ir", {
             },
             onClick() {
                 SB_AUTO_DATA[player.ir.shipType].onClick(player.ir.sendGain)
-                player.ir.saveTimers[player.ir.shipBattleSaveCurrent.slot].current = SB_AUTO_DATA[player.ir.shipBattleSaveCurrent.shipType].max
+                player.ir.saveTimers[player.ir.shipBattleSaveCurrent.slot].current = SB_AUTO_DATA[player.ir.shipBattleSaveCurrent.type].max
             },
             style() {
                 let look = {width: "523px", minHeight: "50px", color: "white", borderRadius: "10px"}
@@ -3880,7 +4231,7 @@ addLayer("ir", {
                                 let container = []
                                 if (player.ir.shipBattleSaveCurrent == null || player.ir.shipType == 0) return container;
                                 let shipStats = SB_getUpgradedShipStats(arena ? arena.upgrades : player.ir.shipBattleSaveCurrent.upgrades)
-                                let baseStats = SB_ships[SB_shipNames[player.ir.shipBattleSaveCurrent.shipType]].baseStats
+                                let baseStats = SB_ships[SB_shipNames[player.ir.shipBattleSaveCurrent.type]].baseStats
                                 for (let [i, v] of Object.entries(shipStats)) {
                                     let statFormat = SHIP_STAT_FORMATTING[i]
                                     let prefix = statFormat.valuePrefix
@@ -3933,7 +4284,7 @@ addLayer("ir", {
                             ["top-column", function () {
                             let container = []
                             if (player.ir.shipBattleSaveCurrent == null) return container;
-                            let shipStats = SB_ships[SB_shipNames[player.ir.shipBattleSaveCurrent.shipType]].baseStats
+                            let shipStats = SB_ships[SB_shipNames[player.ir.shipBattleSaveCurrent.type]].baseStats
                             for (let [i, v] of Object.entries(SB_getDefaultShipStats())) {
                                 v = shipStats[i]
                                 let statFormat = SHIP_STAT_FORMATTING[i]
@@ -4160,7 +4511,7 @@ addLayer("ir", {
                     ["style-row", [
                         ["style-column", [
                             ["blank", "5.5px"],
-                            ["raw-html", () => {return "Ship Selected: <span style='color:#ffff00'>" + (player.ir.shipBattleSaveCurrent == null ? "<span style='color:#aaa2f2'>None" : (layers.ir.levelables[player.ir.shipBattleSaveCurrent.shipType].title() + " " + (player.ir.shipBattleSaveCurrent.slot === -2 ? "(Latest Run)" : player.ir.shipBattleSaveCurrent.slot === -1 ? "<span style='color:#aaa2f2'>(New Run)" : ("<span style='color:#aaa2f2'>(Slot #" + (player.ir.shipBattleSaveCurrent.slot + 1) + ")"))))}, { "color": "white", "font-size": "16px", "font-family": "monospace" }],
+                            ["raw-html", () => {return "Ship Selected: <span style='color:#ffff00'>" + (player.ir.shipBattleSaveCurrent == null ? "<span style='color:#aaa2f2'>None" : (layers.ir.levelables[player.ir.shipBattleSaveCurrent.type].title() + " " + (player.ir.shipBattleSaveCurrent.slot === -2 ? "(Latest Run)" : player.ir.shipBattleSaveCurrent.slot === -1 ? "<span style='color:#aaa2f2'>(New Run)" : ("<span style='color:#aaa2f2'>(Slot #" + (player.ir.shipBattleSaveCurrent.slot + 1) + ")"))))}, { "color": "white", "font-size": "16px", "font-family": "monospace" }],
                             ["blank", "8.5px"],
                             ["clickable", "newRun"],
                         ], {width: "535px"}],
@@ -4190,7 +4541,7 @@ addLayer("ir", {
                     ["style-row", [
                         ["style-column", [
                             ["blank", "5.5px"],
-                            ["raw-html", () => {return "Ship Selected: <span style='color:#ffff00'>" + (player.ir.shipBattleSaveCurrent == null ? "<span style='color:#aaa2f2'>None" : (layers.ir.levelables[player.ir.shipBattleSaveCurrent.shipType].title() + " " + (player.ir.shipBattleSaveCurrent.slot === -2 ? "(Latest Run)" : player.ir.shipBattleSaveCurrent.slot === -1 ? "<span style='color:#aaa2f2'>(New Run)" : ("<span style='color:#aaa2f2'>(Slot #" + (player.ir.shipBattleSaveCurrent.slot + 1) + ")"))))}, { "color": "white", "font-size": "16px", "font-family": "monospace" }],
+                            ["raw-html", () => {return "Ship Selected: <span style='color:#ffff00'>" + (player.ir.shipBattleSaveCurrent == null ? "<span style='color:#aaa2f2'>None" : (layers.ir.levelables[player.ir.shipBattleSaveCurrent.type].title() + " " + (player.ir.shipBattleSaveCurrent.slot === -2 ? "(Latest Run)" : player.ir.shipBattleSaveCurrent.slot === -1 ? "<span style='color:#aaa2f2'>(New Run)" : ("<span style='color:#aaa2f2'>(Slot #" + (player.ir.shipBattleSaveCurrent.slot + 1) + ")"))))}, { "color": "white", "font-size": "16px", "font-family": "monospace" }],
                             ["blank", "8.5px"],
                             ["clickable", "newRun"],
                         ], {width: "535px"}],
@@ -4207,7 +4558,7 @@ addLayer("ir", {
                                 if (player.ir.shipBattleSaveCurrent == null) return container;
                                 container.push(
                                     ["style-column", [
-                                        ["raw-html", "<i>" + layers.ir.levelables[player.ir.shipBattleSaveCurrent.shipType].lore() + "</i>", { "color": "white", "font-size": "16px", "font-family": "monospace" }],
+                                        ["raw-html", "<i>" + layers.ir.levelables[player.ir.shipBattleSaveCurrent.type].lore() + "</i>", { "color": "white", "font-size": "16px", "font-family": "monospace" }],
                                     ], {width: "508px"}],
                                 )
                                 return container

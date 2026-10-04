@@ -75,6 +75,7 @@ addLayer("ev2", {
         player.ev2.timers[3].base = new Decimal(1).add(buyableEffect("ev2", 34).mul(3))
         for (let i in player.ev2.timers) {
             player.ev2.timers[i].base = player.ev2.timers[i].base.mul(player.ev2.shardBoost)
+            player.ev2.timers[i].base = player.ev2.timers[i].base.mul(buyableEffect("pl", 20))
 
             player.ev2.timers[i].current = player.ev2.timers[i].current.sub(onepersec.mul(delta))
         }

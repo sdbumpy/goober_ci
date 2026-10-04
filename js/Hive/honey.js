@@ -64,7 +64,7 @@ addLayer("ho", {
         },
     }},
     automate() {
-        if (hasUpgrade("al", 218) && player.bee.path == 2) {
+        if ((hasUpgrade("al", 127) && player.bee.path == 1) || (hasUpgrade("al", 218) && player.bee.path == 2)) {
             buyUpgrade("ho", 1)
             buyUpgrade("ho", 2)
             buyUpgrade("ho", 3)

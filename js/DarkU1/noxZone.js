@@ -44,13 +44,13 @@ addLayer("noxZone", {
                 let str = "<h2>Enter Nox Zone"
                 let timer = new Decimal(0)
                 if (player.ir.shipBattleSaveCurrent != null) {
-                    timer = player.ir.timers[player.ir.shipBattleSaveCurrent.shipType].current.max(timer);
+                    timer = player.ir.timers[player.ir.shipBattleSaveCurrent.type].current.max(timer);
                     if (player.ir.shipBattleSaveCurrent.slot >= 0) timer = timer.max(player.ir.saveTimers[player.ir.shipBattleSaveCurrent.slot].current)
                 }
                 if (timer.gt(0)) str += "</h2><br>(Ship Cooling Down: " + formatTime(timer) + ")";
                 return str
             },
-            canClick() {return player.ir.shipBattleSaveCurrent != null && player.ir.timers[player.ir.shipBattleSaveCurrent.shipType].current.lte(0) && (player.ir.shipBattleSaveCurrent.slot < 0 || player.ir.saveTimers[player.ir.shipBattleSaveCurrent.slot].current.lte(0))},
+            canClick() {return player.ir.shipBattleSaveCurrent != null && player.ir.timers[player.ir.shipBattleSaveCurrent.type].current.lte(0) && (player.ir.shipBattleSaveCurrent.slot < 0 || player.ir.saveTimers[player.ir.shipBattleSaveCurrent.slot].current.lte(0))},
             unlocked: true,
             onClick() {
                 SB_enterRun(this.layer)
@@ -1352,7 +1352,7 @@ SB_warnings.allyNoxSpear = {
         SB_spawnProjectile("noxSpear", null, warning, {
             fromEnemy: false,
             damage: new Decimal(48),
-            //damage: Decimal.div(arena.shipStats.attackDamage, levelableEffect("ir", player.ir.shipType)[2].toNumber()).div(arena.ship.damage).mul(48),
+            //damage: Decimal.div(arena.shipStats.attackDamage, levelableEffect("ir", player.ir.type)[2].toNumber()).div(arena.ship.damage).mul(48),
         });
     },
     style(ctx, warning, xy1, xy2) {

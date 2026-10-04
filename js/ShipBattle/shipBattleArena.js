@@ -110,8 +110,8 @@ const UPGRADE_POOL = {
         effect() { addUpgrade("moveSpeedRare") },
     },
     bulletSizeRare: {
-        name() {if (player.ir.shipType != 3 && player.ir.shipType != 7 && player.ir.shipType != 8) {return "Bullet Size"} else {return "Max Health"}},
-        description() {if (player.ir.shipType != 3 && player.ir.shipType != 7 && player.ir.shipType != 8) {return "+10% bullet size"} else {return "+10% max HP"}},
+        name() {if (player.ir.type != 3 && player.ir.type != 7 && player.ir.type != 8) {return "Bullet Size"} else {return "Max Health"}},
+        description() {if (player.ir.type != 3 && player.ir.type != 7 && player.ir.type != 8) {return "+10% bullet size"} else {return "+10% max HP"}},
         rarity: "rare",
         effect() { addUpgrade("bulletSizeRare") },
     },
@@ -516,13 +516,13 @@ function pickSalvagedUpgrades(data = {}) {
     let possibleUpgrades = []
     let totalChance = 0;
     // Build Rarity Table
-    for (let [i, v] of Object.entries(player.ir.shipBattleSaveCurrent.bankedUpgrades)) {
+    for (let [i, v] of Object.entries(player.ir.shipBattleSaveCurrent.bankedSalvagedUpgrades)) {
         totalChance += v
         possibleUpgrades.push(i);
     }
     // Select Upgrades
     let chosen = [];
-    let k = Object.entries(player.ir.shipBattleSaveCurrent.bankedUpgrades)
+    let k = Object.entries(player.ir.shipBattleSaveCurrent.bankedSalvagedUpgrades)
     while (chosen.length < Math.min(k.length, 3)) {
         for (let [i, v] of k) {
         let r = Math.random()
@@ -605,7 +605,7 @@ class SpaceArena {
             );
         }
     }
-    drawWrappingLine(source, sourceRef) {
+    drawWrappingLine(source, sourceRef, data = {}) {
         /*
 
             "source" NEEDS:
@@ -632,6 +632,7 @@ class SpaceArena {
         while (remainingDistance > 0) {
             j++
             this.ctx.save()
+            if (data.dash) this.ctx.setLineDash(data.dash);
             this.ctx.lineWidth = source.width;
             this.ctx.translate((this.canvasWidth / 2) - this.ship.x, (this.canvasHeight / 2) - this.ship.y);
             this.ctx.moveTo(currentPos[0], currentPos[1])
@@ -740,8 +741,10 @@ class SpaceArena {
             remainingDistance -= currentDistance
             if (remainingDistance > 100000) {console.warn("uh oh"); break; }
             if (j >= 100) {console.warn("BIG uh oh: " + remainingDistance); break; }
+            if (data.dash) this.ctx.setLineDash([]);
         }
         this.ctx.globalCompositeOperation = "source-over";
+        if (data.dash) this.ctx.setLineDash([]);
     }
 
     // Expand the arena to cover the entire screen and make it transparent
@@ -850,252 +853,49 @@ class SpaceArena {
 
         // load wing GIF for Iridite (200x200). keep a loaded flag so draw can choose fallback.
         this.wingImg = new Image();
-       // this.wingImg.src = 'resources/flying.gif';
+        // this.wingImg.src = 'resources/flying.gif';
         this.wingImgLoaded = false;
         this.wingImg.onload = () => { this.wingImgLoaded = true; };
 
         // ...existing code...
 
         // Ship types
-        if (player.ir.shipType == 1) {
-            this.ship = {
-                x: arenaWidth / 2,
-                y: arenaHeight / 2,
-                radius: 16,
-                angle: 0,
-                velocity: 0,
-                angularVelocity: 0,
-                maxVelocity: 6,
-                acceleration: 0.3,
-                deceleration: 0.15,
-                rotationSpeed: 0.06,
-                cooldown: 120,
-                lastShot: 0,
-                damage: 7,
-                collisionDamage: 1,
-            };
+        this.shipRef = SB_ships[player.ir.type]
+        this.ship = this.shipRef.instanciate()
+
+        this.ship.x = this.width / 2
+        this.ship.y = this.height / 2
+        this.ship.vx = 0
+        this.ship.vy = 0
+        this.ship.ax = 0
+        this.ship.ay = 0
+        this.ship.dvx = 0
+        this.ship.dvy = 0
+        this.ship.dax = 0
+        this.ship.day = 0
+
+        this.ship.velocity = 0
+        this.ship.angle = 0
+        this.ship.angularVelocity = 0
+        this.ship.lastShot = 0
+
+        this.ship.touchControls = {}
+        this.controlTypeRef = SB_controlTypes[this.shipRef.controlType]
+        let ref = this.controlTypeRef.mobile
+        if (ref) {
+            for (let i in ref) {
+                let v = ref[i]
+                let type
+                if (Array.isArray(v)) {
+                    if (player.shipBattle.controlScheme == v[1]) type = v[0];
+                    else continue;
+                } else type = v;
+                SB_touchControls[type].initialize(this.ship);
+            }
         }
-        // hit invulnerability timer in milliseconds (prevents >3 hits/sec)
-        this.shipHitInvuln = 0;
-        if (player.ir.shipType == 2) {
-            this.ship = {
-                x: arenaWidth / 2,
-                y: arenaHeight / 2,
-                radius: 16,
-                angle: 0,
-                velocity: 0,
-                angularVelocity: 0,
-                maxVelocity: 4,
-                acceleration: 0.2,
-                deceleration: 0.15,
-                rotationSpeed: 0.04,
-                cooldown: 500,
-                lastShot: 0,
-                damage: 25,
-                collisionDamage: 2,
-            };
-        }
-        if (player.ir.shipType == 3) {
-            this.ship = {
-                x: arenaWidth / 2,
-                y: arenaHeight / 2,
-                vx: 0,
-                vy: 0,
-                radius: 24,
-                angle: 0,
-                deceleration: 0.98,
-                maxVelocity: 10,
-                damage: 16,
-                collisionDamage: 1,
-                rollingAng: 0,
-                rollingSpeed: 0,
-            };
-            this.ship.lastRollClick = Date.now() - 1500;
-            this.ship.rollCooldown = 1500; // 1.5 seconds in ms
-            this.canvasClickListener = (e) => {
-                if (player.ir.menu != 0) return;
-                let now = Date.now();
-                this.ship.rollCooldown = 1500 / this.shipStats.attackSpeed
-                if (now - this.ship.lastRollClick >= this.ship.rollCooldown) {
-                    this.ship.lastRollClick = now;
-                    let rect = this.canvas.getBoundingClientRect();
-                    let mx = e.clientX - (this.canvasWidth / 2) - rect.left;
-                    let my = e.clientY - (this.canvasHeight / 2) - rect.top;
-                    this.ship.rollingAng = Math.atan2(my, mx);
-                    this.ship.rollingSpeed = Math.min(1, Math.max(0, (Math.hypot(my, mx) - 100) / 200))
-                };
-            };
-        }
-        if (player.ir.shipType == 4) {
-            this.ship = {
-                x: arenaWidth / 2,
-                y: arenaHeight / 2,
-                radius: 16,
-                angle: 0,
-                velocity: 0,
-                angularVelocity: 0,
-                maxVelocity: 4.5,
-                acceleration: 0.25,
-                deceleration: 0.15,
-                rotationSpeed: 0.065,
-                cooldown: 250,
-                lastShot: 0,
-                damage: 12,
-                collisionDamage: 1,
-            };
-        }
-        if (player.ir.shipType == 5) {
-            this.ship = {
-                x: arenaWidth / 2,
-                y: arenaHeight / 2,
-                radius: 16,
-                angle: 0,
-                vx: 0,
-                vy: 0,
-                velocity: 0,
-                angularVelocity: 0,
-                radius: 12,
-                maxVelocity: 5,
-                acceleration: 0.95, // used for omnidirectional thrust
-                deceleration: 0.12,
-                rotationSpeed: 0.08,
-                cooldown: 250,
-                lastShot: 0,
-                damage: 3,
-                collisionDamage: 0.5,
-            };
-        }
-        if (player.ir.shipType == 6) {
-            this.ship = {
-                x: arenaWidth / 2,
-                y: arenaHeight / 2,
-                radius: 16,
-                angle: 0,
-                vx: 0,
-                vy: 0,
-                velocity: 0,
-                angularVelocity: 0,
-                radius: 12,
-                maxVelocity: 3,
-                acceleration: 0.35,
-                deceleration: 0.12,
-                rotationSpeed: 0.02,
-                cooldown: 50,
-                lastShot: 0,
-                damage: 4,
-                collisionDamage: 1.5,
-            };
-        }
-        if (player.ir.shipType == 7) {
-            this.ship = {
-                x: arenaWidth / 2,
-                y: arenaHeight / 2,
-                radius: 16,
-                vx: 0,
-                vy: 0,
-                angle: 0,
-                deceleration: 0.98,
-                dash: 0.8,
-                dashTarget: null,
-                dashing: false,
-                dashFrames: 0,
-                maxVelocity: 10,
-                damage: 12,
-                collisionDamage: 1,
-            };
-            this.lastDashClick = Date.now() - 1000;
-            this.dashCooldown = 1000; // 1 second in ms
-            this.canvasClickListener = (e) => {
-                let now = Date.now();
-                this.dashCooldown = 1000 / this.shipStats.attackSpeed
-                if (now - this.lastDashClick < this.dashCooldown) return;
-                this.lastDashClick = now;
-                let rect = this.canvas.getBoundingClientRect();
-                let mx = e.clientX + this.ship.x - (this.canvasWidth / 2) - rect.left;
-                let my = e.clientY + this.ship.y - (this.canvasHeight / 2) - rect.top;
-                this.ship.dashTarget = { x: mx, y: my };
-            };
-        }
-        if (player.ir.shipType == 8) {
-            this.ship = {
-                x: arenaWidth / 2,
-                y: arenaHeight / 2,
-                radius: 16,
-                angle: 0,
-                velocity: 0,
-                angularVelocity: 0,
-                maxVelocity: 6,
-                acceleration: 0.3,
-                deceleration: 0.15,
-                rotationSpeed: 0.06,
-                cooldown: 300,
-                lastShot: 0,
-                damage: 7,
-                collisionDamage: 1,
-                wingPhase: Math.random() * Math.PI * 2,
-                _laserTimer: 0,
-                _laserActive: false,
-                _laserAngle: 0,
-                _laserLength: 0,
-                _laserSpin: 0.006,
-                _laserHitCooldown: 0,
-            };
-        }
-        if (player.ir.shipType == 9) {
-            this.ship = {
-                x: arenaWidth / 2,
-                y: arenaHeight / 2,
-                radius: 16,
-                angle: 0,
-                velocity: 0,
-                angularVelocity: 0,
-                maxVelocity: 4,
-                acceleration: 0.25,
-                deceleration: 0.2,
-                rotationSpeed: 0.06,
-                cooldown: 500,
-                lastShot: 0,
-                damage: 40,
-                collisionDamage: 1,
-            };
-        }
-        if (player.ir.shipType == 10) {
-            this.ship = {
-                x: arenaWidth / 2,
-                y: arenaHeight / 2,
-                radius: 16,
-                angle: 0,
-                velocity: 0,
-                angularVelocity: 0,
-                maxVelocity: 4.5,
-                acceleration: 0.25,
-                deceleration: 0.2,
-                rotationSpeed: 0.02,
-                cooldown: 5000,
-                lastShot: 0,
-                damage: 600,
-                collisionDamage: 1.5,
-            };
-            this.awaitingShotCharge = false
-            this.shotChargeTimer = 0
-        }
-        if (player.ir.shipType == 0) {
-            this.ship = {
-                x: arenaWidth / 2,
-                y: arenaHeight / 2,
-                angle: 0,
-                velocity: 0,
-                angularVelocity: 0,
-                maxVelocity: 6,
-                acceleration: 0.3,
-                deceleration: 0.15,
-                rotationSpeed: 0.1,
-                cooldown: 120,
-                lastShot: 0,
-                damage: 5,
-                collisionDamage: 2,
-            };
-        }
+        
+        this.UIScale = 1;
+        this.UIEigthScale = 1;
 
         this.bullets = [];
         this.asteroids = [];
@@ -1139,6 +939,8 @@ class SpaceArena {
         this.mobileRightStickDist = 0
 
         this.mobileRightButtonDist = 0
+
+        this.shipRef.initialize(this.ship)
     }
 
     getDefaultUpgrades() {
@@ -1150,15 +952,20 @@ class SpaceArena {
     spawnArena() {
         this.arenaDiv = document.createElement('div');
         this.arenaDiv.id = 'space-arena';
+        let maxScaleX = (window.innerWidth - 64) / this.canvasWidth
+        let maxScaleY = (window.innerHeight - 64) / (this.canvasHeight * 1.25)
+        this.UIScale = Math.min(maxScaleX, maxScaleY)
         Object.assign(this.arenaDiv.style, {
             position: 'fixed',
             left: '50%',
-            top: '549px',
-            width: this.canvasWidth + 'px',
-            height: this.canvasHeight + 'px',
+            top: '50%',
+            width: (this.UIScale * this.canvasWidth) + 'px',
+            height: (this.UIScale * this.canvasHeight) + 'px',
             transform: `translate(-50%, -50%)`,
             backgroundImage: "url(resources/ui/spaceBattle/" + player.ir.battleStage + ".png)",
+            backgroundSize: (this.UIScale * this.width) + "px " + (this.UIScale * this.height) + "px",
             borderRadius: '0',
+            border: (this.UIScale * 3) + 'px solid ' + player.ir.primaryColor,
             zIndex: 9999,
             overflow: 'hidden',
 	        "transition-duration": "0s",
@@ -1170,8 +977,8 @@ class SpaceArena {
 
         this.canvas = document.createElement('canvas');
 	    this.canvas.style["transition-duration"] = "0s",
-        this.canvas.width = this.canvasWidth;
-        this.canvas.height = this.canvasHeight;
+        this.canvas.width = this.UIScale * this.canvasWidth;
+        this.canvas.height = this.UIScale * this.canvasHeight;
         this.arenaDiv.appendChild(this.canvas);
         this.ctx = this.canvas.getContext('2d');
 
@@ -1185,7 +992,7 @@ class SpaceArena {
         this.running = true;
         this.loop = setInterval(() => this.update(), 1000 / 60);
 
-        if (player.ir.shipType == 3 || player.ir.shipType == 7) {
+        if (this.shipRef.movementType == "roll" || this.shipRef.movementType == "jump") {
             this.canvas.addEventListener('click', this.canvasClickListener);
         }
     }
@@ -1201,7 +1008,7 @@ class SpaceArena {
         window.removeEventListener('pointermove', this.handlePointerMove);
         if (this.arenaDiv) document.body.removeChild(this.arenaDiv);
 
-        if ((player.ir.shipType == 3 || player.ir.shipType == 7) && this.canvasClickListener) {
+        if ((this.shipRef.movementType == "roll" || this.shipRef.movementType == "jump") && this.canvasClickListener) {
             this.canvas.removeEventListener('click', this.canvasClickListener);
         }
 
@@ -1219,210 +1026,51 @@ class SpaceArena {
     handleKeyUp = (e) => { this.keys[e.code] = false; };
     handlePointerDown = (e) => {
         if (player.ir.menu == 0) this.pointerDown = true;
-        if (player.ir.mobileControls > 0) {
-            let rect = this.canvas.getBoundingClientRect();
-
-            if (player.ir.shipType != 3 && player.ir.shipType != 7) {
-                // LEFT STICK
-                let originX = 100 * this.mobileControlsScale
-                let originY = this.canvasHeight - (100 * this.mobileControlsScale)
-                let isOmnidirectionalMoving = player.ir.shipType == 5 || player.ir.shipType == 8
-                this.mobileLeftStickDist = Math.hypot(e.clientY - rect.top - originY, e.clientX - rect.left - originX)
-                if (this.mobileLeftStickDist < this.mobileControlsScale * 80) e.action = "leftStick";
-                if (isOmnidirectionalMoving || player.ir.mobileControls == 2) {
-                    // RIGHT STICK
-                    originX = this.canvasWidth - (100 * this.mobileControlsScale)
-                    this.mobileRightStickDist = Math.hypot(e.clientY - rect.top - originY, e.clientX - rect.left - originX)
-                    if (this.mobileRightStickDist < this.mobileControlsScale * 80) e.action = "rightStick";
-                }
-                if (!isOmnidirectionalMoving || player.ir.mobileControls == 2) {
-                    // RIGHT BUTTON
-                    originX = this.canvasWidth - (100 * this.mobileControlsScale)
-                    if (player.ir.mobileControls == 2) originY = this.canvasHeight / 2;
-                    this.mobileRightButtonDist = Math.hypot(e.clientY - rect.top - originY, e.clientX - rect.left - originX)
-                    if (this.mobileRightButtonDist < this.mobileControlsScale * 80) e.action = "rightButton";
-                }
-                this.pointerTouches.set(e.pointerId, {
-                    clientX: e.clientX,
-                    clientY: e.clientY,
-                    pointerId: e.pointerId,
-                    action: e.action,
-                })
-
-            }
+        let rect = this.canvas.getBoundingClientRect();
+        let ref = []
+        if (this.controlTypeRef.touch) ref = ref.concat(this.controlTypeRef.touch);
+        if (this.controlTypeRef.mobile) ref = ref.concat(this.controlTypeRef.mobile);
+        for (let i in ref) {
+            let v = ref[i]
+            let type
+            if (Array.isArray(v)) {
+                if (player.shipBattle.controlScheme == v[1]) type = v[0];
+                else continue;
+            } else type = v;
+            if (!SB_touchControls[type].touchCondition([(e.clientX - rect.left) / this.UIScale, (e.clientY - rect.top) / this.UIScale])) continue;
+            SB_touchControls[type].touchDown([(e.clientX - rect.left) / this.UIScale, (e.clientY - rect.top) / this.UIScale])
+            e.action = type
         }
-        if (player.ir.shipType == 8 && player.ir.menu == 0 && !player.ir.autoShoot) {
-            if (!(player.ir.mobileControls > 0 && e.action != "rightStick")) {
-                this.ship._laserActive = true
-                this.ship._laserTimer = -60;
-            }
-        }
+        this.pointerTouches.set(e.pointerId, {
+            clientX: (e.clientX - rect.left) / this.UIScale,
+            clientY: (e.clientY - rect.top) / this.UIScale,
+            pointerId: e.pointerId,
+            action: e.action,
+        })
     };
     handlePointerMove = (e) => {
         if (!this.canvas) return;
         let rect = this.canvas.getBoundingClientRect();
-        this.mouseX = e.clientX - rect.left;
-        this.mouseY = e.clientY - rect.top;
-        if (player.ir.mobileControls > 0) {
-            this.pointerTouches.forEach((value, key, map) => {
-                if (value.pointerId === e.pointerId) {
-                    value.clientX = e.clientX
-                    value.clientY = e.clientY
-                };
-            })
-        }
+        this.mouseX = (e.clientX - rect.left) / this.UIScale;
+        this.mouseY = (e.clientY - rect.top) / this.UIScale;
+        this.pointerTouches.forEach((value, key, map) => {
+            if (value.pointerId === e.pointerId) {
+                value.clientX = (e.clientX - rect.left) / this.UIScale
+                value.clientY = (e.clientY - rect.top) / this.UIScale
+            };
+        })
     };
     handlePointerUp = (e) => {
         if (player.ir.menu == 0) this.pointerDown = false;
-        if (player.ir.shipType == 8 && player.ir.menu == 0 && this.ship._laserActive && !player.ir.autoShoot && !(player.ir.mobileControls > 0 && this.pointerTouches.get(e.pointerId).action != "rightStick")) this.ship._laserActive = false;
-        if (player.ir.mobileControls > 0 && (player.ir.shipType != 3 && player.ir.shipType != 7)) {
-            let p = this.pointerTouches.get(e.pointerId);
-            switch (p.action) {
-                case "leftStick": this.mobileLeftStickAngle = null; break;
-                case "rightStick": this.mobileRightStickAngle = null; break;
-                default: break;
-            }
-            this.pointerTouches.delete(e.pointerId);
-        }
+        let rect = this.canvas.getBoundingClientRect();
+        let action = this.pointerTouches.get(e.pointerId).action
+        if (action) SB_touchControls[action].touchUp([(e.clientX - rect.left) / this.UIScale, (e.clientY - rect.top) / this.UIScale]);
+        this.pointerTouches.delete(e.pointerId);
     };
     handlePointerCancel = (e) => this.handlePointerUp(e);
 
     shoot() {
-        let now = Date.now();
-        let cooldown = this.ship.cooldown / this.shipStats.attackSpeed;
-        if (now - this.ship.lastShot < cooldown) return;
-        this.ship.lastShot = now
-        let angle = this.ship.angle || 0;
-        let r = 3;
-        if (player.ir.shipType == 2) r = 9;
-        if (player.ir.shipType == 10) r = 12;
-        r *= this.shipStats.bulletSize;
-        // shipType 5 aims at the mouse and fires burst shots toward it
-        if (player.ir.shipType == 5 && ((typeof this.mouseX === "number" && typeof this.mouseY === "number") || player.ir.mobileControls > 0)) {
-            if (player.ir.mobileControls > 0) angle = this.mobileRightStickAngle || this.ship.angle;
-            else angle = Math.atan2(this.mouseY - (this.canvasHeight / 2), this.mouseX - (this.canvasWidth / 2));
-            // spawn a short burst (multiple pellets) per shot
-            let pellets = 5;
-            let spread = 0.22;
-            let spd = 14 + this.shipStats.moveSpeed;
-            for (let i = 0; i < pellets; i++) {
-                let offset = (i / (pellets - 1) - 0.5) * spread;
-                let ang = angle + offset;
-                let bullet = {
-                    x: this.ship.x + Math.cos(ang) * (this.ship.radius || 12),
-                    y: this.ship.y + Math.sin(ang) * (this.ship.radius || 12),
-                    vx: Math.cos(ang) * spd,
-                    vy: Math.sin(ang) * spd,
-                    life: 60,
-                    radius: r,
-                    damage: this.shipStats.attackDamage,
-                    pierce: 0,
-                    piercedAsteroids: [],
-                    piercedEnemies: [],
-                    fromEnemy: false,
-                }
-                this.bullets.push(bullet);
-            }
-            return;
-        }
-        
-        if (player.ir.shipType == 8 && ((typeof this.mouseX === "number" && typeof this.mouseY === "number") || (player.ir.mobileControls > 0 && player.ir.autoShoot))) {
-            if (player.ir.autoShoot && !this.ship._laserActive) {
-                this.ship._laserActive = true
-                this.ship._laserTimer = -60
-            }
-            return;
-        } else if (player.ir.shipType == 8) return;
-
-        let speed = 10;
-        if (player.ir.shipType == 4) speed = 25;
-        if (player.ir.shipType == 6) speed = 20;
-        if (player.ir.shipType == 9) speed = 12;
-        if (player.ir.shipType == 10) speed = 20;
-        speed *= this.shipStats.moveSpeed
-        let pierce = 0;
-        if (player.ir.shipType == 2) pierce = 1;
-        if (player.ir.shipType == 4) pierce = 10;
-        if (player.ir.shipType == 6) pierce = 2;
-
-        let target = null;
-        if (player.ir.shipType == 4 && !this.keys['KeyA'] && !this.keys['KeyD'] && !this.keys['KeyW'] && !this.keys['KeyS']) {
-            let closest = null;
-            let closestDist = 600;
-            for (let e of this.enemies) {
-                let c = this.getClosestCoords([e.x, e.y]);
-                let dx = c[0] - e.x;
-                let dy = c[1] - e.y;
-                let d = Math.hypot(dx, dy);
-                if (d < closestDist) {
-                    closestDist = d;
-                    closest = e;
-                }
-            }
-            if (closest) {
-                let c = this.getClosestCoords([closest.x, closest.y]);
-                let timeToHit = Math.hypot(c[1] - closest.y, c[0] - closest.x) / speed
-                c[0] -= closest.vx * timeToHit
-                c[1] -= closest.vy * timeToHit
-                angle = Math.atan2(c[1] - closest.y, c[0] - closest.x);
-                angle = (angle % (2 * Math.PI)) - Math.PI
-                target = closest;
-                this.ship.currentTarget = closest; // keep marker for drawing
-            } else {
-                this.ship.currentTarget = null;
-            }
-        }
-
-        // Special evolver primary shard: breaks into 3 mini-shards on impact or on hitting arena edge
-        if (player.ir.shipType == 9) {
-            this.bullets.push({
-                x: this.ship.x + Math.cos(angle) * 20,
-                y: this.ship.y + Math.sin(angle) * 20,
-                vx: Math.cos(angle) * speed,
-                vy: Math.sin(angle) * speed,
-                life: 60,
-                radius: r,
-                damage: this.shipStats.attackDamage,
-                pierce: 0,
-                piercedAsteroids: [],
-                piercedEnemies: [],
-                fromEnemy: false,
-                evolverShard: true,
-            });
-        } else if (player.ir.shipType == 10) {
-            this.bullets.push({
-                x: this.ship.x + Math.cos(angle) * 20,
-                y: this.ship.y + Math.sin(angle) * 20,
-                vx: Math.cos(angle) * speed,
-                vy: Math.sin(angle) * speed,
-                life: 60,
-                radius: r,
-                damage: this.shipStats.attackDamage,
-                pierce: 0,
-                piercedAsteroids: [],
-                piercedEnemies: [],
-                fromEnemy: false,
-                explosive: true,
-            });
-        } else {
-            this.bullets.push({
-                x: this.ship.x + Math.cos(angle) * 20,
-                y: this.ship.y + Math.sin(angle) * 20,
-                vx: Math.cos(angle) * speed,
-                vy: Math.sin(angle) * speed,
-                life: 60,
-                radius: r,
-                damage: this.shipStats.attackDamage,
-                pierce: pierce,
-                piercedAsteroids: [],
-                piercedEnemies: [],
-                fromEnemy: false,
-                // homing properties (only used for sniper bullets)
-                homing: player.ir.shipType == null,
-                target: target,
-                homingStrength: 0.18, // radians/frame max turn (tweakable)
-            });
-        }
+        this.shipRef.onShoot(this.ship, [this.mouseX, this.mouseY], player.shipBattle.controlScheme > 0)
     }
 
     // Pause asteroid minigame: freeze existing asteroids and prevent new spawns
@@ -1623,7 +1271,7 @@ class SpaceArena {
 
     update() {
         
-        this.arenaDiv.style.backgroundPosition = (this.canvasWidth / 2 - this.ship.x) + "px " + (this.canvasHeight / 2 - this.ship.y) + "px"
+        this.arenaDiv.style.backgroundPosition = (this.UIScale * (this.canvasWidth / 2 - this.ship.x)) + "px " + (this.UIScale * (this.canvasHeight / 2 - this.ship.y)) + "px"
         this.arenaDiv.style.zIndex = player.ir.menu == 0 ? 10000 : -3
 
         if (player.ir.menu == 0 && !arena.bossActive) {
@@ -1732,7 +1380,7 @@ class SpaceArena {
                 player.ir.shipHealth = new Decimal(arena.shipStats.maxHp);
             }
         }
-        if (player.ir.shipType == 3) {
+        if (player.ir.type == 3) {
             // Auto Roll
             if (player.ir.autoShoot && typeof this.mouseX === "number" && typeof this.mouseY === "number" && player.ir.menu == 0) {
                 let now = Date.now();
@@ -1753,15 +1401,15 @@ class SpaceArena {
             this.ship.y += this.ship.vy;
 
             // Apply deceleration
-            this.ship.vx *= this.ship.deceleration;
-            this.ship.vy *= this.ship.deceleration;
+            this.ship.vx *= this.ship.stats.deceleration;
+            this.ship.vy *= this.ship.stats.deceleration;
 
             // Wrap ship around arena edges
             if (this.ship.x < 0) this.ship.x += this.width;
             if (this.ship.x > this.width) this.ship.x -= this.width;
             if (this.ship.y < 0) this.ship.y += this.height;
             if (this.ship.y > this.height) this.ship.y -= this.height;
-        } else if (player.ir.shipType == 7) {
+        } else if (player.ir.type == 7) {
             // Auto Dash
             if (player.ir.autoShoot) {
                 let now = Date.now();
@@ -1794,8 +1442,8 @@ class SpaceArena {
             this.ship.y += this.ship.vy;
 
             // Apply deceleration
-            this.ship.vx *= this.ship.deceleration;
-            this.ship.vy *= this.ship.deceleration;
+            this.ship.vx *= this.ship.stats.deceleration;
+            this.ship.vy *= this.ship.stats.deceleration;
 
             // Wrap ship around arena edges
             if (this.ship.x < 0) this.ship.x += this.width;
@@ -1805,23 +1453,23 @@ class SpaceArena {
         } else {
 
             // MOBILE MOVEMENT / KEYBOARD SHOOTING
-            if (player.ir.mobileControls == 0) {
+            if (player.shipBattle.controlScheme == 0) {
                 if (this.keys['KeyW']) {
-                    this.ship.velocity += this.ship.acceleration + this.shipStats.moveSpeed * 0.1;
+                    this.ship.velocity += this.ship.stats.acceleration + this.shipStats.moveSpeed * 0.1;
                 } else if (this.keys['KeyS']) {
-                    this.ship.velocity -= this.ship.acceleration + this.shipStats.moveSpeed * 0.1;
+                    this.ship.velocity -= this.ship.stats.acceleration + this.shipStats.moveSpeed * 0.1;
                 } else {
                     if (this.ship.velocity > 0) {
-                        this.ship.velocity -= this.ship.deceleration;
+                        this.ship.velocity -= this.ship.stats.deceleration;
                         if (this.ship.velocity < 0) this.ship.velocity = 0;
                     } else if (this.ship.velocity < 0) {
-                        this.ship.velocity += this.ship.deceleration;
+                        this.ship.velocity += this.ship.stats.deceleration;
                         if (this.ship.velocity > 0) this.ship.velocity = 0;
                     }
                 }
-                if (this.keys['KeyA']) this.ship.angle -= this.ship.rotationSpeed;
-                if (this.keys['KeyD']) this.ship.angle += this.ship.rotationSpeed;
-                if (this.ship.currentTarget && player.ir.shipType == 4 && !this.keys['KeyA'] && !this.keys['KeyD'] && !this.keys['KeyW'] && !this.keys['KeyS']) {
+                if (this.keys['KeyA']) this.ship.angle -= this.ship.stats.rotationSpeed;
+                if (this.keys['KeyD']) this.ship.angle += this.ship.stats.rotationSpeed;
+                if (this.ship.currentTarget && player.ir.type == 4 && !this.keys['KeyA'] && !this.keys['KeyD'] && !this.keys['KeyW'] && !this.keys['KeyS']) {
                     let target = this.ship.currentTarget
                     let closest = this.getClosestCoords([target.x, target.y])
                     let timeToHit = Math.hypot(closest[1] - target.y, closest[0] - target.x) / (25 * this.shipStats.moveSpeed)
@@ -1833,8 +1481,8 @@ class SpaceArena {
                     this.ship.angle += (angDist < 0 ? angDist + Math.PI : angDist) * 0.125;
                 }
             }
-            if ((player.ir.mobileControls == 0 && (this.keys['Space'] || this.pointerDown)) || player.ir.autoShoot) {
-                if (player.ir.shipType == 10) {
+            if ((player.shipBattle.controlScheme == 0 && (this.keys['Space'] || this.pointerDown)) || player.ir.autoShoot) {
+                if (player.ir.type == 10) {
                     this.chargeShot()
                 } else {
                     this.shoot()
@@ -1846,7 +1494,7 @@ class SpaceArena {
                 this.awaitingShotCharge = false
             }
 
-            let maxVel = this.ship.maxVelocity + this.shipStats.moveSpeed;
+            let maxVel = this.ship.stats.moveSpeed;
             this.ship.velocity = Math.max(-maxVel, Math.min(maxVel, this.ship.velocity));
 
             // Move ship
@@ -1860,22 +1508,22 @@ class SpaceArena {
             if (this.ship.y > this.height) this.ship.y -= this.height;
         }
 
-        if (player.ir.mobileControls > 0) {
+        if (player.shipBattle.controlScheme > 0) {
             this.pointerTouches.forEach((value, key, map) => {
                 if (!value.action) return;
                 switch (value.action) {
                     case "leftStick": {
                         let rect = this.canvas.getBoundingClientRect();
-                        let mouseX = value.clientX - rect.left;
-                        let mouseY = value.clientY - rect.top;
+                        let mouseX = (value.clientX - rect.left) / this.UIScale;
+                        let mouseY = (value.clientY - rect.top) / this.UIScale;
                         let originX = 100 * this.mobileControlsScale
                         let originY = this.canvasHeight - (100 * this.mobileControlsScale)
-                        let isOmnidirectionalMoving = player.ir.shipType == 5 || player.ir.shipType == 8
+                        let isOmnidirectionalMoving = this.shipRef.movementType == "omnidirectional"
                         this.mobileLeftStickDist = Math.hypot(mouseY - originY, !isOmnidirectionalMoving ? 0 : mouseX - originX)
                         if (this.mobileLeftStickDist < this.mobileControlsScale * 20) {
                             this.mobileLeftStickAngle = null
                         } else {
-                            if (player.ir.mobileControls == 1 || (player.ir.shipType == 5 || player.ir.shipType == 8)) {
+                            if (player.shipBattle.controlScheme == 1 || (this.shipRef.movementType == "omnidirectional")) {
                                 this.mobileLeftStickAngle = Math.round(Math.atan2(mouseY - originY, mouseX - originX) / Math.PI * 4) * (Math.PI / 4)
                             } else {
                                 this.mobileLeftStickAngle = Math.atan2(mouseY - originY, mouseX - originX) > 0 ? (Math.PI / 2) : (-Math.PI / 2)
@@ -1883,9 +1531,9 @@ class SpaceArena {
                         }
                         
                         if (this.mobileLeftStickAngle != null) {
-                            if (player.ir.shipType == 5 || player.ir.shipType == 8) {
+                            if (this.shipRef.movementType == "omnidirectional") {
                                 // Desired Speed
-                                const maxSpeed = (this.ship.maxVelocity || 3.5) + (this.shipStats.moveSpeed || 0);
+                                const maxSpeed = (this.ship.stats.maxVelocity || 3.5) + (this.shipStats.moveSpeed || 0);
                                 let desiredVx = Math.cos(this.mobileLeftStickAngle) * maxSpeed
                                 let desiredVy = Math.sin(this.mobileLeftStickAngle) * maxSpeed
                             
@@ -1910,35 +1558,35 @@ class SpaceArena {
                                 ang = Math.round(ang)
                                 switch (ang) {
                                     case 0, 8: {
-                                        this.ship.angle -= this.ship.rotationSpeed;
+                                        this.ship.angle -= this.ship.stats.rotationSpeed;
                                     break;}
                                     case 1: {
-                                        this.ship.angle -= this.ship.rotationSpeed;
-                                        this.ship.velocity += this.ship.acceleration + this.shipStats.moveSpeed * 0.1;
+                                        this.ship.angle -= this.ship.stats.rotationSpeed;
+                                        this.ship.velocity += this.ship.stats.acceleration + this.shipStats.moveSpeed * 0.1;
                                     break;}
                                     case 2: {
-                                        this.ship.velocity += this.ship.acceleration + this.shipStats.moveSpeed * 0.1;
+                                        this.ship.velocity += this.ship.stats.acceleration + this.shipStats.moveSpeed * 0.1;
                                     break;}
                                     case 3: {
-                                        this.ship.angle += this.ship.rotationSpeed;
-                                        this.ship.velocity += this.ship.acceleration + this.shipStats.moveSpeed * 0.1;
+                                        this.ship.angle += this.ship.stats.rotationSpeed;
+                                        this.ship.velocity += this.ship.stats.acceleration + this.shipStats.moveSpeed * 0.1;
                                     break;}
                                     case 4: {
-                                        this.ship.angle += this.ship.rotationSpeed;
+                                        this.ship.angle += this.ship.stats.rotationSpeed;
                                     break;}
                                     case 5: {
-                                        this.ship.angle += this.ship.rotationSpeed;
-                                        this.ship.velocity -= this.ship.acceleration + this.shipStats.moveSpeed * 0.1;
+                                        this.ship.angle += this.ship.stats.rotationSpeed;
+                                        this.ship.velocity -= this.ship.stats.acceleration + this.shipStats.moveSpeed * 0.1;
                                     break;}
                                     case 6: {
-                                        this.ship.velocity -= this.ship.acceleration + this.shipStats.moveSpeed * 0.1;
+                                        this.ship.velocity -= this.ship.stats.acceleration + this.shipStats.moveSpeed * 0.1;
                                     break;}
                                     case 7: {
-                                        this.ship.angle -= this.ship.rotationSpeed;
-                                        this.ship.velocity -= this.ship.acceleration + this.shipStats.moveSpeed * 0.1;
+                                        this.ship.angle -= this.ship.stats.rotationSpeed;
+                                        this.ship.velocity -= this.ship.stats.acceleration + this.shipStats.moveSpeed * 0.1;
                                     break;}
                                     default: {
-                                        this.ship.angle -= this.ship.rotationSpeed;
+                                        this.ship.angle -= this.ship.stats.rotationSpeed;
                                     break;};
                                 }
                             
@@ -1950,26 +1598,26 @@ class SpaceArena {
                             }
                         } else {
                             if (this.ship.velocity > 0) {
-                                this.ship.velocity -= this.ship.deceleration;
+                                this.ship.velocity -= this.ship.stats.deceleration;
                                 if (this.ship.velocity < 0) this.ship.velocity = 0;
                             } else if (this.ship.velocity < 0) {
-                                this.ship.velocity += this.ship.deceleration;
+                                this.ship.velocity += this.ship.stats.deceleration;
                                 if (this.ship.velocity > 0) this.ship.velocity = 0;
                             }
                         }
                     break;}
                     case "rightStick": {
                         let rect = this.canvas.getBoundingClientRect();
-                        let mouseX = value.clientX - rect.left;
-                        let mouseY = value.clientY - rect.top;
+                        let mouseX = (value.clientX - rect.left) / this.UIScale;
+                        let mouseY = (value.clientY - rect.top) / this.UIScale;
                         let originX = this.canvasWidth - (100 * this.mobileControlsScale)
                         let originY = this.canvasHeight - (100 * this.mobileControlsScale)
-                        let isOmnidirectionalMoving = player.ir.shipType == 5 || player.ir.shipType == 8
+                        let isOmnidirectionalMoving = this.shipRef.movementType == "omnidirectional"
                         this.mobileRightStickDist = Math.hypot(!isOmnidirectionalMoving ? 0 : mouseY - originY, mouseX - originX)
                         if (this.mobileRightStickDist < this.mobileControlsScale * 20) {
                             this.mobileRightStickAngle = null
                         } else {
-                            if (player.ir.mobileControls == 1 || isOmnidirectionalMoving) {
+                            if (player.shipBattle.controlScheme == 1 || isOmnidirectionalMoving) {
                                 this.mobileRightStickAngle = Math.atan2(mouseY - originY, mouseX - originX)
                             } else {
                                 this.mobileRightStickAngle = Math.abs(Math.atan2(mouseY - originY, mouseX - originX)) > Math.PI / 2 ? Math.PI : 0
@@ -1977,19 +1625,19 @@ class SpaceArena {
                         }
                         
                         if (this.mobileRightStickAngle != null) {
-                            if (player.ir.mobileControls == 1) {
+                            if (player.shipBattle.controlScheme == 1) {
                                 this.ship.angle = this.mobileRightStickAngle
                                 this.shoot()
                             } else {
-                                this.ship.angle += this.mobileRightStickAngle == 0 ? this.ship.rotationSpeed : -this.ship.rotationSpeed;
+                                this.ship.angle += this.mobileRightStickAngle == 0 ? this.ship.stats.rotationSpeed : -this.ship.stats.rotationSpeed;
                             }
                         }
                     break;}
                     case "rightButton": {
-                        if (player.ir.shipType == 10) {
+                        if (player.ir.type == 10) {
                             this.chargeShot()
                         } else {
-                            if (this.ship.currentTarget && player.ir.shipType == 4) {
+                            if (this.ship.currentTarget && player.ir.type == 4) {
                                 let target = this.ship.currentTarget
                                 let closest = this.getClosestCoords([target.x, target.y])
                                 let timeToHit = Math.hypot(closest[1] - target.y, closest[0] - target.x) / (25 * this.shipStats.moveSpeed)
@@ -2011,28 +1659,28 @@ class SpaceArena {
             this.mobileRightStickAngle = null
         }
         if (this.ship.velocity > 0) {
-            this.ship.velocity -= this.ship.deceleration;
+            this.ship.velocity -= this.ship.stats.deceleration;
             if (this.ship.velocity < 0) this.ship.velocity = 0;
         } else if (this.ship.velocity < 0) {
-            this.ship.velocity += this.ship.deceleration;
+            this.ship.velocity += this.ship.stats.deceleration;
             if (this.ship.velocity > 0) this.ship.velocity = 0;
         }
         
-        if (player.ir.shipType == 5 || player.ir.shipType == 8) {
+        if (this.shipRef.movementType == "omnidirectional") {
             // Omnidirectional movement: smooth thrust toward desired velocity (rotation is purely visual)
             if (typeof this.ship.vx !== "number") this.ship.vx = 0;
             if (typeof this.ship.vy !== "number") this.ship.vy = 0;
 
             // Build input vector
             let ix = 0, iy = 0;
-            if (player.ir.mobileControls == 0) {
+            if (player.shipBattle.controlScheme == 0) {
                 if (this.keys['KeyW']) iy -= 1;
                 if (this.keys['KeyS']) iy += 1;
                 if (this.keys['KeyA']) ix -= 1;
                 if (this.keys['KeyD']) ix += 1;
             }
             // Desired speed (account for moveSpeed upgrades)
-            const maxSpeed = (this.ship.maxVelocity || 3.5) + (this.shipStats.moveSpeed || 0);
+            const maxSpeed = (this.ship.stats.maxVelocity || 3.5) + (this.shipStats.moveSpeed || 0);
             let desiredVx = 0, desiredVy = 0;
             if (ix !== 0 || iy !== 0) {
                 let len = Math.hypot(ix, iy) || 1;
@@ -2063,17 +1711,17 @@ class SpaceArena {
                 while (diff > Math.PI) diff -= 2 * Math.PI;
                 while (diff < -Math.PI) diff += 2 * Math.PI;
                 // smaller rotation step for smoothness
-                this.ship.angle += Math.sign(diff) * Math.min(Math.abs(diff), Math.max(0.04, this.ship.rotationSpeed || 0.08));
+                this.ship.angle += Math.sign(diff) * Math.min(Math.abs(diff), Math.max(0.04, this.ship.stats.rotationSpeed || 0.08));
             }
-            if (player.ir.shipType == 8) {
+            if (player.ir.type == 8) {
                 // animate wings
                 if (typeof this.ship.wingPhase !== "number") this.ship.wingPhase = 0;
                 this.ship.wingPhase += 0.12;
                 // handle laser firing
                 if (this.ship._laserActive) {
                     // Laser follows mouse direction
-                    if ((typeof this.mouseX === "number" && typeof this.mouseY === "number") || this.mobileRightStickAngle != null || (player.ir.mobileControls > 0 && player.ir.autoShoot)) {
-                        let desired = (player.ir.mobileControls > 0) ? -this.mobileRightStickAngle || -this.ship.angle : -Math.atan2(this.mouseY - (this.canvasHeight / 2), this.mouseX - (this.canvasWidth / 2));
+                    if ((typeof this.mouseX === "number" && typeof this.mouseY === "number") || this.mobileRightStickAngle != null || (player.shipBattle.controlScheme > 0 && player.ir.autoShoot)) {
+                        let desired = (player.shipBattle.controlScheme > 0) ? -this.mobileRightStickAngle || -this.ship.angle : -Math.atan2(this.mouseY - (this.canvasHeight / 2), this.mouseX - (this.canvasWidth / 2));
                         let diff = desired - (this.ship._laserAngle || 0);
                         while (diff > Math.PI) diff -= 2 * Math.PI;
                         while (diff < -Math.PI) diff += 2 * Math.PI;
@@ -2272,6 +1920,25 @@ class SpaceArena {
             }
         }
 
+        // Update touch controls
+        let processedControls = []
+        this.pointerTouches.forEach((value, key, map) => {
+            if (!value.action || processedControls.indexOf(value.action) > -1) return;
+            processedControls.push(value.action)
+            SB_touchControls[value.action].touchTick([value.clientX, value.clientY])
+        })
+        // Update ship
+        this.shipRef.tick(this.ship)
+        this.ship.vx += this.ship.ax
+        this.ship.vy += this.ship.ay
+        this.ship.x += this.ship.vx
+        this.ship.y += this.ship.vy
+        
+        this.ship.ax *= this.ship.dax
+        this.ship.ay *= this.ship.day
+        this.ship.vx *= this.ship.dvx
+        this.ship.vy *= this.ship.dvy
+
         // Gamma Ship trail damage
         if (this.gammaTrails) {
             for (let trail of this.gammaTrails) {
@@ -2279,13 +1946,13 @@ class SpaceArena {
                 trail.timer--;
                 let dx = closest[0] - trail.x;
                 let dy = closest[1] - trail.y;
-                let shipRadius = player.ir.shipType == 3 || player.ir.shipType == 7 ? this.ship.radius : 12;
+                let shipRadius = this.shipRef.movementType == "roll" || this.shipRef.movementType == "jump" ? this.ship.radius : 12;
                 let dist = Math.sqrt(dx * dx + dy * dy);
                 if (dist < trail.radius + shipRadius && trail.timer > 0) {
                     let dmg = trail.damage / this.shipStats.damageReduction;
                     
                     if (!this._asteroidMinigamePaused) {
-                        if (player.ir.shipType == 3 || player.ir.shipType == 7) dmg /= 4;
+                        if (this.shipRef.movementType == "roll" || this.shipRef.movementType == "jump") dmg /= 4;
                             player.ir.shipHealth = player.ir.shipHealth.sub(dmg);
                         if (player.ir.shipHealth.lte(0)) {
                             this.onShipDeath();
@@ -2330,6 +1997,7 @@ class SpaceArena {
                     let bDmg = (typeof bullet.damage === 'number') ? bullet.damage : (bullet.damage && bullet.damage.toNumber ? bullet.damage.toNumber() : Number(bullet.damage || 0));
                     if (!enemy.invulnerable) enemy.health = enemy.health.sub(bDmg);
                     SB_celestialites[enemy.type].onAttacked(enemy, bDmg, "ship")
+                    if (bullet.type) SB_projectiles[bullet.type].onHit(bullet, enemy);
 
                     // Vampire spear knockback: push enemies away along bullet velocity
                     if (bullet.vampireSpear) {
@@ -2422,7 +2090,7 @@ class SpaceArena {
             if (!bullet.fromEnemy && !bullet.vampireSpear) continue;
             let dx = bullet.x - this.ship.x;
             let dy = bullet.y - this.ship.y;
-            let shipRadius = player.ir.shipType == 3 || player.ir.shipType == 7 ? this.ship.radius : 12;
+            let shipRadius = this.shipRef.movementType == "roll" || this.shipRef.movementType == "jump" ? this.ship.radius : 12;
             let dist = Math.sqrt(dx * dx + dy * dy);
             let bulletRadius = (typeof bullet.radius === "number") ? bullet.radius : (bullet.fromEnemy && bullet.homing ? 10 : 6);
             // account for projectile radius (giant bullets are larger)
@@ -2431,7 +2099,7 @@ class SpaceArena {
                 if (!bullet._hitPlayer) {
                     bullet._hitPlayer = true;
                     let dmg = bullet.damage / this.shipStats.damageReduction;
-                    if (player.ir.shipType == 3 || player.ir.shipType == 7) dmg /= 1.5;
+                    if (this.shipRef.movementType == "roll" || this.shipRef.movementType == "jump") dmg /= 1.5;
                     player.ir.shipHealth = player.ir.shipHealth.sub(dmg);
                     if (bullet.type) SB_projectiles[bullet.type].onHit(bullet, "player");
                 
@@ -2450,14 +2118,14 @@ class SpaceArena {
             if (enemy._pausedBoss) continue;
             let dx = this.ship.x - enemy.x;
             let dy = this.ship.y - enemy.y;
-            let shipRadius = player.ir.shipType == 3 || player.ir.shipType == 7 ? this.ship.radius : 12;
+            let shipRadius = this.shipRef.movementType == "roll" || this.shipRef.movementType == "jump" ? this.ship.radius : 12;
             let dist = Math.sqrt(dx * dx + dy * dy);
             if (dist < enemy.radius + shipRadius && !enemy.attached) {
                 let enemyDmg = new Decimal(this.ship.collisionDamage * this.shipStats.attackDamage);
                 if (enemyDmg.isNan() || enemyDmg.lt(0)) enemyDmg = new Decimal(0);
-                if (player.ir.shipType != 3 && player.ir.shipType != 7 && !enemy.invulnerable) enemy.health = enemy.health.sub(enemyDmg.mul(0.1));
-                if (player.ir.shipType == 3 && !enemy.invulnerable) enemy.health = enemy.health.sub(enemyDmg.mul(1.5));
-                if (player.ir.shipType == 7 && !enemy.invulnerable) enemy.health = enemy.health.sub(enemyDmg);
+                if (player.ir.type != 3 && player.ir.type != 7 && !enemy.invulnerable) enemy.health = enemy.health.sub(enemyDmg.mul(0.1));
+                if (player.ir.type == 3 && !enemy.invulnerable) enemy.health = enemy.health.sub(enemyDmg.mul(1.5));
+                if (player.ir.type == 7 && !enemy.invulnerable) enemy.health = enemy.health.sub(enemyDmg);
                 SB_celestialites[enemy.type].onAttacked(enemy, enemyDmg, "ship")
 
                 let dmgReduction = (typeof this.shipStats.damageReduction === 'number' ? this.shipStats.damageReduction : (this.shipStats.damageReduction.toNumber ? this.shipStats.damageReduction.toNumber() : Number(this.shipStats.damageReduction)))
@@ -2465,10 +2133,10 @@ class SpaceArena {
                 let shipDmgRaw = enemy.bodyDamage.toNumber() / this.shipStats.damageReduction * enemy.damage.toNumber();
                 let shipDmg = (typeof shipDmgRaw === 'number') ? shipDmgRaw : (shipDmgRaw.toNumber ? shipDmgRaw.toNumber() : Number(shipDmgRaw));
                 if (Number.isNaN(shipDmg) || !isFinite(shipDmg) || shipDmg < 0) shipDmg = 6 * dmgReduction;
-                if (player.ir.shipType == 3 || player.ir.shipType == 7) shipDmg /= 50;
+                if (this.shipRef.movementType == "roll" || this.shipRef.movementType == "jump") shipDmg /= 50;
                 if (!this._asteroidMinigamePaused) this.applyShipDamage(shipDmg);
 
-               if (true /*player.ir.shipType == 3 || player.ir.shipType == 7*/) {
+               if (true /*this.shipRef.movementType == "roll" || this.shipRef.movementType == "jump"*/) {
                     let angle = Math.atan2(dy, dx);
                     let speed = Math.abs(Math.sqrt(Math.pow(this.ship.vx, 2) + Math.pow(this.ship.vy, 2)))
                     if (Number.isNaN(speed) || !isFinite(speed) || speed < 0) speed = 0
@@ -2566,7 +2234,7 @@ class SpaceArena {
             }
             if (dist < 30 && !orb.picked) {
                 player.ir.battleXP = player.ir.battleXP.add(orb.amount * this.shipStats.xpGain);
-                addLevelableXP("ir", player.ir.shipType, orb.amount * this.shipStats.xpGain)
+                addLevelableXP("ir", player.ir.type, orb.amount * this.shipStats.xpGain)
                 orb.picked = true;
             }
             orb.x = ((orb.x % this.width) + this.width) % this.width
@@ -2660,378 +2328,10 @@ class SpaceArena {
 
     draw() {
         this.ctx.clearRect(0, 0, this.width, this.height);
+        this.ctx.scale(this.UIScale, this.UIScale)
 
         // Draw ship
-        this.ctx.save();
-        this.ctx.translate(this.canvasWidth / 2, this.canvasHeight / 2);
-        if (player.ir.shipType == 1) {
-            
-            this.ctx.rotate(this.ship.angle);
-            this.ctx.beginPath();
-            this.ctx.moveTo(20, 0);
-            this.ctx.lineTo(-15, 12);
-            this.ctx.lineTo(-10, 0);
-            this.ctx.lineTo(-15, -12);
-            this.ctx.closePath();
-            this.ctx.fillStyle = "#eaf6f7";
-            this.ctx.fill();
-            
-        }
-        if (player.ir.shipType == 2) {
-            
-            this.ctx.rotate(this.ship.angle);
-            this.ctx.beginPath();
-            this.ctx.moveTo(20, 0);
-            this.ctx.lineTo(-20, 25);
-            this.ctx.lineTo(-30, 0);
-            this.ctx.lineTo(-20, -25);
-            this.ctx.closePath();
-            this.ctx.fillStyle = "#eaf6f7";
-            this.ctx.fill();
-            
-        }
-        if (player.ir.shipType == 3) {
-            this.ctx.rotate(this.ship.angle);
-            this.ctx.beginPath();
-            this.ctx.arc(0, 0, this.ship.radius, 0, 2 * Math.PI);
-            this.ctx.fillStyle = "#a7a7a7ff";
-            this.ctx.strokeStyle = "#000000";
-            this.ctx.lineWidth = 2;
-            this.ctx.shadowColor = "#ffffffff";
-            if (!options.performanceMode) {this.ctx.shadowBlur = 16} else {this.ctx.shadowBlur = 0};
-            this.ctx.fill();
-            this.ctx.stroke();
-        }
-        if (player.ir.shipType == 4) {
-            // Sniper-style ship: long barrel and scope
-            
-            this.ctx.rotate(this.ship.angle);
-            // Body
-            this.ctx.fillStyle = "#dbefff";
-            this.ctx.beginPath();
-            this.ctx.moveTo(20, 0);
-            this.ctx.lineTo(-20, 20);
-            this.ctx.lineTo(-30, 0);
-            this.ctx.lineTo(-20, -20);
-            this.ctx.fill();
-            // Long barrel
-            this.ctx.fillStyle = "#eaf6f7";
-            this.ctx.fillRect(10, -3, 36, 6);
-            // Scope / cockpit
-            this.ctx.beginPath();
-            this.ctx.arc(-6, 0, 5, 0, Math.PI * 2);
-            this.ctx.fillStyle = "#9fb8ff";
-            this.ctx.fill();
-            // small accent
-            this.ctx.strokeStyle = "#89a6ff";
-            this.ctx.lineWidth = 1;
-            this.ctx.stroke();
-            
-        }
-        if (player.ir.shipType == 5) {
-            // Small UFO (player ship) — visual match to miniboss but smaller & different color
-            
-            //this.ctx.rotate(this.ship.angle || 0);
-            const r = this.ship.radius || 12;
-            const bodyR = r * 1.4;
-
-            // Main saucer body
-            this.ctx.beginPath();
-            this.ctx.ellipse(0, 0, bodyR, bodyR * 0.5, 0, 0, Math.PI * 2);
-            this.ctx.fillStyle = "#66d9ff"; // distinct color from miniboss
-            this.ctx.shadowColor = "#66d9ff";
-            if (!options.performanceMode) {this.ctx.shadowBlur = 10} else {this.ctx.shadowBlur = 0};
-            this.ctx.fill();
-
-            // Dome
-            this.ctx.beginPath();
-            this.ctx.ellipse(0, -r * 0.45, bodyR * 0.6, bodyR * 0.35, 0, Math.PI, 2 * Math.PI);
-            this.ctx.fillStyle = "#e6fbff";
-            this.ctx.fill();
-
-            // Small underside lights
-            for (let i = -2; i <= 2; i++) {
-                this.ctx.beginPath();
-                const lx = (i / 2) * (bodyR * 0.9);
-                this.ctx.arc(lx, r * 0.25, Math.max(1.5, r * 0.35), 0, Math.PI * 2);
-                this.ctx.fillStyle = i % 2 === 0 ? "#ffd166" : "#89ffb4";
-                this.ctx.fill();
-            }
-
-            // subtle stroke
-            this.ctx.strokeStyle = "rgba(0,0,0,0.15)";
-            this.ctx.lineWidth = 1;
-            this.ctx.stroke();
-
-            
-        }
-        if (player.ir.shipType == 6) {
-            
-            this.ctx.rotate(this.ship.angle);
- 
-            this.ctx.beginPath();
-            this.ctx.moveTo(35, 0); 
-            this.ctx.lineTo(-5, 20); 
-            this.ctx.lineTo(10, 20); 
-            this.ctx.lineTo(-20, 10); 
-            this.ctx.lineTo(-20, -10); 
-            this.ctx.lineTo(10, -20); 
-            this.ctx.lineTo(-5, -20); 
-
-            this.ctx.closePath(); 
-
-            this.ctx.fillStyle = "#a27aebff"; 
-            this.ctx.strokeStyle = "#6e39d1ff";
-            this.ctx.lineWidth = 2;
-
-            this.ctx.fill();
-            this.ctx.stroke(); 
-
-            
-        }
-        if (player.ir.shipType == 7) {
-            
-            this.ctx.rotate(this.ship.angle);
- 
-            // BODY
-            this.ctx.fillStyle = "#f8de7eff";
-            this.ctx.strokeStyle = "#000000ff";
-            this.ctx.lineWidth = 2;
-            this.ctx.beginPath();
-            this.ctx.moveTo(0, 15);
-            this.ctx.lineTo(6, 6); 
-            this.ctx.lineTo(30, 0); 
-            this.ctx.lineTo(6, -6);
-            this.ctx.lineTo(0, -15);
-            this.ctx.lineTo(-6, -6);
-            this.ctx.lineTo(-18, 0);
-            this.ctx.lineTo(-6, 6);
-            this.ctx.closePath();
-            this.ctx.fill();
-            this.ctx.stroke();
-
-            
-        }
-        if (player.ir.shipType == 8) {
-            
-            this.ctx.rotate(Math.PI);
-
-            // Miniature Iridite visuals
-            const r = this.ship.radius * 2 || 24;
-            const phase = (this.ship.wingPhase || 0);
-            let raw = Math.sin(phase);
-            let t = (raw + 1) / 2;
-            let ease = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-            const spreadBase = 0.9 + ease * 0.6;
-            const tipBend = Math.sin(phase * 1.9) * (0.6 + ease * 0.6);
-
-            this.ctx.shadowColor = "rgba(240,230,255,0.7)";
-            if (!options.performanceMode) {this.ctx.shadowBlur = 15} else {this.ctx.shadowBlur = 0};
-                
-            const drawWing = (mirror = false) => {
-                if (mirror) this.ctx.scale(-1, 1);
-                let baseAngle = -0.22 - tipBend * 0.14;
-                //this.ctx.rotate(baseAngle);
-
-                const groups = [
-                    { count: 6, len: r * 1.2, width: r * 0.35, offset: 0.0, light: -8 },
-                    { count: 5, len: r * 0.9, width: r * 0.28, offset: 0.1, light: -2 },
-                    { count: 4, len: r * 0.6, width: r * 0.2, offset: 0.2, light: 6 }
-                ];
-
-                for (let gi = 0; gi < groups.length; gi++) {
-                    const g = groups[gi];
-                    const groupSpread = (0.72 + gi * 0.18) * (0.9 + ease * 0.15);
-                    for (let i = 0; i < g.count; i++) {
-                        let norm = (i / (g.count - 1)) - 0.5;
-                        let bx = r * 0.06 + norm * r * (0.48 - gi * 0.02);
-                        let by = r * 0.02 + Math.abs(norm) * r * 0.06 + g.offset * r;
-                        let featherAngle = norm * groupSpread + tipBend * (0.32 + gi * 0.12);
-                        let len = g.len * (0.86 + (1 - Math.abs(norm)) * 0.22 - gi * 0.07);
-                        let width = g.width * (0.82 - gi * 0.08) * (1 - Math.abs(norm) * 0.5);
-
-                        this.ctx.save();
-                        this.ctx.translate(bx, by);
-                        this.ctx.rotate(featherAngle);
-                        this.ctx.beginPath();
-                        this.ctx.moveTo(0, 0);
-                        this.ctx.quadraticCurveTo(len * 0.35, -width * 0.6, len * 0.92, -width * 0.08);
-                        this.ctx.lineTo(len * 0.86, width * 0.14);
-                        this.ctx.quadraticCurveTo(len * 0.38, width * 0.6, 0, 0);
-                        this.ctx.closePath();
-                        let fg = this.ctx.createLinearGradient(0, -width, len, width);
-                        fg.addColorStop(0, `rgba(${240 + g.light},${236 + g.light},${255 - g.light},0.9)`);
-                        fg.addColorStop(1, `rgba(${210 + g.light},${208 + g.light},${232 - g.light},0.8)`);
-                        this.ctx.fillStyle = fg;
-                        this.ctx.fill();
-                        this.ctx.restore();
-                    }
-                }
-            };
-
-            this.ctx.translate(0.25*r, 0);
-            drawWing(false);
-            this.ctx.translate(-0.5*r, 0);
-            drawWing(true);
-            this.ctx.translate(-0.25*r, 0.25*r);
-
-            this.ctx.save();
-            if (!options.performanceMode) {this.ctx.shadowBlur = 20} else {this.ctx.shadowBlur = 0};
-            const fontSize = Math.max(12, Math.floor(r * 1.5));
-            this.ctx.font = `${fontSize}px monospace`;
-            this.ctx.textAlign = "center";
-            this.ctx.textBaseline = "middle";
-            this.ctx.fillStyle = "#fff";
-            this.ctx.fillText("✦", 0, 0);
-
-            this.ctx.restore();
-        }
-
-        if (player.ir.shipType == 8 && this.ship._laserActive) {
-            const elapsed = Math.min(1, 1 + (this.ship._laserTimer / 60));
-            const windup = 8;
-            const progress = Math.max(0, elapsed);
-            const angle = this.ship._laserAngle || this.ship.angle || 0;
-            const beamLen = this.ship._laserLength;
-            const r = this.ship.radius || 12;
-            const maxThickness = r * 0.8;
-            const thickness = (progress * 0.5 + 0.5) * maxThickness;
-
-            this.ctx.translate(0, -4);
-            this.ctx.rotate(angle);
-            this.ctx.globalCompositeOperation = "lighter";
-            let g = this.ctx.createLinearGradient(0, -thickness * 2, beamLen, thickness * 2);
-            g.addColorStop(0, `rgba(200,120,255,${0.12 + 0.28 * progress})`);
-            g.addColorStop(0.1, `rgba(255,120,180,${0.18 + 0.32 * progress})`);
-            g.addColorStop(0.6, `rgba(180,255,255,${0.06 + 0.18 * progress})`);
-            g.addColorStop(1, `rgba(200,120,255,${0.02 + 0.06 * progress})`);
-            this.ctx.fillStyle = g;
-            this.ctx.beginPath();
-            this.ctx.rect(0, -thickness, beamLen, thickness * 2);
-            this.ctx.fill();
-            this.ctx.fillStyle = `rgba(255,220,160,${0.9 * (0.5 + 0.5 * progress)})`;
-            this.ctx.fillRect(0, -Math.max(1, thickness * 0.12), beamLen, Math.max(1, thickness * 0.12) * 2);
-            this.ctx.globalCompositeOperation = "source-over";
-        }
-
-        // Evolver ship (shipType 9) — triangle shape with blue-purple gradient and dividing line
-        if (player.ir.shipType == 9) {
-            this.ctx.rotate(this.ship.angle);
-            let lenShip = Math.max(18, this.ship.radius || 20);
-
-            // blue-purple gradient
-            let triG = this.ctx.createLinearGradient(15, 0, -15, 0);
-            triG.addColorStop(0, '#5fb8ff');
-            triG.addColorStop(0.5, '#7c4dff');
-            triG.addColorStop(1, '#9aa7ff');
-
-            this.ctx.beginPath();
-            this.ctx.moveTo(20, 0);
-            this.ctx.lineTo(-10, 15);
-            this.ctx.lineTo(-15, 0);
-            this.ctx.lineTo(-10, -15);
-            this.ctx.closePath();
-            this.ctx.fillStyle = triG;
-            this.ctx.fill();
-
-            // black outline
-            this.ctx.strokeStyle = '#000';
-            this.ctx.lineWidth = Math.max(2, lenShip * 0.1);
-            this.ctx.stroke();
-
-            // dividing line through the middle
-            this.ctx.beginPath();
-            this.ctx.moveTo(-15, 0);
-            this.ctx.lineTo(20, 0);
-            this.ctx.strokeStyle = '#000';
-            this.ctx.lineWidth = Math.max(1, lenShip * 0.05);
-            this.ctx.stroke();
-
-        }
-        if (player.ir.shipType == 10) {
-            this.ctx.rotate(this.ship.angle);
-            this.ctx.strokeStyle = "#30bf78";
-            this.ctx.fillStyle = "#30bf78";
-            // Body Background
-            this.ctx.beginPath();
-            this.ctx.arc(0, 0, 21, 0, Math.PI * 2);
-            this.ctx.fill();
-            // Left Cannon
-            this.ctx.fillStyle = "#dfffdf";
-            this.ctx.moveTo(20, 0);
-            this.ctx.beginPath();
-            this.ctx.lineTo(0, -5);
-            this.ctx.lineTo(75, -5);
-            this.ctx.lineTo(65, -15);
-            this.ctx.lineTo(0, -15);
-            this.ctx.closePath();
-            this.ctx.fill();
-            this.ctx.stroke();
-            // Right Cannon
-            this.ctx.moveTo(20, 0);
-            this.ctx.beginPath();
-            this.ctx.lineTo(0, 5);
-            this.ctx.lineTo(75, 5);
-            this.ctx.lineTo(65, 15);
-            this.ctx.lineTo(0, 15);
-            this.ctx.closePath();
-            this.ctx.fill();
-            this.ctx.stroke();
-            // Body
-            this.ctx.beginPath();
-            this.ctx.arc(0, 0, 20, 0, Math.PI * 2);
-            this.ctx.fill();
-            // Cockpit
-            
-            this.ctx.beginPath();
-            this.ctx.arc(0, 0, 16, 0, Math.PI * 2);
-            this.ctx.fillStyle = "#400020";
-            this.ctx.fill();
-
-            this.ctx.beginPath();
-            this.ctx.arc(0, 0, 4, 0, Math.PI * 2);
-            if (this.awaitingShotCharge && this.shotChargeTimer <= 3) this.ctx.fillStyle = "#fff";
-            else this.ctx.fillStyle = "#800040"
-            this.ctx.fill();
-
-            this.ctx.beginPath();
-            this.ctx.arc(10, 0, 4, 0, Math.PI * 2);
-            if (this.awaitingShotCharge && this.shotChargeTimer <= 21) this.ctx.fillStyle = "#ff7f7f";
-            else this.ctx.fillStyle = "#800040"
-            this.ctx.fill();
-
-            this.ctx.beginPath();
-            this.ctx.arc(5, Math.sqrt(3) * 5, 4, 0, Math.PI * 2);
-            if (this.awaitingShotCharge && this.shotChargeTimer <= 18) this.ctx.fillStyle = "#ffff7f";
-            else this.ctx.fillStyle = "#800040"
-            this.ctx.fill();
-
-            this.ctx.beginPath();
-            this.ctx.arc(-5, Math.sqrt(3) * 5, 4, 0, Math.PI * 2);
-            if (this.awaitingShotCharge && this.shotChargeTimer <= 15) this.ctx.fillStyle = "#7fff7f";
-            else this.ctx.fillStyle = "#800040"
-            this.ctx.fill();
-
-            this.ctx.beginPath();
-            this.ctx.arc(-10, 0, 4, 0, Math.PI * 2);
-            if (this.awaitingShotCharge && this.shotChargeTimer <= 12) this.ctx.fillStyle = "#7fffff";
-            else this.ctx.fillStyle = "#800040"
-            this.ctx.fill();
-
-            this.ctx.beginPath();
-            this.ctx.arc(-5, -Math.sqrt(3) * 5, 4, 0, Math.PI * 2);
-            if (this.awaitingShotCharge && this.shotChargeTimer <= 9) this.ctx.fillStyle = "#7f7fff";
-            else this.ctx.fillStyle = "#800040"
-            this.ctx.fill();
-
-            this.ctx.beginPath();
-            this.ctx.arc(5, -Math.sqrt(3) * 5, 4, 0, Math.PI * 2);
-            if (this.awaitingShotCharge && this.shotChargeTimer <= 6) this.ctx.fillStyle = "#ff7fff";
-            else this.ctx.fillStyle = "#800040"
-            this.ctx.fill();
-
-        }
-        this.ctx.restore();
+        SB_ships[player.ir.type].draw(this.ctx, this.ship)
 
         // Draw warns
         for (let i = this.warnings.length - 1; i >= 0; i--) {
@@ -3329,7 +2629,7 @@ class SpaceArena {
         }
 
         // Draw sniper auto-aim target cross if present
-        if (player.ir.shipType == 4 && this.ship.currentTarget && this.ship.currentTarget.health.gt(0)) {
+        if (player.ir.type == 4 && this.ship.currentTarget && this.ship.currentTarget.health.gt(0)) {
             let t = this.ship.currentTarget;
             let wrapped = this.getVisibleWrappedCoords([t.x, t.y], [t.radius * 2, t.radius * 2])
             if (wrapped) {
@@ -3411,7 +2711,7 @@ class SpaceArena {
             }
             this.ctx.restore();
         }
-        if (player.ir.shipType == 8 && this.ship._laserActive) {
+        if (player.ir.type == 8 && this.ship._laserActive) {
             this.ctx.save();
             this.ctx.fillStyle = "yellow"
             this.ctx.translate(100, 100)
@@ -3433,7 +2733,7 @@ class SpaceArena {
         }
 
         // Draw unarmed indicator
-        if (player.ir.shipType == 3) {
+        if (player.ir.type == 3) {
             this.ctx.save();
             this.ctx.globalAlpha = 0.0625
             let g = this.ctx.createRadialGradient(this.canvasWidth / 2, this.canvasHeight / 2, 100, this.canvasWidth / 2, this.canvasHeight / 2, 300)
@@ -3471,7 +2771,7 @@ class SpaceArena {
             this.ctx.lineTo(this.ship.rollingSpeed * 200 + 100, 0)
             this.ctx.fill()
 
-            let dist = Math.min(1, Math.hypot(this.ship.vy, this.ship.vx) / (this.shipStats.moveSpeed / 5 * this.ship.deceleration) * (1 - this.ship.deceleration))
+            let dist = Math.min(1, Math.hypot(this.ship.vy, this.ship.vx) / (this.shipStats.moveSpeed / 5 * this.ship.stats.deceleration) * (1 - this.ship.stats.deceleration))
             this.ctx.strokeStyle = "#00ff00";
             this.ctx.beginPath();
             this.ctx.rotate(-this.ship.rollingAng)
@@ -3490,229 +2790,22 @@ class SpaceArena {
         }
 
         // Draw mobile controls
-        if (player.ir.mobileControls > 0 && (player.ir.shipType != 3 && player.ir.shipType != 7)) {
-            this.ctx.save();
-            this.ctx.globalAlpha = 1
-            this.ctx.lineWidth = 3;
-
-            let isCondensedControls = player.ir.mobileControls == 1 || player.ir.shipType == 5 || player.ir.shipType == 8
-
-            // LEFT STICK
-
-            if (isCondensedControls) { // CONDENSED
-
-                // OUTER CIRCLE
-                this.ctx.fillStyle = "#ffff003f";
-                this.ctx.strokeStyle = "#ffff006e";
-                this.ctx.beginPath();
-                this.ctx.ellipse(100 * this.mobileControlsScale, this.canvasHeight - (100 * this.mobileControlsScale), 80 * this.mobileControlsScale, 80 * this.mobileControlsScale, 0, 0, 360);
-                this.ctx.closePath();
-                this.ctx.fill();
-                this.ctx.stroke();
-
-                // INNER CIRCLE
-                this.ctx.fillStyle = "#0000003f";
-                this.ctx.beginPath();
-                this.ctx.ellipse(100 * this.mobileControlsScale, this.canvasHeight - (100 * this.mobileControlsScale), 40 * this.mobileControlsScale + 6, 40 * this.mobileControlsScale + 6, 0, 0, 360);
-                this.ctx.closePath();
-                this.ctx.fill();
-
-                // STICK
-                this.ctx.fillStyle = "#ffff00bf";
-                this.ctx.beginPath();
-                if (this.mobileLeftStickAngle == null) {
-                    this.ctx.ellipse(100 * this.mobileControlsScale, this.canvasHeight - (100 * this.mobileControlsScale), 40 * this.mobileControlsScale, 40 * this.mobileControlsScale, 0, 0, 360);
-                } else {
-                    this.ctx.ellipse(100 * this.mobileControlsScale + Math.cos(this.mobileLeftStickAngle) * 40 * this.mobileControlsScale, this.canvasHeight - (100 * this.mobileControlsScale) + Math.sin(this.mobileLeftStickAngle) * 40 * this.mobileControlsScale, 40 * this.mobileControlsScale, 40 * this.mobileControlsScale, 0, 0, 360);
+        if (player.shipBattle.controlScheme > 0) {
+            let ref = this.controlTypeRef.mobile
+            if (ref) {
+                for (let i in ref) {
+                    let v = ref[i]
+                    let type
+                    if (Array.isArray(v)) {
+                        if (player.shipBattle.controlScheme == v[1]) type = v[0];
+                        else continue;
+                    } else type = v;
+                    SB_touchControls[type].draw(this.ctx);
                 }
-                this.ctx.closePath();
-                this.ctx.fill();
-
-                // OUTLINE
-                this.ctx.strokeStyle = "#ffff006e";
-                this.ctx.beginPath();
-                this.ctx.arc(100 * this.mobileControlsScale, this.canvasHeight - (100 * this.mobileControlsScale), (80 * this.mobileControlsScale), 0, 360);
-                this.ctx.stroke();
-
-            } else { // EXTENDED
-
-                // OUTER CIRCLE
-                this.ctx.fillStyle = "#ffff003f";
-                this.ctx.beginPath();
-                this.ctx.arc(100 * this.mobileControlsScale, this.canvasHeight - (140 * this.mobileControlsScale), 40 * this.mobileControlsScale + 6, -Math.PI, 0)
-                this.ctx.arc(100 * this.mobileControlsScale, this.canvasHeight - (60 * this.mobileControlsScale), 40 * this.mobileControlsScale + 6, 0, Math.PI)
-                this.ctx.closePath();
-                this.ctx.fill();
-
-                // INNER CIRCLE
-                this.ctx.fillStyle = "#0000003f";
-                this.ctx.beginPath();
-                this.ctx.ellipse(100 * this.mobileControlsScale, this.canvasHeight - (100 * this.mobileControlsScale), 40 * this.mobileControlsScale + 6, 40 * this.mobileControlsScale + 6, 0, 0, 360);
-                this.ctx.closePath();
-                this.ctx.fill();
-
-                // STICK
-                this.ctx.fillStyle = "#ffff00bf";
-                this.ctx.beginPath();
-                if (this.mobileLeftStickAngle == null) {
-                    this.ctx.ellipse(100 * this.mobileControlsScale, this.canvasHeight - (100 * this.mobileControlsScale), 40 * this.mobileControlsScale, 40 * this.mobileControlsScale, 0, 0, 360);
-                } else {
-                    this.ctx.ellipse(100 * this.mobileControlsScale + Math.cos(this.mobileLeftStickAngle) * 40 * this.mobileControlsScale, this.canvasHeight - (100 * this.mobileControlsScale) + Math.sin(this.mobileLeftStickAngle) * 40 * this.mobileControlsScale, 40 * this.mobileControlsScale, 40 * this.mobileControlsScale, 0, 0, 360);
-                }
-                this.ctx.closePath();
-                this.ctx.fill();
-
-                // OUTLINE
-                this.ctx.strokeStyle = "#ffff006e";
-                this.ctx.beginPath();
-                this.ctx.arc(100 * this.mobileControlsScale, this.canvasHeight - (140 * this.mobileControlsScale), 40 * this.mobileControlsScale + 6, -Math.PI, 0)
-                this.ctx.arc(100 * this.mobileControlsScale, this.canvasHeight - (60 * this.mobileControlsScale), 40 * this.mobileControlsScale + 6, 0, Math.PI)
-                this.ctx.closePath();
-                this.ctx.stroke();
-
             }
-
-            // RIGHT STICK
-
-            if (isCondensedControls) { // CONDENSED
-                if (player.ir.shipType == 5 || player.ir.shipType == 8) {
-                    // OUTER CIRCLE
-                    this.ctx.fillStyle = "#ffff003f";
-                    this.ctx.beginPath();
-                    this.ctx.ellipse(this.canvasWidth - (100 * this.mobileControlsScale), this.canvasHeight - (100 * this.mobileControlsScale), 80 * this.mobileControlsScale, 80 * this.mobileControlsScale, 0, 0, 360);
-                    this.ctx.closePath();
-                    this.ctx.fill();
-
-                    // INNER CIRCLE
-                    this.ctx.fillStyle = "#0000003f";
-                    this.ctx.beginPath();
-                    this.ctx.ellipse(this.canvasWidth - (100 * this.mobileControlsScale), this.canvasHeight - (100 * this.mobileControlsScale), 40 * this.mobileControlsScale + 6, 40 * this.mobileControlsScale + 6, 0, 0, 360);
-                    this.ctx.closePath();
-                    this.ctx.fill();
-
-                    // STICK
-                    this.ctx.fillStyle = "#ffff00bf";
-                    this.ctx.beginPath();
-                    if (this.mobileRightStickAngle == null) {
-                        this.ctx.ellipse(this.canvasWidth - (100 * this.mobileControlsScale), this.canvasHeight - (100 * this.mobileControlsScale), 40 * this.mobileControlsScale, 40 * this.mobileControlsScale, 0, 0, 360);
-                    } else {
-                        this.ctx.ellipse(this.canvasWidth - (100 * this.mobileControlsScale) + Math.cos(this.mobileRightStickAngle) * 40 * this.mobileControlsScale, this.canvasHeight - (100 * this.mobileControlsScale) + Math.sin(this.mobileRightStickAngle) * 40 * this.mobileControlsScale, 40 * this.mobileControlsScale, 40 * this.mobileControlsScale, 0, 0, 360);
-                    }
-                    this.ctx.closePath();
-                    this.ctx.fill();
-
-                    // OUTLINE
-                    this.ctx.strokeStyle = "#ffff006e";
-                    this.ctx.beginPath();
-                    this.ctx.arc(this.canvasWidth - (100 * this.mobileControlsScale), this.canvasHeight - (100 * this.mobileControlsScale), (80 * this.mobileControlsScale), 0, 360);
-                    this.ctx.stroke();
-                }
-
-            } else { // EXTENDED
-
-                // OUTER CIRCLE
-                this.ctx.fillStyle = "#ffff003f";
-                this.ctx.beginPath();
-                this.ctx.arc(this.canvasWidth - (140 * this.mobileControlsScale), this.canvasHeight - (100 * this.mobileControlsScale), 40 * this.mobileControlsScale + 6, -3 * Math.PI / 2, -Math.PI / 2)
-                this.ctx.arc(this.canvasWidth - (60 * this.mobileControlsScale), this.canvasHeight - (100 * this.mobileControlsScale), 40 * this.mobileControlsScale + 6, -Math.PI / 2, Math.PI / 2)
-                this.ctx.closePath();
-                this.ctx.fill();
-
-                // INNER CIRCLE
-                this.ctx.fillStyle = "#0000003f";
-                this.ctx.beginPath();
-                this.ctx.ellipse(this.canvasWidth - (100 * this.mobileControlsScale), this.canvasHeight - (100 * this.mobileControlsScale), 40 * this.mobileControlsScale + 6, 40 * this.mobileControlsScale + 6, 0, 0, 360);
-                this.ctx.closePath();
-                this.ctx.fill();
-
-                // STICK
-                this.ctx.fillStyle = "#ffff00bf";
-                this.ctx.beginPath();
-                if (this.mobileRightStickAngle == null) {
-                    this.ctx.ellipse(this.canvasWidth - (100 * this.mobileControlsScale), this.canvasHeight - (100 * this.mobileControlsScale), 40 * this.mobileControlsScale, 40 * this.mobileControlsScale, 0, 0, 360);
-                } else {
-                    this.ctx.ellipse(this.canvasWidth - (100 * this.mobileControlsScale) + Math.cos(this.mobileRightStickAngle) * 40 * this.mobileControlsScale, this.canvasHeight - (100 * this.mobileControlsScale) + Math.sin(this.mobileRightStickAngle) * 40 * this.mobileControlsScale, 40 * this.mobileControlsScale, 40 * this.mobileControlsScale, 0, 0, 360);
-                }
-                this.ctx.closePath();
-                this.ctx.fill();
-
-                // OUTLINE
-                this.ctx.strokeStyle = "#ffff006e";
-                this.ctx.beginPath();
-                this.ctx.arc(this.canvasWidth - (140 * this.mobileControlsScale), this.canvasHeight - (100 * this.mobileControlsScale), 40 * this.mobileControlsScale + 6, -3 * Math.PI / 2, -Math.PI / 2)
-                this.ctx.arc(this.canvasWidth - (60 * this.mobileControlsScale), this.canvasHeight - (100 * this.mobileControlsScale), 40 * this.mobileControlsScale + 6, -Math.PI / 2, Math.PI / 2)
-                this.ctx.closePath();
-                this.ctx.stroke();
-
-            }
-
-            // SHOOT BUTTON
-
-            if (!player.ir.autoShoot && player.ir.shipType != 5 && player.ir.shipType != 8) {
-                if (isCondensedControls) { // CONDENSED
-
-                    // OUTER CIRCLE
-                    this.ctx.fillStyle = "#ffff003f";
-                    this.ctx.beginPath();
-                    this.ctx.ellipse(this.canvasWidth - (100 * this.mobileControlsScale), this.canvasHeight - (100 * this.mobileControlsScale), 80 * this.mobileControlsScale, 80 * this.mobileControlsScale, 0, 0, 360);
-                    this.ctx.closePath();
-                    this.ctx.fill();
-
-                    // INNER CIRCLE
-                    this.ctx.fillStyle = "#0000003f";
-                    this.ctx.beginPath();
-                    this.ctx.ellipse(this.canvasWidth - (100 * this.mobileControlsScale), this.canvasHeight - (100 * this.mobileControlsScale), 71 * this.mobileControlsScale + 6, 71 * this.mobileControlsScale + 6, 0, 0, 360);
-                    this.ctx.closePath();
-                    this.ctx.fill();
-
-                    // OUTLINE
-                    this.ctx.strokeStyle = "#ffff006e";
-                    this.ctx.beginPath();
-                    this.ctx.arc(this.canvasWidth - (100 * this.mobileControlsScale), this.canvasHeight - (100 * this.mobileControlsScale), (80 * this.mobileControlsScale), 0, 360);
-                    this.ctx.stroke();
-
-                    // TEXT
-                    this.ctx.fillStyle = "#ffff00bf";
-                    this.ctx.font = "bold 48px monospace";
-                    this.ctx.textAlign = "center";
-                    this.ctx.fillText("Shoot", this.canvasWidth - (100 * this.mobileControlsScale), this.canvasHeight - (100 * this.mobileControlsScale) + 12);
-
-                } else { // EXTENDED
-
-                    // OUTER CIRCLE
-                    this.ctx.fillStyle = "#ffff003f";
-                    this.ctx.beginPath();
-                    this.ctx.ellipse(this.canvasWidth - (100 * this.mobileControlsScale), this.canvasHeight / 2, 80 * this.mobileControlsScale, 80 * this.mobileControlsScale, 0, 0, 360);
-                    this.ctx.closePath();
-                    this.ctx.fill();
-
-                    // INNER CIRCLE
-                    this.ctx.fillStyle = "#0000003f";
-                    this.ctx.beginPath();
-                    this.ctx.ellipse(this.canvasWidth - (100 * this.mobileControlsScale), this.canvasHeight / 2, 71 * this.mobileControlsScale + 6, 71 * this.mobileControlsScale + 6, 0, 0, 360);
-                    this.ctx.closePath();
-                    this.ctx.fill();
-
-                    // OUTLINE
-                    this.ctx.strokeStyle = "#ffff006e";
-                    this.ctx.beginPath();
-                    this.ctx.arc(this.canvasWidth - (100 * this.mobileControlsScale), this.canvasHeight / 2, (80 * this.mobileControlsScale), 0, 360);
-                    this.ctx.stroke();
-
-                    // TEXT
-                    this.ctx.fillStyle = "#ffff00bf";
-                    this.ctx.font = "bold 48px monospace";
-                    this.ctx.textAlign = "center";
-                    this.ctx.fillText("Shoot", this.canvasWidth - (100 * this.mobileControlsScale), this.canvasHeight / 2 + 12);
-
-
-                }
-
-            }
-
         }
 
-        // Draw upgrade choice overlay (unchanged)
+        // Draw upgrade choice overlay
         if (player.ir.menu > 0) {
             /*
             this.ctx.save();
@@ -3896,6 +2989,8 @@ class SpaceArena {
             */
         }
         this.arenaDiv.style.filter = player.ir.menu != 0 ? "blur(4px)" : ""
+
+        this.ctx.scale(1/this.UIScale, 1/this.UIScale)
     }
 
     showUpgradeChoice() {

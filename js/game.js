@@ -9,7 +9,12 @@ var BHB = {}
 
 // Space battle variables
 var SB_ships = {}
+var SB_controlTypes = {}
+var SB_touchControls = {}
+
+var SB_locations = {}
 var SB_zones = {}
+
 var SB_celestialites = {}
 var SB_projectiles = {}
 var SB_warnings = {}

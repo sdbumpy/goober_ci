@@ -18,7 +18,7 @@
 		"DarkU1/boosters.js", "DarkU1/vaporizer.js", "DarkU1/generators.js", "DarkU1/darkGrass.js", "DarkU1/normality.js",
 		"Singularity/core.js", "Singularity/coreFragments.js", "DarkU1/funify2.js",
 		"Singularity/starmetalEssence.js", "rockets.js", "AltU2/altUni2.js", "AltU2/stars.js", "AltU2/spacePets.js", "AltU2/starDimensions.js", "AltU2/planets.js", "AltU2/exploration.js", "AltU2/iridite.js", "AltU2/spaceship.js",
-		"ShipBattle/shipBattle.js", "ShipBattle/shipBattleFunctions.js", "ShipBattle/shipBattleShips.js",
+		"ShipBattle/shipBattle.js", "ShipBattle/shipBattleFunctions.js", "ShipBattle/shipBattleShips.js",// "ShipBattle/shipBattleControls.js",
 		"AltU2/spaceZone1.js", "AltU2/spaceZone2.js", "AltU2/iriditeZone.js", "AltU2/spaceZone3.js", "AltU2/evolutionField.js", "AltU2/spaceZone4.js", 
 		"Hex/hex.js", "Hex/provenance.js", "Hex/refinement.js", "Hex/blessings.js", "Hex/curses.js",
 		"Hex/purity.js", "Hex/power.js", "Hex/realms.js", "Hex/vex.js", "Hex/sacrifice.js",
@@ -75,9 +75,7 @@ function updateStyles() {
 
 	// ===------   PREVENT UNWANTED FULLSCREENS   ------=== //
 	if (options.fullscreen && player.tab != "bh" &&
-	!(player.tab == "ir" && player.subtabs["ir"]["stuff"] == "Battle") &&
-	!(player.tab == "bl" && player.subtabs["bl"]["stuff"] == "Battle") &&
-	!(player.tab == "cbs" && player.subtabs["cbs"]["stuff"] == "Battle")) {
+	!(player.tab == "shipBattle" && player.subtabs["shipBattle"]["stuff"] == "Battle")) {
 		options.fullscreen = false
 	}
 
@@ -237,9 +235,6 @@ function updateStyles() {
 		case "en":
 			layerBG = "linear-gradient(0deg, #400c42 0%, white 800%)"
 			break;
-		case "en":
-			layerBG = "#400c42"
-			break;
 		case "s":
 			if (player.s.pylonBuilt && player.subtabs["s"]["stuff"] == "Pylon") {
 				layerBG = "linear-gradient(120deg, #801757 0%, #D3173A 100%)"
@@ -373,7 +368,7 @@ function updateStyles() {
 				layerBG = "linear-gradient(to right, #443812, #432236)"
 			}
 			break;
-		case "tw":
+		case "tw": case "mut":
 			layerBG = "linear-gradient(0deg, #021507)"
 			break;
 		case "cb":
@@ -416,7 +411,10 @@ function updateStyles() {
 			layerBG = "linear-gradient(0deg, #eed200)"
 			break;
 		case "gwaTemple":
-			layerBG = "#676742"
+			layerBG = "linear-gradient(0deg, #676742)"
+			break
+		case "shipBattle":
+			layerBG = "repeating-linear-gradient(135deg, " + player.ir.secondaryColor + "5f 0 15px, " + player.ir.secondaryColor + "7f 0 30px), linear-gradient(black)"
 			break
 		default:
 			layerBG = "linear-gradient(0deg, var(--layerBackground))"
@@ -625,7 +623,8 @@ function updateStyles() {
 	}
 
 	if (!options.performanceMode && (player.tab === "wel" || player.tab === "prj" || player.tab === "pri" || player.tab === "blu" || player.tab === "bum" || player.tab === "cer" || player.tab === "smn"  || player.tab === "lightRift"
-		|| player.tab === "bea" || player.tab === "for" || player.tab === "plt" || player.tab === "ast" || player.tab === "mre")
+		|| player.tab === "bea" || player.tab === "for" || player.tab === "plt" || player.tab === "ast" || player.tab === "mre"
+		)
     	) {
 		let t = Date.now()
     	t = ((t % 1000) / 1000) * 32
@@ -1022,10 +1021,10 @@ function updateStyles() {
             	sideBG = "#0b0129"
 				break;
 			case "UD":
-				sideBG = "linear-gradient(135deg, #2e152e 0%, #384038 100%)"
+				sideBG = "linear-gradient(135deg, #2e172e 0%, #384038 100%)"
 				break;
 			case "UD_C":
-				sideBG = "linear-gradient(-45deg, #2e1522 0%, #374040 100%)"
+				sideBG = "linear-gradient(-45deg, #2e2228 0%, #204040 100%)"
 				break;
 			case "CB":
 				sideBG = "#00111a"
@@ -1247,19 +1246,32 @@ let credits = `<h1>Credits:</h1><br>
 
 let changelog = `<h1>Changelog:</h1><br>
 
-	<h2 style='color:#ff3f3f'>MAJOR SPOILERS BELOW</h2><br><br>
-	<h3>v1.14.1 - Still Changing Space</h3><br>
+	<h2 style='color:#ff3f3f'>MAJOR SPOILERS BELOW!</h2><br><br>
+	<h3>v1.17 </h3><small>(probably)</small><h3> - The Interspace Update Part II: Starlit Requiem</h3><br>
 	
 		Content:<br>
-			- Extended interspace content.<br>
-			- Added evolution field.<br>
-			- Added four new ships.<br>
+			˙ƍ ǝsɹǝʌᴉu∩ pǝpp∀ - [WIP]<br>
+			- Expanded interspace content. [WIP]<br>
+			- Added new cutscenes to previous interspace content. [NYI]<br>
+			- Added an epic pet and its shop. [WIP]<br>
+			- Added the evolution field and space zone IV. [WIP]<br>
+			- Added twig skills.<br>
+			- Added the technological pylon. [WIP]<br>
+			- Added new star upgrade tree upgrades. [WIP]<br>
+			- Added three punchcards. [NYI]<br>
+			- Added five ships. [WIP]<br>
+			- Added a theme.<br>
 		<br>Design and QoL:<br>
-			- Changed interspace fountain UI.<br>
+			- Tweaked ship battle UI, and made it adjust based on screen size/zoom.<br>
+			- Made aleph upgrade "Honeycomb (9, 3)" automate honey upgrades when on pollen path.<br>
+			- Changed interspace well and fountain UI.<br>
+			- Changed the blueshift info box design.<br>
 		<br>Balancing:<br>
-			- ???<br>
+			- Deflated ship battle damage and XP. [NYI]<br>
+			- Reduced paradox pylon energy factor effects, but strengthened other sources of paradox pylon energy gain.<br>
 		<br>Bugfixes:<br>
-			- ???<br>
+			- Fixed stage 13 achievement "Big Time" boosting time capsule gain instead of time energy gain.<br>
+			- Fixed light well δ blueshift being unavailable.<br>
 		<br>
 
 	<h3>v1.14 - The Interspace Update Part I: A Change of Space</h3><br>

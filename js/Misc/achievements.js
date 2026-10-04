@@ -1090,8 +1090,16 @@ addLayer("achievements", {
             complete() {return false},
             unlocked: true,
             marked: true,
-        },
+        },/*
         1216: {
+            name: "???",
+            image: "resources/achievements/12_19.png",
+            tooltip: "<h3>???</h3><hr style='margin-bottom:4px'>???",
+            color: "#994d99",
+            complete() {return false},
+            unlocked: true,
+        },
+        1217: {
             name: "Ultraviolet",
             image: "resources/achievements/12_16.png",
             tooltip: "<h3>Ultraviolet</h3><hr style='margin-bottom:4px'>Reset for starlight.",
@@ -1099,7 +1107,15 @@ addLayer("achievements", {
             complete() {return false},
             unlocked: true,
         },
-        1217: {
+        1218: {
+            name: "Full Marks",
+            image: "resources/achievements/12_19.png",
+            tooltip: "<h3>Full Marks</h3><hr style='margin-bottom:4px'>Get e100 Light.",
+            color: "#994d99",
+            complete() {return false},
+            unlocked: true,
+        },
+        1219: {
             name: "awwww kitty!!!",
             image: "resources/achievements/12_17.png",
             tooltip: "<h3>awwww kitty!!!</h3><hr style='margin-bottom:4px'>Unlock goobert.<br><br>Reward: Fragment<br>shop cooldowns<br>are 2% shorter.",
@@ -1108,16 +1124,23 @@ addLayer("achievements", {
             unlocked: true,
             marked: true,
         },
-        1218: {
-            name: "okay this is getting ridiculous",
-            image: "resources/achievements/12_18.png",
-            tooltip: "<h3>okay this is getting<br>ridiculous</h3><hr style='margin-bottom:4px'>Get at least 1 ↻ for each<br>of the first twelve<br>pyramid fountains.<br><br>Reward: Pyramid fountains<br>are 20% cheaper.",
+        1220: {
+            name: "Those Count?",
+            image: "resources/achievements/12_19.png",
+            tooltip: "<h3>Those Count?</h3><hr style='margin-bottom:4px'>Complete project 3-6.",
             color: "#994d99",
             complete() {return false},
             unlocked: true,
-            marked: true,
         },
-        1219: {
+        1221: {
+            name: "Mind-numbing",
+            image: "resources/achievements/12_19.png",
+            tooltip: "<h3>Mind-numbing</h3><hr style='margin-bottom:4px'>Have 20 focus spent.",
+            color: "#994d99",
+            complete() {return false},
+            unlocked: true,
+        },
+        1222: {
             name: "Outerspace",
             image: "resources/achievements/12_19.png",
             tooltip: "<h3>Outerspace</h3><hr style='margin-bottom:4px'>Enter space zone<br>IV.<br><br>Reward: +2 max<br>ship health.",
@@ -1126,17 +1149,44 @@ addLayer("achievements", {
             unlocked: true,
             marked: true,
         },
+        1223: {
+            name: "okay this is getting ridiculous",
+            image: "resources/achievements/12_19.png",
+            tooltip: "<h3>okay this is getting<br>ridiculous</h3><hr style='margin-bottom:4px'>Get at least 1 ↻ for each<br>of the first twelve<br>pyramid fountains.<br><br>Reward: Pyramid fountains<br>are 20% cheaper.",
+            color: "#994d99",
+            complete() {return false},
+            unlocked: true,
+            marked: true,
+        },
+        1224: {
+            name: "Now What?",
+            image: "resources/achievements/12_24.png",
+            tooltip: "<h3>Now What?</h3><hr style='margin-bottom:4px'>Complete project 4-5.",
+            color: "#994d99",
+            complete() {return false},
+            unlocked: true,
+        },
+        /*
+        1218: {
+            name: "okay this is getting ridiculous",
+            image: "resources/achievements/12_19.png",
+            tooltip: "<h3>okay this is getting<br>ridiculous</h3><hr style='margin-bottom:4px'>Get at least 1 ↻ for each<br>of the first twelve<br>pyramid fountains.<br><br>Reward: Pyramid fountains<br>are 20% cheaper.",
+            color: "#994d99",
+            complete() {return false},
+            unlocked: true,
+            marked: true,
+        },
         1220: {
             name: "Advanced Classes",
-            image: "resources/achievements/12_20.png",
-            tooltip: "<h3>Advanced Classes</h3><hr style='margin-bottom:4px'>Get a project study ↻.",
+            image: "resources/achievements/12_19.png",
+            tooltip: "<h3>Advanced Classes</h3><hr style='margin-bottom:4px'>Get a research project ↻.",
             color: "#994d99",
             complete() {return false},
             unlocked: true,
         },
         1221: {
             name: "The Abyss",
-            image: "resources/achievements/12_21.png",
+            image: "resources/achievements/12_19.png",
             tooltip: "<h3>The Abyss</h3><hr style='margin-bottom:4px'>Obtain a ε ↻.<br><br>Reward: Gain 20%<br>more starlight.",
             color: "#994d99",
             complete() {return false},
@@ -1144,18 +1194,18 @@ addLayer("achievements", {
             marked: true,
         },
         1222: {
-            name: "Omen of Light",
-            image: "resources/achievements/12_22.png",
-            tooltip: "<h3>Omen of Light</h3><hr style='margin-bottom:4px'>Get at least 1 ↻ for<br>every pyramid fountain.<br><br>Reward: Gain +1 prism<br>well ↻ on collect after<br>multipliers.",
+            name: "We've Made It",
+            image: "resources/achievements/12_19.png",
+            tooltip: "<h3>We've Made It</h3><hr style='margin-bottom:4px'>Get at least 1 ↻ for<br>every pyramid fountain.<br><br>Reward: Gain +1 prism<br>well ↻ on collect after<br>multipliers.",
             color: "#994d99",
             complete() {return false},
             unlocked: true,
             marked: true,
         },
         1223: {
-            name: "I sure hope I keep this a while",
-            image: "resources/achievements/12_23.png",
-            tooltip: "<h3>I sure hope I keep<br>this a while</h3><hr style='margin-bottom:4px'>Obtain a θ ↻.<br><br>Reward: Gain 20%<br>more prism well ↻<br>on collect.",
+            name: "Rock Bottom",
+            image: "resources/achievements/12_19.png",
+            tooltip: "<h3>Rock Bottom</h3><hr style='margin-bottom:4px'>Obtain a θ ↻.<br><br>Reward: Gain 20%<br>more prism well ↻<br>on collect.",
             color: "#994d99",
             complete() {return false},
             unlocked: true,
@@ -1163,16 +1213,17 @@ addLayer("achievements", {
         },
         1224: {
             name: "Elite Bumpy Knowledge",
-            image: "resources/achievements/12_24.png",
+            image: "resources/achievements/12_19.png",
             tooltip: "<h3>Elite Bumpy Knowledge</h3><hr style='margin-bottom:4px'>Have 60 total project ↻.",
             color: "#994d99",
             complete() {return false},
             unlocked: true,
         },
+        */
         // Row 1: Wells of Light
         // Row 2: Prisms to Light Well Delta
-        // Row 3: Light Well Delta to Wells of Prismatic
-        // Row 4: Wells of Prismatic to Cycle unlock
+        // Row 3: Light Well Delta to Wells of Prisms
+        // Row 4: Wells of Prisms to Cycle unlock
         1701: {
             name: "Universeception",
             image: "resources/achievements/17_01.png",

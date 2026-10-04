@@ -1117,6 +1117,7 @@ function bulletHell(actions, values = {}, exitAction = () => {}) {
         }
         if (!options.performanceMode) info.ctx.shadowBlur = 8;
         info.ctx.fill();
+
         info.ctx.restore();
 
         requestAnimationFrame(animate);

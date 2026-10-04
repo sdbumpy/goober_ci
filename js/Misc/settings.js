@@ -565,7 +565,7 @@ addLayer("settings", {
         },
         111: {
             title: "Blossom Theme",
-            canClick() {return options.theme != "blossom" && false},
+            canClick() {return options.theme != "blossom" && hasMilestone("prj", 501)},
             unlocked: false,
             tooltip() {return !false ? "Begin again. And again. And again." : ""},
             onClick() {

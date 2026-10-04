@@ -18,6 +18,7 @@
         autoPrismaticAmount: new Decimal(1),
         autoPrismaticType: false, // False: Amount ; True: Time
         autoPrismaticTime: new Decimal(0),
+        prismaticResetTime: new Decimal(0),
 
         fountainSpeed: new Decimal(0),
         totalFountainCycles: new Decimal(0),
@@ -251,6 +252,30 @@
                 statReq: new Decimal(1),
             },
         },
+
+        growth: {
+            technological: {
+                amount: new Decimal(0),
+                best: new Decimal(0),
+                gain: new Decimal(0),
+                effect: new Decimal(1),
+                effect2: new Decimal(1),
+            },
+            natural: {
+                amount: new Decimal(0),
+                best: new Decimal(0),
+                gain: new Decimal(0),
+                effect: new Decimal(1),
+                effect2: new Decimal(1),
+            },
+            cosmic: {
+                amount: new Decimal(0),
+                best: new Decimal(0),
+                gain: new Decimal(0),
+                effect: new Decimal(1),
+                effect2: new Decimal(1),
+            },
+        },
     }},
     automate() {},
     nodeStyle() {
@@ -290,8 +315,10 @@
         if (hasMilestone("prj", 203)) player.pri.prismsToGet = player.pri.prismsToGet.mul(2);
         player.pri.prismsToGet = player.pri.prismsToGet.mul(player.pri.fountains[8].completionEffect);
         if (player.wel.modules[3].completions.gte(1e12)) player.pri.prismsToGet = player.pri.prismsToGet.mul(player.wel.modules[4].completionEffect);
+        if (hasMilestone("prj", 207)) player.pri.prismsToGet = player.pri.prismsToGet.mul(player.blu.blueshiftEffect2.max(1));
         if (hasAchievement("achievements", 1214)) player.pri.prismsToGet = player.pri.prismsToGet.mul(1.2);
 
+        player.pri.prismsToGet = player.pri.prismsToGet.mul(player.pri.prismaticResetTime.div(30).min(1))
         player.pri.prismsToGet = player.pri.prismsToGet.floor()
 
         if (player.pri.bestPrisms.lt(player.pri.prisms)) player.pri.bestPrisms = player.pri.prisms;
@@ -314,6 +341,8 @@
             module.statReq = fountain.getstatReq()
             module.completionEffect = fountain.getCompletionEffect()
 
+            module.pourSafety = false
+            module.focusSafety = false
             player.pri.fountains[i].focusTimerMax = player.prj.prismFountainFocusExtension.mul(4).div(Math.pow(1.4, i - 1))
             if (player.pri.fountains[i].isFocused) {
                 player.pri.fountains[i].focusTimer = player.pri.fountains[i].focusTimer.sub(delta)
@@ -355,15 +384,31 @@
             }
         });
         player.pri.totalFountainCycles = new Decimal(player.pri.totalFountainCycles)
+
+        // GREENHOUSE
+
+        if (hasMilestone("prj", 206)) {
+            player.pri.growth.technological.gain = player.wel.lightWellSpeed.div(1e4).pow(2)
+            player.pri.growth.technological.amount = player.pri.growth.technological.amount.add(player.pri.growth.technological.gain.mul(delta))
+            player.pri.growth.technological.effect = player.pri.growth.technological.amount.div(60).add(1).log(10).add(1).pow(0.4).sub(1).mul(0.25).add(1).min(1)
+            player.pri.growth.technological.effect2 = player.pri.growth.technological.amount.add(1).log(10).add(1).pow(0.6).sub(1).pow_base(10).pow(2)
+        }
+
+        // MISC
+
+        player.pri.prismaticResetTime = player.pri.prismaticResetTime.add(delta)
     },
     
     prismReset(isRewarded) {
+        if (!player.wel.light.gte(1e15)) return;
         if (isRewarded) {
             player.pri.prisms = player.pri.prisms.add(player.pri.prismsToGet)
             player.pri.totalPrisms = player.pri.totalPrisms.add(player.pri.prismsToGet)
             if (player.pri.prismsToGet.gt(player.pri.bestPrismsInOneReset)) player.pri.bestPrismsInOneReset = player.pri.prismsToGet;
             if (!hasAchievement("achievements", 1207)) completeAchievement("achievements", 1207);
         }
+
+        player.pri.prismaticResetTime = new Decimal(0)
 
         player.wel.light = new Decimal(0)
         player.wel.bestLight = new Decimal(0)
@@ -640,7 +685,7 @@
                 });
             },
             style() {
-                let look = {width: "536px", minHeight: "75px", maxHeight: "75px", borderRadius: "25px", margin: "3px"}
+                let look = {width: "512px", minHeight: "60px", maxHeight: "60px", borderRadius: "25px", margin: "3px"}
                 if (this.canClick()) {
                     look.backgroundColor = "#dfffdf"
                     look.border = "3px solid #0000003f"
@@ -1049,19 +1094,22 @@
             },
         },
         "autoPrismaticToggle": {
-            title() {return player.pri.autoPrismaticToggle ? "Auto-Reset: ON" : "Auto-Reset: OFF"},
-            canClick: true,
+            title() {return "<h3>" + (player.pri.autoPrismaticToggle ? "Auto-Reset: ON" : "Auto-Reset: OFF") + "</h3><br><small>Requires 3 Focus"},
+            canClick() {return player.prj.maxFocused.sub(player.prj.focused).gte(3) || player.pri.autoPrismaticToggle},
             unlocked: true,
             onClick() {
                 if (player.pri.autoPrismaticToggle) {
                     player.pri.autoPrismaticToggle = false
+                    player.prj.focused = player.prj.focused.sub(3)
                 } else {
+                    if (!player.prj.maxFocused.sub(player.prj.focused).gte(3)) return;
                     player.pri.autoPrismaticToggle = true
+                    player.prj.focused = player.prj.focused.add(3)
                 }
             },
             style() {
-                let look = {width: "194px", minHeight: "45.5px", maxHeight: "45.5px", fontSize: "12px", border: "3px solid #0000003f", borderRadius: "0 0 7px 0"}
-                if (player.pri.autoPrismaticToggle) {look.backgroundColor = "#a8ffff"} else {look.backgroundColor = "#4d9999"}
+                let look = {width: "194px", minHeight: "45.5px", maxHeight: "45.5px", fontSize: "10px", border: "3px solid #0000003f", borderRadius: "0 0 7px 0", lineHeight: "1"}
+                if (player.pri.autoPrismaticToggle) {look.backgroundColor = "#dfffdf"} else {look.backgroundColor = "#4d9999"}
                 return look
             },
         },
@@ -1075,7 +1123,7 @@
             style() {
                 let look = {width: "95.5px", minHeight: "45.5px", maxHeight: "45.5px", fontSize: "12px", border: "3px solid #0000003f", borderRadius: "0"}
                 if (this.canClick()) {
-                    look.backgroundColor = "#a8ffff"
+                    look.backgroundColor = "#d6ebff"
                     look.border = "3px solid #0000003f"
                     look.color = "black"
                 } else {
@@ -1096,7 +1144,7 @@
             style() {
                 let look = {width: "95.5px", minHeight: "45.5px", maxHeight: "45.5px", fontSize: "12px", border: "3px solid #0000003f", borderRadius: "0 7px 0 0"}
                 if (this.canClick()) {
-                    look.backgroundColor = "#a8ffff"
+                    look.backgroundColor = "#d6ebff"
                     look.border = "3px solid #0000003f"
                     look.color = "black"
                 } else {
@@ -1121,8 +1169,8 @@
             unlocked() { return true },
             conditionDisplay() { return "This should always be unlocked... why are you seeing this??"},
             condition() { return true },
-            canAuto() { return player.blu.totalBlueshifts.gte(1) && hasMilestone("prj", 301) },
-            infiniteAuto() { return false },
+            canAuto() { return (player.blu.totalBlueshifts.gte(1) && hasMilestone("prj", 301)) || player.bum.starshines.gt(0) },
+            infiniteAuto() { return hasUpgrade("bum", 11) },
             effectDisplay() { return "Boosts light gain by x" + formatSimple(layers.pri.fountains[1].getCompletionEffect(), 2) + ", based on light"},
             currencyLocation() { return player.pri },
             currencyInternalName: "prisms",
@@ -1143,6 +1191,10 @@
 
                 return s
             },
+            getTimeBulk() {
+                let unscaledBulk = player.pri.fountains[1].time.div(10).root(1.0625).log(1.25)
+                return unscaledBulk.max(0).floor()
+            },
             getstatReq() {
                 let completions = player.pri.fountains[1].completions
                 let s = completions.div(8).add(1).pow(4)
@@ -1150,6 +1202,10 @@
                 s = s.mul(completions.sub(20).max(0).pow_base(1.25))
 
                 return s.floor()
+            },
+            getStatBulk() {
+                let unscaledBulk = player.pri.fountains[1].time.log(1.25)
+                return unscaledBulk.max(0).floor()
             },
             getTimeSpeed() {
                 let s = new Decimal(1)
@@ -1164,8 +1220,8 @@
             unlocked() { return true },
             conditionDisplay() { return "1 Tetrahedron ↻"},
             condition() { return player.pri.fountains[1].completions.gt(0) },
-            canAuto() { return player.blu.totalBlueshifts.gte(2) && hasMilestone("prj", 301) },
-            infiniteAuto() { return false },
+            canAuto() { return (player.blu.totalBlueshifts.gte(2) && hasMilestone("prj", 301)) || player.bum.starshines.gt(0) },
+            infiniteAuto() { return hasUpgrade("bum", 11) },
             effectDisplay() { return "Boosts light well ↻ gain by x" + formatSimple(layers.pri.fountains[2].getCompletionEffect(), 2)},
             currencyLocation() { return player.pri },
             currencyInternalName: "prisms",
@@ -1175,6 +1231,7 @@
 
                 s = completions.add(1)
                 if (hasMilestone("prj", 203)) s = s.pow(1.5);
+                if (hasMilestone("prj", 208)) s = s.mul(completions.pow_base(1.004));
 
                 return s.floor()
             },
@@ -1208,8 +1265,8 @@
             unlocked() { return true },
             conditionDisplay() { return "1 Tetrahedron ↻"},
             condition() { return player.pri.fountains[1].completions.gt(0) },
-            canAuto() { return player.blu.totalBlueshifts.gte(3) && hasMilestone("prj", 301) },
-            infiniteAuto() { return false },
+            canAuto() { return (player.blu.totalBlueshifts.gte(3) && hasMilestone("prj", 301)) || player.bum.starshines.gt(0) },
+            infiniteAuto() { return hasUpgrade("bum", 11) },
             effectDisplay() { return "Reduces light fountain requirements by /" + formatSimple(layers.pri.fountains[3].getCompletionEffect(), 2)},
             currencyLocation() { return player.pri },
             currencyInternalName: "prisms",
@@ -1219,6 +1276,7 @@
 
                 s = completions.add(1).pow(2)
                 if (hasMilestone("prj", 203)) s = s.pow(1.5)
+                if (hasMilestone("prj", 208)) s = s.mul(completions.pow_base(1.05));
 
                 return s.floor()
             },
@@ -1252,8 +1310,8 @@
             unlocked() { return player.pri.fountains[2].completions.gt(0) || player.pri.fountains[3].completions.gt(0) },
             conditionDisplay() { return "8 Tetrahedron ↻"},
             condition() { return player.pri.fountains[1].completions.gte(8) },
-            canAuto() { return player.blu.totalBlueshifts.gte(4) && hasMilestone("prj", 301) },
-            infiniteAuto() { return false },
+            canAuto() { return (player.blu.totalBlueshifts.gte(4) && hasMilestone("prj", 301)) || player.bum.starshines.gt(0) },
+            infiniteAuto() { return hasUpgrade("bum", 11) },
             effectDisplay() { return "Boosts light gain by x" + formatSimple(layers.pri.fountains[4].getCompletionEffect(), 2) + ", based on prisms"},
             currencyLocation() { return player.pri },
             currencyInternalName: "prisms",
@@ -1296,8 +1354,8 @@
             unlocked() { return player.pri.fountains[2].completions.gt(0) || player.pri.fountains[3].completions.gt(0) },
             conditionDisplay() { return "Gain 100 Prisms in one reset"},
             condition() { return player.pri.bestPrismsInOneReset.gte(100) },
-            canAuto() { return player.blu.totalBlueshifts.gte(5) && hasMilestone("prj", 301) },
-            infiniteAuto() { return false },
+            canAuto() { return (player.blu.totalBlueshifts.gte(5) && hasMilestone("prj", 301)) || player.bum.starshines.gt(0) },
+            infiniteAuto() { return hasUpgrade("bum", 11) },
             effectDisplay() { return "Boosts light well speed by x" + formatSimple(layers.pri.fountains[5].getCompletionEffect(), 2)},
             currencyLocation() { return player.pri },
             currencyInternalName: "prisms",
@@ -1339,8 +1397,8 @@
             unlocked() { return player.pri.fountains[2].completions.gt(0) || player.pri.fountains[3].completions.gt(0) },
             conditionDisplay() { return "10 Spiral ↻ and 10 Arrow ↻"},
             condition() { return player.pri.fountains[2].completions.gte(10) && player.pri.fountains[3].completions.gte(10) },
-            canAuto() { return player.blu.totalBlueshifts.gte(6) && hasMilestone("prj", 301) },
-            infiniteAuto() { return false },
+            canAuto() { return (player.blu.totalBlueshifts.gte(6) && hasMilestone("prj", 301)) || player.bum.starshines.gt(0) },
+            infiniteAuto() { return hasUpgrade("bum", 11) },
             effectDisplay() { return "Boosts time capsules stored by x" + formatSimple(layers.pri.fountains[6].getCompletionEffect(), 2)},
             currencyLocation() { return player.pri },
             currencyInternalName: "prisms",
@@ -1349,6 +1407,8 @@
                 let completions = player.pri.fountains[6].completions
 
                 s = completions.pow(0.8).pow_base(1.2).sub(1).mul(2.5).add(1)
+                if (hasMilestone("prj", 209)) s = s.pow(1.25);
+                if (s.gt(4e3)) s = s.div(4e3).pow(0.5).mul(4e3);
 
                 return s
             },
@@ -1382,8 +1442,8 @@
             unlocked() { return (player.pri.fountains[4].completions.gt(0) || player.pri.fountains[5].completions.gt(0) || player.pri.fountains[6].completions.gt(0)) && hasMilestone("prj", 302) },
             conditionDisplay() { return "20 Octahedron ↻"},
             condition() { return player.pri.fountains[4].completions.gte(20) },
-            canAuto() { return player.blu.totalBlueshifts.gte(7) && hasMilestone("prj", 301) },
-            infiniteAuto() { return false },
+            canAuto() { return (player.blu.totalBlueshifts.gte(7) && hasMilestone("prj", 301)) || player.bum.starshines.gt(0) },
+            infiniteAuto() { return hasUpgrade("bum", 11) },
             effectDisplay() { return "Boosts light gain by x" + formatSimple(layers.pri.fountains[7].getCompletionEffect(), 2) + ", based on light well ↻"},
             currencyLocation() { return player.pri },
             currencyInternalName: "prisms",
@@ -1393,9 +1453,6 @@
             },
             unlocked() {
                 return (player.pri.fountains[4].completions.gt(0) || player.pri.fountains[5].completions.gt(0) || player.pri.fountains[6].completions.gt(0)) && hasMilestone("prj", 302)
-            },
-            canAuto() {
-                return player.blu.totalBlueshifts.gte(7) && hasMilestone("prj", 301)
             },
             getCompletionEffect() {
                 let completions = player.pri.fountains[7].completions.pow(0.75)
@@ -1408,10 +1465,10 @@
                 let completions = player.pri.fountains[7].completions
                 let s = new Decimal(1)
 
-                s = s.mul(completions.pow_base(completions))
+                s = s.mul(completions.add(1).pow_base(completions.add(1)))
                 s = s.mul(completions.sub(20).max(0).pow_base(1.4))
 
-                s = s.pow(1.0625).mul(4.8e8)
+                s = s.pow(1.0625).mul(2.4e7)
 
                 return s
             },
@@ -1419,10 +1476,10 @@
                 let completions = player.pri.fountains[7].completions
                 let s = new Decimal(1)
 
-                s = s.mul(completions.pow_base(completions))
+                s = s.mul(completions.add(1).pow_base(completions.add(1)))
                 s = s.mul(completions.sub(20).max(0).pow_base(1.4))
                 
-                s = s.mul(1.2e7)
+                s = s.mul(1.2e5)
 
                 return s.floor()
             },
@@ -1439,8 +1496,8 @@
             unlocked() { return (player.pri.fountains[4].completions.gt(0) || player.pri.fountains[5].completions.gt(0) || player.pri.fountains[6].completions.gt(0)) && hasMilestone("prj", 302) },
             conditionDisplay() { return "Gain 1,000,000 Prisms in one reset"},
             condition() { return player.pri.bestPrismsInOneReset.gte(1e6) },
-            canAuto() { return player.blu.totalBlueshifts.gte(8) && hasMilestone("prj", 301) },
-            infiniteAuto() { return false },
+            canAuto() { return (player.blu.totalBlueshifts.gte(8) && hasMilestone("prj", 301)) || player.bum.starshines.gt(0) },
+            infiniteAuto() { return hasUpgrade("bum", 11) },
             effectDisplay() { return "Boosts prism gain by x" + formatSimple(layers.pri.fountains[8].getCompletionEffect(), 2)},
             currencyLocation() { return player.pri },
             currencyInternalName: "prisms",
@@ -1483,8 +1540,8 @@
             unlocked() { return (player.pri.fountains[4].completions.gt(0) || player.pri.fountains[5].completions.gt(0) || player.pri.fountains[6].completions.gt(0)) && hasMilestone("prj", 302) },
             conditionDisplay() { return "1 Tetrahedron ↻"},
             condition() { return player.prj.bestProjectSpeed.gte(400) },
-            canAuto() { return player.blu.totalBlueshifts.gte(9) && hasMilestone("prj", 301) },
-            infiniteAuto() { return false },
+            canAuto() { return (player.blu.totalBlueshifts.gte(9) && hasMilestone("prj", 301)) || player.bum.starshines.gt(0) },
+            infiniteAuto() { return hasUpgrade("bum", 11) },
             effectDisplay() { return "Boosts project speed by x" + formatSimple(layers.pri.fountains[9].getCompletionEffect(), 2)},
             currencyLocation() { return player.pri },
             currencyInternalName: "prisms",
@@ -1522,31 +1579,26 @@
             },
         },
         10: {
-            title: "Cube",
+            title: "Gear",
             unlocked() { return player.pri.fountains[2].completions.gt(0) || player.pri.fountains[3].completions.gt(0) },
-            conditionDisplay() { return "1 Tetrahedron ↻"},
+            conditionDisplay() { return "x1e10 Light Well Speed"},
             condition() { return player.pri.fountains[1].completions.gte(8) },
-            canAuto() { return player.blu.totalBlueshifts.gte(10) && hasMilestone("prj", 301) },
+            canAuto() { return hasMilestone("prj", 406) },
             infiniteAuto() { return false },
-            effectDisplay() { return "Boosts light gain by x" + formatSimple(layers.pri.fountains[10].getCompletionEffect(), 2) + ", based on prisms"},
+            effectDisplay() { return "Strengthen per-well blueshift effects by ^" + formatSimple(layers.pri.fountains[10].getCompletionEffect(), 3)},
             currencyLocation() { return player.pri },
             currencyInternalName: "prisms",
             currencyDisplayName: "Prisms",
-            completionEffectPrefix: "x",
-            completionEffectSuffix: " Light",
             condition() {
-                return player.wel.light.gte(1e100)
+                return player.wel.lightWellSpeed.gte(1e10)
             },
             unlocked() {
                 return (player.pri.fountains[7].completions.gt(0) || player.pri.fountains[8].completions.gt(0) || player.pri.fountains[9].completions.gt(0)) && hasMilestone("prj", 403)
             },
-            canAuto() {
-                return false
-            },
             getCompletionEffect() {
                 let completions = player.pri.fountains[10].completions
 
-                s = completions.pow(0.75).pow_base(4)
+                s = completions.pow(0.5).mul(0.05).add(1)
 
                 return s
             },
@@ -1554,16 +1606,21 @@
                 let completions = player.pri.fountains[10].completions
                 let s = new Decimal(1)
 
-                s = s.mul(completions.pow_base(4))
-                s = s.mul(completions.sub(20).max(0).pow_base(1.4))
-                s = s.pow(1.0625).mul(1.4e13)
+                s = s.mul(completions.add(1).pow_base(completions.div(2).add(1)))
+                s = s.mul(completions.sub(20).max(0).pow_base(2))
+
+                s = s.pow(1.0625).mul(4e40)
 
                 return s
             },
             getstatReq() {
                 let completions = player.pri.fountains[10].completions
-                let s = completions.pow_base(4).mul(1e11)
-                s = s.mul(completions.sub(20).max(0).pow_base(1.4))
+                let s = new Decimal(1)
+
+                s = s.mul(completions.add(1).pow_base(completions.div(2).add(1)))
+                s = s.mul(completions.sub(20).max(0).pow_base(2))
+
+                s = s.mul(1e36)
 
                 return s.floor()
             },
@@ -1576,31 +1633,26 @@
             },
         },
         11: {
-            title: "Star",
+            title: "Cube",
             unlocked() { return player.pri.fountains[2].completions.gt(0) || player.pri.fountains[3].completions.gt(0) },
-            conditionDisplay() { return "1 Tetrahedron ↻"},
+            conditionDisplay() { return "x1e9 Light Well δ Effect"},
             condition() { return player.pri.fountains[1].completions.gte(8) },
-            canAuto() { return false },
+            canAuto() { return hasMilestone("prj", 406) },
             infiniteAuto() { return false },
-            effectDisplay() { return "Boosts light gain by x" + formatSimple(layers.pri.fountains[11].getCompletionEffect(), 2) + ", based on prisms"},
+            effectDisplay() { return "Boosts light well speed by x" + formatSimple(layers.pri.fountains[11].getCompletionEffect(), 2) + ", based on light"},
             currencyLocation() { return player.pri },
             currencyInternalName: "prisms",
             currencyDisplayName: "Prisms",
-            completionEffectPrefix: "x",
-            completionEffectSuffix: " Starlight",
             condition() {
-                return player.bum.starshines.gte(100)
+                return player.wel.modules[4].completionEffect.gte(1e9) || player.pri.fountains[11].completions.gt(0)
             },
             unlocked() {
                 return (player.pri.fountains[7].completions.gt(0) || player.pri.fountains[8].completions.gt(0) || player.pri.fountains[9].completions.gt(0)) && hasMilestone("prj", 403)
             },
-            canAuto() {
-                return false
-            },
             getCompletionEffect() {
-                let completions = player.pri.fountains[11].completions
+                let completions = player.pri.fountains[11].completions.pow(0.75)
 
-                s = completions.pow(0.75).pow_base(1.25)
+                s = player.wel.light.add(1).log10().div(150).pow(4).add(1).pow(completions).log(10).add(1).pow(0.5).sub(1).pow_base(10)
 
                 return s
             },
@@ -1608,16 +1660,21 @@
                 let completions = player.pri.fountains[11].completions
                 let s = new Decimal(1)
 
-                s = s.mul(completions.pow_base(4))
-                s = s.mul(completions.sub(20).max(0).pow_base(1.4))
-                s = s.pow(1.0625).mul(1.4e13)
+                s = s.mul(completions.add(1).pow_base(completions.div(2).add(1)))
+                s = s.mul(completions.sub(20).max(0).pow_base(2))
+
+                s = s.pow(1.0625).mul(4e44)
 
                 return s
             },
             getstatReq() {
                 let completions = player.pri.fountains[11].completions
-                let s = completions.pow_base(4).mul(1e11)
-                s = s.mul(completions.sub(20).max(0).pow_base(1.4))
+                let s = new Decimal(1)
+
+                s = s.mul(completions.add(1).pow_base(completions.div(2).add(1)))
+                s = s.mul(completions.sub(20).max(0).pow_base(2))
+
+                s = s.mul(1e40)
 
                 return s.floor()
             },
@@ -1630,31 +1687,26 @@
             },
         },
         12: {
-            title: "Gear",
+            title: "Star",
             unlocked() { return player.pri.fountains[2].completions.gt(0) || player.pri.fountains[3].completions.gt(0) },
-            conditionDisplay() { return "1 Tetrahedron ↻"},
+            conditionDisplay() { return "400 Starlight Fountain ↻"},
             condition() { return player.pri.fountains[1].completions.gte(8) },
-            canAuto() { return false },
+            canAuto() { return hasMilestone("prj", 406) },
             infiniteAuto() { return false },
-            effectDisplay() { return "Boosts light gain by x" + formatSimple(layers.pri.fountains[12].getCompletionEffect(), 2) + ", based on prisms"},
+            effectDisplay() { return "Boosts starlight fountain speed by x" + formatSimple(layers.pri.fountains[11].getCompletionEffect(), 2) + "."},
             currencyLocation() { return player.pri },
             currencyInternalName: "prisms",
             currencyDisplayName: "Prisms",
-            completionEffectPrefix: "x",
-            completionEffectSuffix: " Study Speed",
             condition() {
-                return player.prj.bestProjectSpeed.gte(1e4)
+                return player.bum.fountains[1].completions.add(player.bum.fountains[2].completions).add(player.bum.fountains[3].completions).gte(400)
             },
             unlocked() {
                 return (player.pri.fountains[7].completions.gt(0) || player.pri.fountains[8].completions.gt(0) || player.pri.fountains[9].completions.gt(0)) && hasMilestone("prj", 403)
             },
-            canAuto() {
-                return false
-            },
             getCompletionEffect() {
                 let completions = player.pri.fountains[12].completions
 
-                s = completions.pow(0.75).pow_base(1.25)
+                s = completions.div(4).add(1)
 
                 return s
             },
@@ -1662,15 +1714,15 @@
                 let completions = player.pri.fountains[12].completions
                 let s = new Decimal(1)
 
-                s = s.mul(completions.pow_base(4))
+                s = s.mul(completions.pow_base(5))
                 s = s.mul(completions.sub(20).max(0).pow_base(1.4))
-                s = s.pow(1.0625).mul(1.4e13)
+                s = s.pow(1.0625).mul(4e52)
 
                 return s
             },
             getstatReq() {
                 let completions = player.pri.fountains[12].completions
-                let s = completions.pow_base(4).mul(1e11)
+                let s = completions.pow_base(5).mul(1e48)
                 s = s.mul(completions.sub(20).max(0).pow_base(1.4))
 
                 return s.floor()
@@ -1849,7 +1901,7 @@
     microtabs: {
         stuff: {
             "Pyramid": {
-                buttonStyle() { return { color: "white", borderRadius: "8px"} },
+                buttonStyle() { return { color: "white", borderWidth: "2px", borderRadius: "20px"} },
                 unlocked() { return true },
                 content() {
                     let look = [
@@ -1879,7 +1931,7 @@
                                 textColor: "#ffffff",
                                 bottomAdjacent: layers.pri.fountains[2].unlocked(),
                             }),//linear-gradient(45deg, #ffd6d6 0%, #abffd6 33%, #d6ebff 66%, #ffabff 100%)
-                        ], {background: "linear-gradient(#ffd6d6, #abffd6)", width: "fit-content", borderRadius:
+                        ], {background: "linear-gradient(#ffd6d6, #abffd6)", width: "fit-content", padding: "3px", marginBottom: "-6px", borderRadius:
                             layers.pri.fountains[2].unlocked() ? "28px 28px 0 0" : "28px"
                         }],
                         ["style-row", [
@@ -1901,7 +1953,7 @@
                                 leftAdjacent: true,
                                 bottomAdjacent: layers.pri.fountains[4].unlocked(),
                             }),
-                        ], {background: "linear-gradient(#abffd6, #d6ebff)", width: "fit-content", borderRadius:
+                        ], {background: "linear-gradient(#abffd6, #d6ebff)", width: "fit-content", padding: "3px", marginBottom: "-6px", borderRadius:
                             layers.pri.fountains[4].unlocked() ? "28px 28px 0 0" : "28px"
                         }],
                         ["style-row", [
@@ -1933,7 +1985,7 @@
                                 leftAdjacent: true,
                                 bottomAdjacent: layers.pri.fountains[7].unlocked(),
                             }),
-                        ], {background: "linear-gradient(#d6ebff, #ffabff)", width: "fit-content", borderRadius:
+                        ], {background: "linear-gradient(#d6ebff, #ffabff)", width: "fit-content", padding: "3px", marginBottom: "-6px", borderRadius:
                             layers.pri.fountains[7].unlocked() ? "28px 28px 0 0" : "28px"
                         }],
                         ["style-row", [
@@ -1968,32 +2020,159 @@
                                 topAdjacent: layers.pri.fountains[4].unlocked(),
                                 bottomAdjacent: layers.pri.fountains[10].unlocked(),
                             }),
-                        ], {background: "linear-gradient(#ffabff, #ffd6d6)", width: "fit-content", borderRadius:
-                            layers.pri.fountains[10].unlocked() ? "28px 28px 0 0" : "28px"
+                        ], {background: "linear-gradient(#ffabff, #ffd6d6)", width: "fit-content", padding: "3px", marginBottom: "-6px", borderRadius:
+                            layers.pri.fountains[10].unlocked() ? "0" : "0 0 28px 28px"
                         }],
                         ["style-row", [
-                        ], {background: "linear-gradient(#ffabff, #ffd6d6)", width: "fit-content", borderRadius:
-                            layers.pri.fountains[13].unlocked() ? "28px 28px 0 0" : "28px"
+                            component_fountain("pri", 10, {
+                                primaryColor: "#4d9999",
+                                secondaryColor: "#335966",
+                                progressFrontColor: "#d6ebff",
+                                progressBackColor: "#1a2d33",
+                                textColor: "#ffffff",
+                                rightAdjacent: true,
+                                topAdjacent: layers.pri.fountains[7].unlocked(),
+                                bottomAdjacent: false,
+                            }),
+                            component_fountain("pri", 11, {
+                                primaryColor: "#4d9999",
+                                secondaryColor: "#335966",
+                                progressFrontColor: "#d6ebff",
+                                progressBackColor: "#1a2d33",
+                                textColor: "#ffffff",
+                                rightAdjacent: true,
+                                leftAdjacent: true,
+                                topAdjacent: layers.pri.fountains[7].unlocked(),
+                                bottomAdjacent: false,
+                            }),
+                            component_fountain("pri", 12, {
+                                primaryColor: "#4d9999",
+                                secondaryColor: "#335966",
+                                progressFrontColor: "#d6ebff",
+                                progressBackColor: "#1a2d33",
+                                textColor: "#ffffff",
+                                leftAdjacent: true,
+                                topAdjacent: layers.pri.fountains[7].unlocked(),
+                                bottomAdjacent: false,
+                            }),
+                        ], {background: "linear-gradient(#ffd6d6, #abffd6)", width: "fit-content", padding: "3px", marginBottom: "-6px", borderRadius:
+                            "0 0 28px 28px"
                         }],
                         ["style-row", [
-                        ], {background: "linear-gradient(#ffabff, #ffd6d6)", width: "fit-content", borderRadius:
-                            layers.pri.fountains[15].unlocked() ? "28px 28px 0 0" : "28px"
+                        ], {background: "linear-gradient(#abffd6, #d6ebff)", width: "fit-content", padding: "3px", marginBottom: "-6px", borderRadius:
+                            "0 0 28px 28px"
                         }],
-                        ["blank", "3px"],
+                        ["blank", "9px"],
                         ["clickable", "prismFountains_respecFocus"],
                     ]
                     return look
                 }
             },
             "Greenhouse": {
-                buttonStyle() { return { color: "white", borderRadius: "8px"} },
-                unlocked() { return hasMilestone("prj", 206) },
+                buttonStyle() { return { color: "white", borderWidth: "2px", borderRadius: "20px"} },
+                unlocked() { return hasMilestone("prj", 206) && false },
                 content() {
                     let look = [
-                        ["blank", "25px"],
-                        ["raw-html", 
-                        "COMING SOON..."
-                        , {color: "#dfffdf", fontSize: "32px", fontFamily: "monospace"}],
+                        ["blank", "5px"],
+                        ["microtabs", "greenhouse", {borderWidth: "0"}],
+                    ]
+                    return look
+                }
+            },
+        },
+        greenhouse: {
+            "Technological Growth": {
+                buttonStyle() { return { color: "white", background: "linear-gradient(120deg, #595A5C3f 0%, #9c9c9c3f 100%)", borderColor: "#9c9c9c", outline: "2px solid #d6ebff", borderRadius: "20px", marginLeft: "7px", marginRight: "7px"} },
+                unlocked() { return true },
+                content() {
+                    let look = [
+                        ["blank", "12px"],
+                        ["style-row", [
+                            ["top-column", [
+                                ["style-column", [
+                                ], {width: "25px", height: "450px"}],
+                                ["style-column", [
+                                ], {background: "#9c9c9c", width: "25px", height: "150px"}],
+                            ], {background: "#0000003f", border: "2px solid #9c9c9c", outline: "2px solid #d6ebff", borderRadius: "25px 0 0 25px", width: "25px", height: "600px", overflow: "hidden"}],
+                            ["blank", "6px", {width: "18px"}],
+                            ["top-column", [
+                                ["style-column", [
+                                    ["raw-html", "You have <h3>" + format(player.pri.growth.technological.amount, 2) + "m</h3> of<br>technological growth.", {color: "#ffffff", fontSize: "20px", fontFamily: "monospace"}],
+                                    ["raw-html", "<small>Boosts light fountain effects by ^" + format(player.pri.growth.technological.effect, 3) + ".</small>", {color: "#ffffff", fontSize: "16px", fontFamily: "monospace"}],
+                                    ["raw-html", "<small>Boosts star gain by x" + format(player.pri.growth.technological.effect2, 2) + ".</small>", {color: "#ffffff", fontSize: "16px", fontFamily: "monospace"}],
+                                ], {height: "100px"}],
+                                ["style-column", [
+                                ], {background: "#9c9c9c", width: "450px", height: "3px"}],
+                                ["top-column", [
+                                    ["blank", "6px"],
+                                    ["raw-html", "Light well speed provides a base growth rate of <br><h3>+" + format(player.pri.growth.technological.gain, 2) + "m/s", {color: "#ffffff", fontSize: "16px", fontFamily: "monospace"}],
+                                ], {height: "100px"}],
+                            ], {background: "linear-gradient(120deg, #595A5C3f 0%, #9c9c9c3f 100%)", border: "2px solid #9c9c9c", outline: "2px solid #d6ebff", borderRadius: "0 25px 25px 0", width: "450px", height: "600px"}],
+                        ]],
+                    ]
+                    return look
+                }
+            },
+            "Natural Growth": {
+                buttonStyle() { return { color: "white", background: "linear-gradient(120deg, #63C9643f 0%, #0079173f 100%)", borderColor: "#63C964", outline: "2px solid #d6ebff", borderRadius: "20px", marginLeft: "7px", marginRight: "7px"} },
+                unlocked() { return true },
+                content() {
+                    let look = [
+                        ["blank", "12px"],
+                        ["style-row", [
+                            ["top-column", [
+                                ["style-column", [
+                                ], {width: "25px", height: "450px"}],
+                                ["style-column", [
+                                ], {background: "#63C964", width: "25px", height: "150px"}],
+                            ], {background: "#0000003f", border: "2px solid #63C964", outline: "2px solid #d6ebff", borderRadius: "25px 0 0 25px", width: "25px", height: "600px", overflow: "hidden"}],
+                            ["blank", "6px", {width: "18px"}],
+                            ["top-column", [
+                                ["style-column", [
+                                    ["raw-html", "You have <h3>" + format(player.pri.growth.natural.amount, 2) + "m</h3> of<br>natural growth.", {color: "#ffffff", fontSize: "20px", fontFamily: "monospace"}],
+                                    ["raw-html", "<small>Boosts pyramid fountain effects by ^" + format(player.pri.growth.natural.effect, 3) + ".</small>", {color: "#ffffff", fontSize: "16px", fontFamily: "monospace"}],
+                                    ["raw-html", "<small>Boosts base technological growth gain by ^" + format(player.pri.growth.natural.effect2, 3) + ".</small>", {color: "#ffffff", fontSize: "16px", fontFamily: "monospace"}],
+                                ], {height: "100px"}],
+                                ["style-column", [
+                                ], {background: "#63C964", width: "450px", height: "3px"}],
+                                ["top-column", [
+                                    ["blank", "6px"],
+                                    ["raw-html", "Light well ↻ provides a base growth rate of <br><h3>+" + format(player.pri.growth.natural.gain, 2) + "m/s", {color: "#ffffff", fontSize: "16px", fontFamily: "monospace"}],
+                                ], {height: "100px"}],
+                            ], {background: "linear-gradient(120deg, #0079173f 0%, #63C9643f 100%)", border: "2px solid #63C964", outline: "2px solid #d6ebff", borderRadius: "0 25px 25px 0", width: "450px", height: "600px"}],
+                        ]],
+                    ]
+                    return look
+                }
+            },
+            "Cosmic Growth": {
+                buttonStyle() { return { color: "white", background: "linear-gradient(15deg, #0112473f 0%, #37078f3f 50%, #5d14823f 100%)", borderColor: "#5d1482", outline: "2px solid #d6ebff", borderRadius: "20px", marginLeft: "7px", marginRight: "7px"} },
+                unlocked() { return true },
+                content() {
+                    let look = [
+                        ["blank", "12px"],
+                        ["style-row", [
+                            ["top-column", [
+                                ["style-column", [
+                                ], {width: "25px", height: "450px"}],
+                                ["style-column", [
+                                ], {background: "#5d1482", width: "25px", height: "150px"}],
+                            ], {background: "#0000003f", border: "2px solid #5d1482", outline: "2px solid #d6ebff", borderRadius: "25px 0 0 25px", width: "25px", height: "600px", overflow: "hidden"}],
+                            ["blank", "6px", {width: "18px"}],
+                            ["top-column", [
+                                ["style-column", [
+                                    ["raw-html", "You have <h3>" + format(player.pri.growth.cosmic.amount, 2) + "m</h3> of<br>cosmic growth.", {color: "#ffffff", fontSize: "20px", fontFamily: "monospace"}],
+                                    ["raw-html", "<small>Boosts project speed by x" + format(player.pri.growth.cosmic.effect, 2) + ".</small>", {color: "#ffffff", fontSize: "16px", fontFamily: "monospace"}],
+                                    ["raw-html", "<small>Boosts base natural growth gain by ^" + format(player.pri.growth.cosmic.effect2, 3) + ".</small>", {color: "#ffffff", fontSize: "16px", fontFamily: "monospace"}],
+                                ], {height: "100px"}],
+                                ["style-column", [
+                                ], {background: "#5d1482", width: "450px", height: "3px"}],
+                                ["top-column", [
+                                    ["blank", "6px"],
+                                    ["raw-html", "Light provides a base growth rate of <br><h3>+" + format(player.pri.growth.cosmic.gain, 2) + "m/s", {color: "#ffffff", fontSize: "16px", fontFamily: "monospace"}],
+                                ], {height: "100px"}],
+                            ], {background: "linear-gradient(15deg, #0112473f 0%, #37078f3f 50%, #5d14823f 100%)", border: "2px solid #5d1482", outline: "2px solid #d6ebff", borderRadius: "0 25px 25px 0", width: "450px", height: "600px"}],
+                        ]],
                     ]
                     return look
                 }
@@ -2013,6 +2192,7 @@
             ], () => {return {display: hasMilestone("prj", 202) ? "" : "none !important"}}],
         ]],
         ["raw-html", () => {return "(" + formatSimple(player.pri.totalPrisms) + " total)"}, {color: "#d6ebff", fontSize: "18px", fontFamily: "monospace"}],
+        ["raw-html", () => {return player.pri.prismaticResetTime.gte(30) ? "" : "(Reduced to x" + format(player.pri.prismaticResetTime.div(30), 2) + " yield, " + formatTime(Decimal.sub(30, player.pri.prismaticResetTime)) + " until x1)"}, {color: "#ffff00", fontSize: "18px", fontFamily: "monospace"}],
         ["blank", "15px"],
         ["style-row", [
             ["clickable", "prismaticReset"],
@@ -2037,7 +2217,7 @@
                         ["clickable", "autoPrismaticToggle"],
                     ], {width: "200px", height: "100px"}],
                 ], {width: "400px", height: "100px", backgroundColor: "#335966", borderRadius: "10px"}],
-            ], () => {return {display: hasMilestone("prj", 206) && false ? "" : "none !important"}}],
+            ], () => {return {display: hasMilestone("prj", 211) ? "" : "none !important"}}],
         ]],
         ["blank", "15px"],
         ["style-column", [
@@ -2053,7 +2233,7 @@
             key: "p", 
             description: "Prismatic",
             onPress() {
-                clickClickable(this.layer, "lightWell1_blueshift")
+                clickClickable(this.layer, "prismaticReset")
             },
         },
     ]

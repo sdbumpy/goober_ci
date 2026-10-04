@@ -396,13 +396,13 @@ addLayer("st", {
             style: {width: '140px', height: '140px', color: "white", background: "linear-gradient(120deg,rgb(128, 24, 11) 0%,rgb(136, 6, 82) 100%", border: "5px solid #000000", borderColor: "#000000", borderRadius: "5px", boxSizing: "border-box", margin: "15px 25px 15px 25px"}
         },
         111: {
-            costBase() { return new Decimal(1e26) },
+            costBase() { return new Decimal(1e32) },
             costGrowth() { return new Decimal(1.5) },
-            purchaseLimit() { return new Decimal(20) },
+            purchaseLimit() { return new Decimal(100) },
             currency() { return player.au2.stars},
             pay(amt) { player.au2.stars = this.currency().sub(amt) },
-            effect(x) { return getBuyableAmount(this.layer, this.id).add(1).pow(2).sub(1).div(10).add(1)  },
-            unlocked() { return player.st.buyables[110].gte(50) && hasMilestone("prj", 403) },
+            effect(x) { return getBuyableAmount(this.layer, this.id).add(1).pow(2).sub(1).div(10).add(1).mul(getBuyableAmount(this.layer, this.id).pow_base(1.1))  },
+            unlocked() { return player.st.buyables[110].gte(50) && hasMilestone("prj", 404) && false },
             cost(x) { return this.costGrowth().pow(x || getBuyableAmount(this.layer, this.id)).mul(this.costBase()).floor() },
             canAfford() { return this.currency().gte(this.cost()) },
             display() {
@@ -428,7 +428,7 @@ addLayer("st", {
             style: {width: '140px', height: '140px', color: "black", background: "linear-gradient(150deg,rgb(122, 122, 122) 0%,rgb(233, 233, 233) 50%,rgb(122, 122, 122) 100%)", border: "5px solid white", borderColor: "white", borderRadius: "5px", boxSizing: "border-box", margin: "15px 25px 15px 25px"}
         },
         112: {
-            costBase() { return new Decimal(1e30) },
+            costBase() { return new Decimal(1e35) },
             costGrowth() { return new Decimal(3) },
             purchaseLimit() { return new Decimal(100) },
             currency() { return player.au2.stars},
@@ -626,17 +626,17 @@ addLayer("st", {
             style: {width: '140px', height: '140px', color: "white", background: "linear-gradient(50deg, #9c86ebff 0%, #433186ff 50%, #231947ff 100%)", border: "5px solid #010003ff", borderColor: "#010003ff", borderRadius: "5px", boxSizing: "border-box", margin: "15px 25px 15px 25px"}
         },
         207: {
-            costBase() { return new Decimal(1e27) },
-            costGrowth() { return new Decimal(2.5) },
-            purchaseLimit() { return new Decimal(25) },
+            costBase() { return new Decimal(1e34) },
+            costGrowth() { return new Decimal(1.1) },
+            purchaseLimit() { return new Decimal(1) },
             currency() { return player.au2.stars},
             pay(amt) { player.au2.stars = this.currency().sub(amt) },
-            effect(x) { return getBuyableAmount(this.layer, this.id).add(1).pow(2).sub(1).div(10).add(1)  },
-            unlocked() { return player.st.buyables[203].gte(1) && hasMilestone("prj", 403) },
+            effect(x) { return getBuyableAmount(this.layer, this.id).div(10).add(1)  },
+            unlocked() { return player.st.buyables[203].gte(1) && hasMilestone("prj", 403) && false },
             cost(x) { return this.costGrowth().pow(x || getBuyableAmount(this.layer, this.id)).mul(this.costBase()).floor() },
             canAfford() { return this.currency().gte(this.cost()) },
             display() {
-                return "which are multiplying space energy and time capsules stored by x" + format(tmp[this.layer].buyables[this.id].effect) + ".\n\
+                return "Unlock a star effect.\n\
                     Cost: " + formatWhole(tmp[this.layer].buyables[this.id].cost) + " Stars"
             },
             branches: [203],
@@ -655,20 +655,20 @@ addLayer("st", {
                     setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(max))
                 }
             },
-            style: {width: '140px', height: '140px', color: "black", background: "linear-gradient(0deg, #221473ff 0%, #c5c5c5ff 50%, #147363 100%)", border: "5px solid #464646ff", borderColor: "#464646ff", borderRadius: "5px", boxSizing: "border-box", margin: "15px 25px 15px 25px"}
+            style: {width: '140px', height: '140px', color: "white", background: "linear-gradient(15deg, #011247 0%, #37078f 50%, #5d1482 100%)", border: "5px solid #eaf6f7", borderColor: "#eaf6f7", borderRadius: "5px", boxSizing: "border-box", margin: "15px 25px 15px 25px"}
         },
         208: {
-            costBase() { return new Decimal(1e32) },
+            costBase() { return new Decimal(1e38) },
             costGrowth() { return new Decimal(1.1) },
             purchaseLimit() { return new Decimal(1) },
             currency() { return player.au2.stars},
             pay(amt) { player.au2.stars = this.currency().sub(amt) },
             effect(x) { return getBuyableAmount(this.layer, this.id).mul(0.01)  },
-            unlocked() { return player.st.buyables[207].gte(5)},
+            unlocked() { return player.st.buyables[207].gte(1)},
             cost(x) { return this.costGrowth().pow(x || getBuyableAmount(this.layer, this.id)).mul(this.costBase()).floor() },
             canAfford() { return this.currency().gte(this.cost()) },
             display() {
-                return "Reveals a new ascension pet.\n\
+                return "Unlock more star exploration nodes.\n\
                     Cost: " + formatWhole(tmp[this.layer].buyables[this.id].cost) + " Stars"
             },
             branches: [207],
@@ -687,7 +687,7 @@ addLayer("st", {
                     setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(max))
                 }
             },
-            style: {width: '140px', height: '140px', color: "black", background: "linear-gradient(45deg, #c6f7ff 0%, #d5abff 100%)", border: "5px solid #5d51ff", borderColor: "#5d51ff", borderRadius: "5px", boxSizing: "border-box", margin: "15px 25px 15px 25px"}
+            style: {width: '140px', height: '140px', color: "white", background: "linear-gradient(15deg, #0e0146ff 0%, #011146ff 50%, #013046ff 100%)", border: "5px solid #eaf6f7", borderColor: "#00a2ff", borderRadius: "5px", boxSizing: "border-box", margin: "15px 25px 15px 25px"}
         },
         //planets
         301: {

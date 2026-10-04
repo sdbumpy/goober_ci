@@ -1,74 +1,16 @@
-﻿const createPourClickable = function (layer, id, data = {}) {
-    if (!data.primaryColor) data.primaryColor = "#999999"
-    if (!data.secondaryColor) data.secondaryColor = "#666666"
-    if (!data.progressFrontColor) data.progressFrontColor = "#ffffff"
-    if (!data.textColor) data.textColor = "#ffffff"
-    let clickable = {
-        title() { return "<h3>Pour</h3>" },
-        canClick() {
-            let fountain = layers[layer].fountains[id]
-            return player.prj.focused.lt(player.prj.maxFocused) && fountain.currencyLocation()[fountain.currencyInternalName].gte(player[layer].fountains[id].statReq) && !player[layer].fountains[id].focused
-        },
-        unlocked() { return true },
-        onClick() {
-            let fountain = layers[layer].fountains[id]
-            fountain.currencyLocation()[fountain.currencyInternalName] = fountain.currencyLocation()[fountain.currencyInternalName].sub(player[layer].fountains[id].statReq)
-            player.prj.focused = player.prj.focused.add(1)
-            player[layer].fountains[id].focused = true
-        },
-        style() {
-            let look = {width: "75px", minHeight: "30px", borderRadius: "0px"}
-            if (player[layer].fountains[id].focused || player[layer].fountains[id].isFocused) {
-                look.backgroundColor = data.secondaryColor
-                look.border = "3px solid " + data.primaryColor
-                look.color = "white"
-            } else if (this.canClick()) {
-                look.backgroundColor = data.progressFrontColor
-                look.border = "3px solid " + data.secondaryColor + "7f"
-                look.color = "black"
-            } else {
-                look.background = "#361e1e"
-                look.border = "3px solid " + data.secondaryColor + "7f"
-                look.color = "white"
+﻿const tickProjects = function (time) {
+    Object.keys(layers.prj.projects).forEach(i => {
+        let module = player.prj.modules[i]
+        if (module.focused) {
+            module.time = module.time.add(module.timeSpeed.mul(time))
+            if (module.time.gte(module.timeReq)) {
+                module.focused = false
+                module.completions = module.completions.add(1)
+                module.time = new Decimal(0)
+                player.prj.focused = player.prj.focused.sub(1)
             }
-            return look
-        },
-    }
-    return clickable
-}
-const createFountainFocusClickable = function (layer, id, data = {}) {
-    if (!data.primaryColor) data.primaryColor = "#999999"
-    if (!data.secondaryColor) data.secondaryColor = "#666666"
-    if (!data.textColor) data.textColor = "#ffffff"
-    let clickable = {
-        title() { return layers[layer].fountains[id].canAuto() ? "<h3>Focus</h3>" : "" },
-        canClick() {
-            return player.prj.focused.lt(player.prj.maxFocused) && !player[layer].fountains[id].isFocused
-        },
-        unlocked() { return true },
-        onClick() {
-            player[layer].fountains[id].isFocused = true
-            player.prj.focused = player.prj.focused.add(1)
-        },
-        style() {
-            let look = {width: "75px", minHeight: "30px", borderRadius: "0px"}
-            if (player[layer].fountains[id].focused || player[layer].fountains[id].isFocused) {
-                look.backgroundColor = data.secondaryColor
-                look.border = "3px solid " + data.primaryColor
-                look.color = "white"
-            } else if (this.canClick()) {
-                look.backgroundColor = "#dfffdf"
-                look.border = "3px solid " + data.secondaryColor + "7f"
-                look.color = "black"
-            } else {
-                look.background = "#361e1e"
-                look.border = "3px solid " + data.secondaryColor + "7f"
-                look.color = "white"
-            }
-            return look
-        },
-    }
-    return clickable
+        }
+    });
 }
 
 addLayer("wel", {
@@ -84,6 +26,7 @@ addLayer("wel", {
         bestLight: new Decimal(0),
         lightGain: new Decimal(1),
         lightGen: new Decimal(0),
+        lightEffect: new Decimal(1),
         lightModuleEffects: [new Decimal(1), new Decimal(1), new Decimal(1), new Decimal(1), new Decimal(1), new Decimal(1), new Decimal(1), new Decimal(1), new Decimal(1)],
         lightWellCycleEffectSoftcap: new Decimal(0.5),
         
@@ -221,12 +164,14 @@ addLayer("wel", {
                 time: new Decimal(0),
                 timeReq: new Decimal(60),
                 timeSpeed: new Decimal(1),
-                statReq: new Decimal(5),
+                lightReq: new Decimal(5),
                 canAddCompletion: false,
                 completions: new Decimal(0),
                 maxCompletions: new Decimal(0),
                 bestCompletions: new Decimal(0),
                 completionEffect: new Decimal(1),
+                pourSafety: false,
+                focusSafety: false,
 
                 focused: false,
 
@@ -238,12 +183,14 @@ addLayer("wel", {
                 time: new Decimal(0),
                 timeReq: new Decimal(2.7e4),
                 timeSpeed: new Decimal(1),
-                statReq: new Decimal(1.5e3),
+                lightReq: new Decimal(1.5e3),
                 canAddCompletion: false,
                 completions: new Decimal(0),
                 maxCompletions: new Decimal(0),
                 bestCompletions: new Decimal(0),
                 completionEffect: new Decimal(1),
+                pourSafety: false,
+                focusSafety: false,
 
                 focused: false,
 
@@ -255,12 +202,14 @@ addLayer("wel", {
                 time: new Decimal(0),
                 timeReq: new Decimal(6e6),
                 timeSpeed: new Decimal(1),
-                statReq: new Decimal(5e4),
+                lightReq: new Decimal(5e4),
                 canAddCompletion: false,
                 completions: new Decimal(0),
                 maxCompletions: new Decimal(0),
                 bestCompletions: new Decimal(0),
                 completionEffect: new Decimal(1),
+                pourSafety: false,
+                focusSafety: false,
 
                 focused: false,
 
@@ -272,12 +221,14 @@ addLayer("wel", {
                 time: new Decimal(0),
                 timeReq: new Decimal(5e8),
                 timeSpeed: new Decimal(1),
-                statReq: new Decimal(1.5e6),
+                lightReq: new Decimal(1.5e6),
                 canAddCompletion: false,
                 completions: new Decimal(0),
                 maxCompletions: new Decimal(0),
                 bestCompletions: new Decimal(0),
                 completionEffect: new Decimal(1),
+                pourSafety: false,
+                focusSafety: false,
 
                 focused: false,
 
@@ -287,6 +238,8 @@ addLayer("wel", {
             },
             
         },
+
+        upgrade43Effect: new Decimal(1),
     }},
     automate() {},
     nodeStyle() {
@@ -327,7 +280,7 @@ addLayer("wel", {
             else player.wel.modules[3].completionEffect = player.wel.modules[3].completions.mul(0.01).add(1);
             player.wel.lightGain = player.wel.lightGain.mul(player.wel.modules[3].completionEffect)
 
-            if (player.wel.modules[4].completions.gte(1e3)) player.wel.modules[4].completionEffect = player.wel.modules[4].completions.div(1e3).pow(player.wel.lightWellCycleEffectSoftcap).mul(1e3).mul(0.01).add(1);
+            if (player.wel.modules[4].completions.gte(1e3)) player.wel.modules[4].completionEffect = player.wel.modules[4].completions.div(1e3).pow(player.wel.lightWellCycleEffectSoftcap).mul(1e3).mul(0.02).add(1);
             else player.wel.modules[4].completionEffect = player.wel.modules[4].completions.mul(0.02).add(1);
         }
         if (hasUpgrade("wel", 14)) player.wel.lightGain = player.wel.lightGain.mul(player.wel.bestLight.add(1).log(1e4).floor().pow_base(2));
@@ -336,9 +289,17 @@ addLayer("wel", {
         player.wel.lightGain = player.wel.lightGain.mul(player.pri.fountains[4].completionEffect)
         player.wel.lightGain = player.wel.lightGain.mul(player.pri.fountains[7].completionEffect)
         if (hasMilestone("prj", 112)) player.wel.lightGain = player.wel.lightGain.mul(player.prj.milestone112Effect)
+        if (hasMilestone("prj", 304)) player.wel.lightGain = player.wel.lightGain.mul(player.blu.blueshiftEffect3.max(1));
+        player.wel.lightGain = player.wel.lightGain.mul(player.prj.milestone210Effect)
+        player.wel.lightGain = player.wel.lightGain.mul(player.bum.fountains[1].completionEffect)
+        if (hasUpgrade("bum", 21)) player.wel.lightGain = player.wel.lightGain.mul(player.bum.starlight.mul(0.1).add(1));
+        player.wel.lightGain = player.wel.lightGain.mul(levelableEffect("pet", 407)[0])
 
         if (hasAchievement("achievements", 1203)) player.wel.lightGain = player.wel.lightGain.mul(1.05)
         if (hasAchievement("achievements", 1208)) player.wel.lightGain = player.wel.lightGain.mul(1.2)
+
+        player.wel.lightEffect = player.wel.light.add(1).log(10).add(1).pow(0.75).sub(1).pow_base(10).pow(0.1)
+        if (player.wel.lightEffect.gte(1e4)) player.wel.lightEffect = player.wel.lightEffect.div(1e4).log(10).add(1).pow(0.75).sub(1).pow_base(10).mul(1e4)
         
         // WELL CYCLE SPEED
 
@@ -346,8 +307,11 @@ addLayer("wel", {
         player.wel.lightWellSpeed = player.wel.lightWellSpeed.mul(player.wel.fountains[4].completionEffect)
         player.wel.lightWellSpeed = player.wel.lightWellSpeed.mul(player.pri.fountains[5].completionEffect)
         if (hasMilestone("prj", 105)) player.wel.lightWellSpeed = player.wel.lightWellSpeed.mul(player.prj.milestone105Effect)
+        if (hasUpgrade("wel", 43)) player.wel.lightWellSpeed = player.wel.lightWellSpeed.mul(player.wel.upgrade43Effect)
+        //if (hasUpgrade("bum", 22)) player.wel.lightWellSpeed = player.wel.lightWellSpeed.mul(player.prj.maxFocused.mul(0.1).add(1));
         player.wel.lightWellSpeed = player.wel.lightWellSpeed.mul(buyableEffect("sme", 192))
-        if (hasMilestone("prj", 209)) player.wel.lightWellSpeed = player.wel.lightWellSpeed.mul(1.09)
+        player.wel.lightWellSpeed = player.wel.lightWellSpeed.mul(player.pri.fountains[11].completionEffect)
+        if (hasMilestone("prj", 307)) player.wel.lightWellSpeed = player.wel.lightWellSpeed.mul(2)
 
         if (player.wel.lightWellSpeed.gte(100) && !hasAchievement("achievements", 1210)) completeAchievement("achievements", 1210)
         
@@ -417,7 +381,7 @@ addLayer("wel", {
             if (player.wel.modules[i].isFocused) {
                 player.wel.modules[i].focusTimer = player.wel.modules[i].focusTimer.sub(delta)
                 clickClickable("wel", "lightWell" + i + "_collect")
-                if (player.wel.modules[i].focusTimer.lte(0)) {
+                if (player.wel.modules[i].focusTimer.lte(0) && !hasMilestone("prj", 402)) {
                     player.wel.modules[i].isFocused = false
                     player.wel.modules[i].focusTimer = player.wel.modules[i].focusTimerMax
                     player.prj.focused = player.prj.focused.sub(1)
@@ -443,14 +407,16 @@ addLayer("wel", {
             let fountain = layers.wel.fountains[i]
             module.timeSpeed = fountain.getTimeSpeed()
             module.timeReq = fountain.getTimeReq()
-            module.statReq = fountain.getstatReq()
+            module.lightReq = fountain.getLightReq()
             module.completionEffect = fountain.getCompletionEffect()
 
+            module.pourSafety = false
+            module.focusSafety = false
             player.wel.fountains[i].focusTimerMax = player.prj.lightFountainFocusExtension.mul(4).div(Math.pow(2, i - 1))
             if (player.wel.fountains[i].isFocused) {
                 player.wel.fountains[i].focusTimer = player.wel.fountains[i].focusTimer.sub(delta)
-                if (player.wel.light.gte(module.statReq) && module.timeSpeed.gt(0)) module.time = module.time.add(module.timeSpeed.div(player.wel.light).mul(player.wel.light.sub(module.statReq)).mul(delta));
-                if (player.wel.fountains[i].focusTimer.lte(0) && !hasUpgrade("wel", 34)) {
+                if (player.wel.light.gte(module.lightReq) && module.timeSpeed.gt(0)) module.time = module.time.add(module.timeSpeed.div(player.wel.light).mul(player.wel.light.sub(module.lightReq)).mul(delta));
+                if (player.wel.fountains[i].focusTimer.lte(0) && !hasUpgrade("wel", 33)) {
                     player.wel.fountains[i].isFocused = false
                     player.wel.fountains[i].focusTimer = player.wel.fountains[i].focusTimerMax
                     player.prj.focused = player.prj.focused.sub(1)
@@ -499,6 +465,8 @@ addLayer("wel", {
         //
 
         if (player.wel.bestLight.lt(player.wel.light)) player.wel.bestLight = player.wel.light;
+
+        player.wel.upgrade43Effect = player.wel.wellCycleProduct.add(1).log(10).pow(5).div(4e8).add(1)
     },
     branches: [],
     bars: {},
@@ -516,7 +484,7 @@ addLayer("wel", {
             currencyInternalName: "light",
             canAfford() { return true },
             style() {
-                let look = {width: "200px", borderRadius: "8px 0px 0px 0px", border: "3px solid #0000007f", color: "#000000df", padding: "8px", margin: "1.5px"}
+                let look = {width: "200px", borderRadius: "25px 0px 0px 0px", border: "3px solid #0000007f", color: "#000000df", padding: "8px", margin: "3px"}
                 if (hasUpgrade(this.layer, this.id)) {
                     look.backgroundColor = "#4d9973"
                     look.border = "3px solid #336659"
@@ -531,7 +499,7 @@ addLayer("wel", {
             },
         },
         12: {
-            unlocked() { return hasUpgrade("wel", 11) },
+            unlocked() { return hasUpgrade("wel", 11) || hasMilestone("prj", 401) },
             condition() { return player.wel.bestLight.gte(5) },
             fullDisplay() {
                 let s = "<h2>"
@@ -550,7 +518,7 @@ addLayer("wel", {
                 return this.condition()
             },
             style() {
-                let look = {width: "200px", borderRadius: "0px", border: "3px solid #0000007f", color: "#000000df", padding: "8px", margin: "1.5px"}
+                let look = {width: "200px", borderRadius: "0px", border: "3px solid #0000007f", color: "#000000df", padding: "8px", margin: "3px"}
                 if (hasUpgrade(this.layer, this.id)) {
                     look.backgroundColor = "#4d9973"
                     look.border = "3px solid #336659"
@@ -569,7 +537,7 @@ addLayer("wel", {
             },
         },
         13: {
-            unlocked() { return hasUpgrade("wel", 12) },
+            unlocked() { return hasUpgrade("wel", 12) || hasMilestone("prj", 401) },
             condition() { return player.wel.fountains[1].completions.gte(6) },
             fullDisplay() {
                 let s = "<h2>"
@@ -590,7 +558,7 @@ addLayer("wel", {
                 return this.condition()
             },
             style() {
-                let look = {width: "200px", borderRadius: "0px", border: "3px solid #0000007f", color: "#000000df", padding: "8px", margin: "1.5px"}
+                let look = {width: "200px", borderRadius: "0px", border: "3px solid #0000007f", color: "#000000df", padding: "8px", margin: "3px"}
                 if (hasUpgrade(this.layer, this.id)) {
                     look.backgroundColor = "#4d9973"
                     look.border = "3px solid #336659"
@@ -609,7 +577,7 @@ addLayer("wel", {
             },
         },
         14: {
-            unlocked() { return hasUpgrade("wel", 12) },
+            unlocked() { return hasUpgrade("wel", 12) || hasMilestone("prj", 401) },
             condition() { return player.wel.fountains[2].completions.gte(3) },
             fullDisplay() {
                 let s = "<h2>"
@@ -630,7 +598,7 @@ addLayer("wel", {
                 return this.condition()
             },
             style() {
-                let look = {width: "200px", borderRadius: "0px 8px 0px 0px", border: "3px solid #0000007f", color: "#000000df", padding: "8px", margin: "1.5px"}
+                let look = {width: "200px", borderRadius: "0px 25px 0px 0px", border: "3px solid #0000007f", color: "#000000df", padding: "8px", margin: "3px"}
                 if (hasUpgrade(this.layer, this.id)) {
                     look.backgroundColor = "#4d9973"
                     look.border = "3px solid #336659"
@@ -649,7 +617,7 @@ addLayer("wel", {
             },
         },
         21: {
-            unlocked() { return hasUpgrade("wel", 14) },
+            unlocked() { return hasUpgrade("wel", 14) || hasMilestone("prj", 401) },
             condition() { return player.wel.lightGain.gte(1e6) },
             fullDisplay() {
                 let s = "<h2>"
@@ -668,7 +636,7 @@ addLayer("wel", {
                 return this.condition()
             },
             style() {
-                let look = {width: "200px", borderRadius: "0px", border: "3px solid #0000007f", color: "#000000df", padding: "8px", margin: "1.5px"}
+                let look = {width: "200px", borderRadius: "0px", border: "3px solid #0000007f", color: "#000000df", padding: "8px", margin: "3px"}
                 if (hasUpgrade(this.layer, this.id)) {
                     look.backgroundColor = "#4d9973"
                     look.border = "3px solid #336659"
@@ -687,7 +655,7 @@ addLayer("wel", {
             },
         },
         22: {
-            unlocked() { return hasUpgrade("wel", 21) },
+            unlocked() { return hasUpgrade("wel", 21) || hasMilestone("prj", 401) },
             condition() { return player.wel.modules[2].completions.gte(500) },
             fullDisplay() {
                 let s = "<h2>"
@@ -706,7 +674,7 @@ addLayer("wel", {
                 return this.condition()
             },
             style() {
-                let look = {width: "200px", borderRadius: "0px", border: "3px solid #0000007f", color: "#000000df", padding: "8px", margin: "1.5px"}
+                let look = {width: "200px", borderRadius: "0px", border: "3px solid #0000007f", color: "#000000df", padding: "8px", margin: "3px"}
                 if (hasUpgrade(this.layer, this.id)) {
                     look.backgroundColor = "#4d9973"
                     look.border = "3px solid #336659"
@@ -725,7 +693,7 @@ addLayer("wel", {
             },
         },
         23: {
-            unlocked() { return hasUpgrade("wel", 21) },
+            unlocked() { return hasUpgrade("wel", 21) || hasMilestone("prj", 401) },
             condition() { return hasMilestone("prj", 105) },
             fullDisplay() {
                 let s = "<h2>"
@@ -749,10 +717,10 @@ addLayer("wel", {
                 return this.condition()
             },
             tooltip() {
-                return "Capped at 5 ↻ per project."
+                return this.condition() ? "Capped at 5 ↻ per project." : ""
             },
             style() {
-                let look = {width: "200px", borderRadius: "0px", border: "3px solid #0000007f", color: "#000000df", padding: "8px", margin: "1.5px"}
+                let look = {width: "200px", borderRadius: "0px", border: "3px solid #0000007f", color: "#000000df", padding: "8px", margin: "3px"}
                 if (hasUpgrade(this.layer, this.id)) {
                     look.backgroundColor = "#4d9973"
                     look.border = "3px solid #336659"
@@ -771,7 +739,7 @@ addLayer("wel", {
             },
         },
         24: {
-            unlocked() { return hasUpgrade("wel", 21) },
+            unlocked() { return hasUpgrade("wel", 21) || hasMilestone("prj", 401) },
             condition() { return player.wel.bestLight.gte(1e15) },
             fullDisplay() {
                 let s = "<h2>"
@@ -790,7 +758,7 @@ addLayer("wel", {
                 return this.condition()
             },
             style() {
-                let look = {width: "200px", borderRadius: "0px", border: "3px solid #0000007f", color: "#000000df", padding: "8px", margin: "1.5px"}
+                let look = {width: "200px", borderRadius: "0px", border: "3px solid #0000007f", color: "#000000df", padding: "8px", margin: "3px"}
                 if (hasUpgrade(this.layer, this.id)) {
                     look.backgroundColor = "#4d9973"
                     look.border = "3px solid #336659"
@@ -809,7 +777,7 @@ addLayer("wel", {
             },
         },
         31: {
-            unlocked() { return hasUpgrade("wel", 24) },
+            unlocked() { return hasUpgrade("wel", 24) || hasMilestone("prj", 401) },
             condition() { return player.pri.fountains[2].completions.gte(3) },
             fullDisplay() {
                 let s = "<h2>"
@@ -828,7 +796,7 @@ addLayer("wel", {
                 return this.condition()
             },
             style() {
-                let look = {width: "200px", borderRadius: "0px", border: "3px solid #0000007f", color: "#000000df", padding: "8px", margin: "1.5px"}
+                let look = {width: "200px", borderRadius: "0px", border: "3px solid #0000007f", color: "#000000df", padding: "8px", margin: "3px"}
                 if (hasUpgrade(this.layer, this.id)) {
                     look.backgroundColor = "#4d9973"
                     look.border = "3px solid #336659"
@@ -847,7 +815,7 @@ addLayer("wel", {
             },
         },
         32: {
-            unlocked() { return hasUpgrade("wel", 24) },
+            unlocked() { return hasUpgrade("wel", 24) || hasMilestone("prj", 401) },
             condition() { return player.pri.fountains[3].completions.gte(3) },
             fullDisplay() {
                 let s = "<h2>"
@@ -866,7 +834,7 @@ addLayer("wel", {
                 return this.condition()
             },
             style() {
-                let look = {width: "200px", borderRadius: "0px", border: "3px solid #0000007f", color: "#000000df", padding: "8px", margin: "1.5px"}
+                let look = {width: "200px", borderRadius: "0px", border: "3px solid #0000007f", color: "#000000df", padding: "8px", margin: "3px"}
                 if (hasUpgrade(this.layer, this.id)) {
                     look.backgroundColor = "#4d9973"
                     look.border = "3px solid #336659"
@@ -885,7 +853,7 @@ addLayer("wel", {
             },
         },
         33: {
-            unlocked() { return hasUpgrade("wel", 31) && hasUpgrade("wel", 32) },
+            unlocked() { return hasUpgrade("wel", 31) && hasUpgrade("wel", 32) || hasMilestone("prj", 401) },
             condition() { return player.pri.bestPrisms.gte(100) },
             fullDisplay() {
                 let s = "<h2>"
@@ -904,7 +872,7 @@ addLayer("wel", {
                 return this.condition()
             },
             style() {
-                let look = {width: "200px", borderRadius: "0px", border: "3px solid #0000007f", color: "#000000df", padding: "8px", margin: "1.5px"}
+                let look = {width: "200px", borderRadius: "0px", border: "3px solid #0000007f", color: "#000000df", padding: "8px", margin: "3px"}
                 if (hasUpgrade(this.layer, this.id)) {
                     look.backgroundColor = "#4d9973"
                     look.border = "3px solid #336659"
@@ -923,7 +891,7 @@ addLayer("wel", {
             },
         },
         34: {
-            unlocked() { return hasUpgrade("wel", 33) },
+            unlocked() { return hasUpgrade("wel", 33) || hasMilestone("prj", 401) },
             condition() { return player.prj.completedProjects.gte(15) },
             fullDisplay() {
                 let s = "<h2>"
@@ -942,7 +910,7 @@ addLayer("wel", {
                 return this.condition()
             },
             style() {
-                let look = {width: "200px", borderRadius: "0px", border: "3px solid #0000007f", color: "#000000df", padding: "8px", margin: "1.5px"}
+                let look = {width: "200px", borderRadius: "0px", border: "3px solid #0000007f", color: "#000000df", padding: "8px", margin: "3px"}
                 if (hasUpgrade(this.layer, this.id)) {
                     look.backgroundColor = "#4d9973"
                     look.border = "3px solid #336659"
@@ -961,7 +929,7 @@ addLayer("wel", {
             },
         },
         41: {
-            unlocked() { return hasUpgrade("wel", 34) },
+            unlocked() { return hasUpgrade("wel", 34) || hasMilestone("prj", 401) },
             condition() { return player.pri.fountains[7].completions.gte(1) },
             fullDisplay() {
                 let s = "<h2>"
@@ -972,7 +940,7 @@ addLayer("wel", {
                 }
                 return s
             },
-            cost: new Decimal(1e45),
+            cost: new Decimal(1e38),
             currencyLocation() { return player.wel },
             currencyDisplayName: "Light",
             currencyInternalName: "light",
@@ -980,7 +948,7 @@ addLayer("wel", {
                 return this.condition()
             },
             style() {
-                let look = {width: "200px", borderRadius: "0 0 0 10px", border: "3px solid #0000007f", color: "#000000df", padding: "8px", margin: "1.5px"}
+                let look = {width: "200px", borderRadius: "0 0 0 25px", border: "3px solid #0000007f", color: "#000000df", padding: "8px", margin: "3px"}
                 if (hasUpgrade(this.layer, this.id)) {
                     look.backgroundColor = "#4d9973"
                     look.border = "3px solid #336659"
@@ -999,7 +967,7 @@ addLayer("wel", {
             },
         },
         42: {
-            unlocked() { return hasUpgrade("wel", 34) },
+            unlocked() { return hasUpgrade("wel", 34) || hasMilestone("prj", 401) },
             condition() { return hasMilestone("prj", 303) && player.wel.modules[3].completions.gte(1e10) },
             fullDisplay() {
                 let s = "<h2>"
@@ -1018,7 +986,7 @@ addLayer("wel", {
                 return this.condition()
             },
             style() {
-                let look = {width: "200px", borderRadius: "0px", border: "3px solid #0000007f", color: "#000000df", padding: "8px", margin: "1.5px"}
+                let look = {width: "200px", borderRadius: "0px", border: "3px solid #0000007f", color: "#000000df", padding: "8px", margin: "3px"}
                 if (hasUpgrade(this.layer, this.id)) {
                     look.backgroundColor = "#4d9973"
                     look.border = "3px solid #336659"
@@ -1037,18 +1005,18 @@ addLayer("wel", {
             },
         },
         43: {
-            unlocked() { return hasUpgrade("wel", 34) },
-            condition() { return player.blu.totalBlueshifts.gte(8) },
+            unlocked() { return hasUpgrade("wel", 34) || hasMilestone("prj", 401) },
+            condition() { return player.blu.totalBlueshifts.gte(6) },
             fullDisplay() {
                 let s = "<h2>"
                 if (hasUpgrade(this.layer, this.id) || this.condition()) {
-                    s += "COMING SOON.</h2><br><br><h3>Cost: " + formatWhole(this.cost) + " " + this.currencyDisplayName + "</h3>"
+                    s += "Light well ↻ slightly boost light well speed.<br>(x" + format(player.wel.upgrade43Effect, 3) +")</h2><br><br><h3>Cost: " + formatWhole(this.cost) + " " + this.currencyDisplayName + "</h3>"
                 } else {
-                    s += "???</h2><br><br><h3>Req: 8 Blueshifts</h3>"
+                    s += "???</h2><br><br><h3>Req: 6 Blueshifts</h3>"
                 }
                 return s
             },
-            cost: new Decimal("9.99e999"),
+            cost: new Decimal("7.77e77"),
             currencyLocation() { return player.wel },
             currencyDisplayName: "Light",
             currencyInternalName: "light",
@@ -1056,7 +1024,7 @@ addLayer("wel", {
                 return this.condition()
             },
             style() {
-                let look = {width: "200px", borderRadius: "0px", border: "3px solid #0000007f", color: "#000000df", padding: "8px", margin: "1.5px"}
+                let look = {width: "200px", borderRadius: "0px", border: "3px solid #0000007f", color: "#000000df", padding: "8px", margin: "3px"}
                 if (hasUpgrade(this.layer, this.id)) {
                     look.backgroundColor = "#4d9973"
                     look.border = "3px solid #336659"
@@ -1075,7 +1043,7 @@ addLayer("wel", {
             },
         },
         44: {
-            unlocked() { return hasUpgrade("wel", 34) },
+            unlocked() { return hasUpgrade("wel", 34) || hasMilestone("prj", 401) },
             condition() { return player.prj.completedProjects.gte(30) },
             fullDisplay() {
                 let s = "<h2>"
@@ -1086,7 +1054,7 @@ addLayer("wel", {
                 }
                 return s
             },
-            cost: new Decimal("9.99e999"),
+            cost: new Decimal("1e88"),
             currencyLocation() { return player.wel },
             currencyDisplayName: "Light",
             currencyInternalName: "light",
@@ -1094,7 +1062,7 @@ addLayer("wel", {
                 return this.condition()
             },
             style() {
-                let look = {width: "200px", borderRadius: "0px 0px 10px 0px", border: "3px solid #0000007f", color: "#000000df", padding: "8px", margin: "1.5px"}
+                let look = {width: "200px", borderRadius: "0px 0px 25px 0px", border: "3px solid #0000007f", color: "#000000df", padding: "8px", margin: "3px"}
                 if (hasUpgrade(this.layer, this.id)) {
                     look.backgroundColor = "#4d9973"
                     look.border = "3px solid #336659"
@@ -1137,7 +1105,7 @@ addLayer("wel", {
             },
             onHold() { clickClickable(this.layer, this.id) },
             style() {
-                let look = {width: "150px", minHeight: "50px", borderRadius: "0"}
+                let look = {width: "150px", minHeight: "50px", maxHeight: "50px", borderRadius: "0"}
                 if (player.wel.modules[1].isFocused) {
                     look.backgroundColor = "#336659"
                     look.border = "3px solid #4d9973"
@@ -1174,7 +1142,7 @@ addLayer("wel", {
             },
             onHold() { clickClickable(this.layer, this.id) },
             style() {
-                let look = {width: "150px", minHeight: "50px", borderRadius: "0"}
+                let look = {width: "150px", minHeight: "50px", maxHeight: "50px", borderRadius: "0"}
                 if (player.wel.modules[2].isFocused) {
                     look.backgroundColor = "#336659"
                     look.border = "3px solid #4d9973"
@@ -1211,7 +1179,7 @@ addLayer("wel", {
             },
             onHold() { clickClickable(this.layer, this.id) },
             style() {
-                let look = {width: "150px", minHeight: "50px", borderRadius: "0"}
+                let look = {width: "150px", minHeight: "50px", maxHeight: "50px", borderRadius: "0"}
                 if (player.wel.modules[3].isFocused) {
                     look.backgroundColor = "#336659"
                     look.border = "3px solid #4d9973"
@@ -1248,7 +1216,7 @@ addLayer("wel", {
             },
             onHold() { clickClickable(this.layer, this.id) },
             style() {
-                let look = {width: "150px", minHeight: "50px", borderRadius: "0"}
+                let look = {width: "150px", minHeight: "50px", maxHeight: "50px", borderRadius: "0"}
                 if (player.wel.modules[4].isFocused) {
                     look.backgroundColor = "#274d48"
                     look.border = "3px solid #408069"
@@ -1283,7 +1251,7 @@ addLayer("wel", {
             },
             onHold() { clickClickable(this.layer, this.id) },
             style() {
-                let look = {width: "150px", minHeight: "50px", borderRadius: "0"}
+                let look = {width: "150px", minHeight: "50px", maxHeight: "50px", borderRadius: "0"}
                 if (this.canClick()) {
                     look.backgroundColor = "#d6ebff"
                     look.color = "black"
@@ -1314,7 +1282,7 @@ addLayer("wel", {
             },
             onHold() { clickClickable(this.layer, this.id) },
             style() {
-                let look = {width: "150px", minHeight: "50px", borderRadius: "0"}
+                let look = {width: "150px", minHeight: "50px", maxHeight: "50px", borderRadius: "0"}
                 if (this.canClick()) {
                     look.backgroundColor = "#d6ebff"
                     look.color = "black"
@@ -1345,7 +1313,7 @@ addLayer("wel", {
             },
             onHold() { clickClickable(this.layer, this.id) },
             style() {
-                let look = {width: "150px", minHeight: "50px", borderRadius: "0"}
+                let look = {width: "150px", minHeight: "50px", maxHeight: "50px", borderRadius: "0"}
                 if (this.canClick()) {
                     look.backgroundColor = "#d6ebff"
                     look.color = "black"
@@ -1376,7 +1344,7 @@ addLayer("wel", {
             },
             onHold() { clickClickable(this.layer, this.id) },
             style() {
-                let look = {width: "150px", minHeight: "50px", borderRadius: "0"}
+                let look = {width: "150px", minHeight: "50px", maxHeight: "50px", borderRadius: "0"}
                 if (this.canClick()) {
                     look.backgroundColor = "#d6ebff"
                     look.color = "black"
@@ -1390,7 +1358,7 @@ addLayer("wel", {
             },
         },
         "lightFountains_respecFocus": {
-            title() { return "<h3>Respec Focus</h3><br><small>(you won't get your poured light back!)</small>" },
+            title() { return "<h3>Respec Focus</h3><br><small>(you won't get your light back!)</small>" },
             canClick() {
                 for (let v in player.wel.fountains) {
                     if (player.wel.fountains[v].focused || player.wel.fountains[v].isFocused) return true;
@@ -1411,7 +1379,7 @@ addLayer("wel", {
                 });
             },
             style() {
-                let look = {width: "536px", minHeight: "75px", maxHeight: "75px", borderRadius: "25px", margin: "3px"}
+                let look = {width: "512px", minHeight: "60px", maxHeight: "60px", borderRadius: "25px", margin: "3px"}
                 if (this.canClick()) {
                     look.backgroundColor = "#dfffdf"
                     look.border = "3px solid #0000003f"
@@ -1437,7 +1405,7 @@ addLayer("wel", {
                 });
             },
             style() {
-                let look = {width: "400px", minHeight: "50px", maxHeight: "50px", borderRadius: "10px"}
+                let look = {width: "250px", minHeight: "60px", maxHeight: "60px", borderRadius: "25px", margin: "3px"}
                 if (this.canClick()) {
                     look.backgroundColor = "#dfffdf"
                     look.border = "3px solid #0000003f"
@@ -1451,16 +1419,17 @@ addLayer("wel", {
             },
         },
         "lightWell1_focus": {
-            title() { return "<h3>Focus</h3><br><small>(" + formatSimpleTime(player.wel.modules[1].focusTimer, 1) + ")" },
+            title() { return "<h3>Focus</h3>" },
             canClick() { return player.prj.focused.lt(player.prj.maxFocused) && !player.wel.modules[1].isFocused},
             unlocked() { return hasUpgrade("wel", 33) },
             onClick() {
+                if (!this.canClick()) return;
                 player.wel.modules[1].isFocused = true
                 player.prj.focused = player.prj.focused.add(1)
                 player.wel.modules[1].focusTimer = player.wel.modules[1].focusTimerMax
             },
             style() {
-                let look = {width: "150px", minHeight: "50px", borderRadius: "0px", marginTop: "3px"}
+                let look = {width: "150px", minHeight: "30px", maxHeight: "30px", borderRadius: "0px", marginTop: "3px"}
                 if (player.wel.modules[1].focused) {
                     look.backgroundColor = "#336659"
                     look.border = "3px solid #4d9973"
@@ -1478,16 +1447,17 @@ addLayer("wel", {
             },
         },
         "lightWell2_focus": {
-            title() { return "<h3>Focus</h3><br><small>(" + formatSimpleTime(player.wel.modules[2].focusTimer, 1) + ")" },
+            title() { return "<h3>Focus</h3>" },
             canClick() { return player.prj.focused.lt(player.prj.maxFocused) && !player.wel.modules[2].isFocused},
             unlocked() { return hasUpgrade("wel", 33) },
             onClick() {
+                if (!this.canClick()) return;
                 player.wel.modules[2].isFocused = true
                 player.prj.focused = player.prj.focused.add(1)
                 player.wel.modules[2].focusTimer = player.wel.modules[2].focusTimerMax
             },
             style() {
-                let look = {width: "150px", minHeight: "50px", borderRadius: "0px", marginTop: "3px"}
+                let look = {width: "150px", minHeight: "30px", maxHeight: "30px", borderRadius: "0px", marginTop: "3px"}
                 if (player.wel.modules[2].focused) {
                     look.backgroundColor = "#336659"
                     look.border = "3px solid #4d9973"
@@ -1505,7 +1475,7 @@ addLayer("wel", {
             },
         },
         "lightWell3_focus": {
-            title() { return "<h3>Focus</h3><br><small>(" + formatSimpleTime(player.wel.modules[3].focusTimer, 1) + ")" },
+            title() { return "<h3>Focus</h3>" },
             canClick() { return player.prj.focused.lt(player.prj.maxFocused) && !player.wel.modules[3].isFocused},
             unlocked() { return hasUpgrade("wel", 33) },
             onClick() {
@@ -1514,7 +1484,7 @@ addLayer("wel", {
                 player.wel.modules[3].focusTimer = player.wel.modules[3].focusTimerMax
             },
             style() {
-                let look = {width: "150px", minHeight: "50px", borderRadius: "0px", marginTop: "3px"}
+                let look = {width: "150px", minHeight: "30px", maxHeight: "30px", borderRadius: "0px", marginTop: "3px"}
                 if (player.wel.modules[3].focused) {
                     look.backgroundColor = "#336659"
                     look.border = "3px solid #4d9973"
@@ -1532,7 +1502,7 @@ addLayer("wel", {
             },
         },
         "lightWell4_focus": {
-            title() { return "<h3>Focus</h3><br><small>(" + formatSimpleTime(player.wel.modules[4].focusTimer, 1) + ")" },
+            title() { return "<h3>Focus</h3>" },
             canClick() { return player.prj.focused.lt(player.prj.maxFocused) && !player.wel.modules[4].isFocused},
             unlocked() { return hasUpgrade("wel", 33) },
             onClick() {
@@ -1541,7 +1511,7 @@ addLayer("wel", {
                 player.wel.modules[4].focusTimer = player.wel.modules[4].focusTimerMax
             },
             style() {
-                let look = {width: "150px", minHeight: "50px", borderRadius: "0px", marginTop: "3px"}
+                let look = {width: "150px", minHeight: "30px", maxHeight: "30px", borderRadius: "0px", marginTop: "3px"}
                 if (player.wel.modules[4].focused) {
                     look.backgroundColor = "#336659"
                     look.border = "3px solid #4d9973"
@@ -1558,52 +1528,124 @@ addLayer("wel", {
                 return look
             },
         },
-        "fountainPour_1": createPourClickable("wel", 1, {
-            primaryColor: "#4d9973",
-            secondaryColor: "#336659",
-            progressFrontColor: "#ffdfdf",
-            textColor: "#ffffff",
-        }),
-        "fountainFocus_1": createFountainFocusClickable("wel", 1, {
-            primaryColor: "#4d9973",
-            secondaryColor: "#336659",
-            textColor: "#ffffff",
-        }),
-        "fountainPour_2": createPourClickable("wel", 2, {
-            primaryColor: "#4d9973",
-            secondaryColor: "#336659",
-            progressFrontColor: "#ffdfdf",
-            textColor: "#ffffff",
-        }),
-        "fountainFocus_2": createFountainFocusClickable("wel", 2, {
-            primaryColor: "#4d9973",
-            secondaryColor: "#336659",
-            textColor: "#ffffff",
-        }),
-        "fountainPour_3": createPourClickable("wel", 3, {
-            primaryColor: "#4d9973",
-            secondaryColor: "#336659",
-            progressFrontColor: "#ffdfdf",
-            textColor: "#ffffff",
-        }),
-        "fountainFocus_3": createFountainFocusClickable("wel", 3, {
-            primaryColor: "#4d9973",
-            secondaryColor: "#336659",
-            textColor: "#ffffff",
-        }),
-        "fountainPour_4": createPourClickable("wel", 4, {
-            primaryColor: "#4d9973",
-            secondaryColor: "#336659",
-            progressFrontColor: "#ffdfdf",
-            textColor: "#ffffff",
-        }),
-        "fountainFocus_4": createFountainFocusClickable("wel", 4, {
-            primaryColor: "#4d9973",
-            secondaryColor: "#336659",
-            textColor: "#ffffff",
-        }),
+        2001: {
+            title() { return "<h3>Pour</h3>" },
+            canClick() { return player.prj.focused.lt(player.prj.maxFocused) && player.wel.light.gte(player.wel.fountains[this.id - 2000].lightReq) && !player.wel.fountains[this.id - 2000].focused && !player.wel.fountains[this.id - 2000].isFocused},
+            unlocked() { return true },
+            onClick() {
+                if (player.wel.fountains[this.id - 2000].pourSafety) return;
+                player.wel.fountains[this.id - 2000].pourSafety = true
+                player.wel.light = player.wel.light.sub(player.wel.fountains[this.id - 2000].lightReq)
+                player.prj.focused = player.prj.focused.add(1)
+                player.wel.fountains[this.id - 2000].focused = true
+            },
+            style() {
+                let look = {width: layers.wel.fountains[this.id - 2000].canAuto() ? "108px" : "219px", minHeight: "45px", borderRadius: "0px"}
+                if (player.wel.fountains[this.id - 2000].focused || player.wel.fountains[this.id - 2000].isFocused) {
+                    look.backgroundColor = "#336659"
+                    look.border = "3px solid #4d9973"
+                    look.color = "white"
+                } else if (this.canClick()) {
+                    look.backgroundColor = "#a8ffd3"
+                    look.border = "3px solid #3366597f"
+                    look.color = "black"
+                } else {
+                    look.background = "#361e1e"
+                    look.border = "3px solid #3366597f"
+                    look.color = "white"
+                }
+                return look
+            },
+        },
+        2002: {
+            title() { return "<h3>Pour</h3>" },
+            canClick() { return player.prj.focused.lt(player.prj.maxFocused) && player.wel.light.gte(player.wel.fountains[this.id - 2000].lightReq) && !player.wel.fountains[this.id - 2000].focused && !player.wel.fountains[this.id - 2000].isFocused},
+            unlocked() { return true },
+            onClick() {
+                if (player.wel.fountains[this.id - 2000].pourSafety) return;
+                player.wel.fountains[this.id - 2000].pourSafety = true
+                player.wel.light = player.wel.light.sub(player.wel.fountains[this.id - 2000].lightReq)
+                player.prj.focused = player.prj.focused.add(1)
+                player.wel.fountains[this.id - 2000].focused = true
+            },
+            style() {
+                let look = {width: layers.wel.fountains[this.id - 2000].canAuto() ? "108px" : "219px", minHeight: "45px", borderRadius: "0px"}
+                if (player.wel.fountains[this.id - 2000].focused || player.wel.fountains[this.id - 2000].isFocused) {
+                    look.backgroundColor = "#336659"
+                    look.border = "3px solid #4d9973"
+                    look.color = "white"
+                } else if (this.canClick()) {
+                    look.backgroundColor = "#a8ffd3"
+                    look.border = "3px solid #3366597f"
+                    look.color = "black"
+                } else {
+                    look.background = "#361e1e"
+                    look.border = "3px solid #3366597f"
+                    look.color = "white"
+                }
+                return look
+            },
+        },
+        2003: {
+            title() { return "<h3>Pour</h3>" },
+            canClick() { return player.prj.focused.lt(player.prj.maxFocused) && player.wel.light.gte(player.wel.fountains[this.id - 2000].lightReq) && !player.wel.fountains[this.id - 2000].focused && !player.wel.fountains[this.id - 2000].isFocused},
+            unlocked() { return true },
+            onClick() {
+                if (player.wel.fountains[this.id - 2000].pourSafety) return;
+                player.wel.fountains[this.id - 2000].pourSafety = true
+                player.wel.light = player.wel.light.sub(player.wel.fountains[this.id - 2000].lightReq)
+                player.prj.focused = player.prj.focused.add(1)
+                player.wel.fountains[this.id - 2000].focused = true
+            },
+            style() {
+                let look = {width: layers.wel.fountains[this.id - 2000].canAuto() ? "108px" : "219px", minHeight: "45px", borderRadius: "0px"}
+                if (player.wel.fountains[this.id - 2000].focused || player.wel.fountains[this.id - 2000].isFocused) {
+                    look.backgroundColor = "#336659"
+                    look.border = "3px solid #4d9973"
+                    look.color = "white"
+                } else if (this.canClick()) {
+                    look.backgroundColor = "#a8ffd3"
+                    look.border = "3px solid #3366597f"
+                    look.color = "black"
+                } else {
+                    look.background = "#361e1e"
+                    look.border = "3px solid #3366597f"
+                    look.color = "white"
+                }
+                return look
+            },
+        },
+        2004: {
+            title() { return "<h3>Pour</h3>" },
+            canClick() { return player.prj.focused.lt(player.prj.maxFocused) && player.wel.light.gte(player.wel.fountains[this.id - 2000].lightReq) && !player.wel.fountains[this.id - 2000].focused && !player.wel.fountains[this.id - 2000].isFocused},
+            unlocked() { return true },
+            onClick() {
+                if (player.wel.fountains[this.id - 2000].pourSafety) return;
+                player.wel.fountains[this.id - 2000].pourSafety = true
+                player.wel.light = player.wel.light.sub(player.wel.fountains[this.id - 2000].lightReq)
+                player.prj.focused = player.prj.focused.add(1)
+                player.wel.fountains[this.id - 2000].focused = true
+            },
+            style() {
+                let look = {width: layers.wel.fountains[this.id - 2000].canAuto() ? "108px" : "219px", minHeight: "45px", borderRadius: "0px"}
+                if (player.wel.fountains[this.id - 2000].focused || player.wel.fountains[this.id - 2000].isFocused) {
+                    look.backgroundColor = "#336659"
+                    look.border = "3px solid #4d9973"
+                    look.color = "white"
+                } else if (this.canClick()) {
+                    look.backgroundColor = "#a8ffd3"
+                    look.border = "3px solid #3366597f"
+                    look.color = "black"
+                } else {
+                    look.background = "#361e1e"
+                    look.border = "3px solid #3366597f"
+                    look.color = "white"
+                }
+                return look
+            },
+        },
         3001: {
-            title() { return "<h3>Focus</h3>" },
+            title() { return "<h3>Focus</h3>" + (hasUpgrade("wel", 33) ? "" : ("<br><small>(" + formatSimpleTime(player.wel.fountains[this.id - 3000].focusTimer, 1) + ")")) },
             canClick() { return player.prj.focused.lt(player.prj.maxFocused) && !player.wel.fountains[this.id - 3000].isFocused },
             unlocked() { return layers.wel.fountains[this.id - 3000].canAuto() },
             onClick() {
@@ -1616,7 +1658,7 @@ addLayer("wel", {
                 }
             },
             style() {
-                let look = {width: "75px", minHeight: "30px", borderRadius: "0px"}
+                let look = {width: "108px", minHeight: "45px", borderRadius: "0px"}
                 if (player.wel.fountains[this.id - 3000].isFocused) {
                     look.backgroundColor = "#336659"
                     look.border = "3px solid #4d9973"
@@ -1634,7 +1676,7 @@ addLayer("wel", {
             },
         },
         3002: {
-            title() { return "<h3>Focus</h3>" },
+            title() { return "<h3>Focus</h3>" + (hasUpgrade("wel", 33) ? "" : ("<br><small>(" + formatSimpleTime(player.wel.fountains[this.id - 3000].focusTimer, 1) + ")")) },
             canClick() { return player.prj.focused.lt(player.prj.maxFocused) && !player.wel.fountains[this.id - 3000].isFocused },
             unlocked() { return layers.wel.fountains[this.id - 3000].canAuto() },
             onClick() {
@@ -1642,7 +1684,7 @@ addLayer("wel", {
                 player.wel.fountains[this.id - 3000].isFocused = true
             },
             style() {
-                let look = {width: "75px", minHeight: "30px", borderRadius: "0px"}
+                let look = {width: "108px", minHeight: "45px", borderRadius: "0px"}
                 if (player.wel.fountains[this.id - 3000].isFocused) {
                     look.backgroundColor = "#336659"
                     look.border = "3px solid #4d9973"
@@ -1660,7 +1702,7 @@ addLayer("wel", {
             },
         },
         3003: {
-            title() { return "<h3>Focus</h3>" },
+            title() { return "<h3>Focus</h3>" + (hasUpgrade("wel", 33) ? "" : ("<br><small>(" + formatSimpleTime(player.wel.fountains[this.id - 3000].focusTimer, 1) + ")")) },
             canClick() { return player.prj.focused.lt(player.prj.maxFocused) && !player.wel.fountains[this.id - 3000].isFocused },
             unlocked() { return layers.wel.fountains[this.id - 3000].canAuto() },
             onClick() {
@@ -1668,7 +1710,7 @@ addLayer("wel", {
                 player.wel.fountains[this.id - 3000].isFocused = true
             },
             style() {
-                let look = {width: "75px", minHeight: "30px", borderRadius: "0px"}
+                let look = {width: "108px", minHeight: "45px", borderRadius: "0px"}
                 if (player.wel.fountains[this.id - 3000].isFocused) {
                     look.backgroundColor = "#336659"
                     look.border = "3px solid #4d9973"
@@ -1686,7 +1728,7 @@ addLayer("wel", {
             },
         },
         3004: {
-            title() { return "<h3>Focus</h3>" },
+            title() { return "<h3>Focus</h3>" + (hasUpgrade("wel", 33) ? "" : ("<br><small>(" + formatSimpleTime(player.wel.fountains[this.id - 3000].focusTimer, 1) + ")")) },
             canClick() { return player.prj.focused.lt(player.prj.maxFocused) && !player.wel.fountains[this.id - 3000].isFocused },
             unlocked() { return layers.wel.fountains[this.id - 3000].canAuto() },
             onClick() {
@@ -1694,7 +1736,7 @@ addLayer("wel", {
                 player.wel.fountains[this.id - 3000].isFocused = true
             },
             style() {
-                let look = {width: "75px", minHeight: "30px", borderRadius: "0px"}
+                let look = {width: "108px", minHeight: "45px", borderRadius: "0px"}
                 if (player.wel.fountains[this.id - 3000].isFocused) {
                     look.backgroundColor = "#336659"
                     look.border = "3px solid #4d9973"
@@ -1715,19 +1757,19 @@ addLayer("wel", {
     fountains: {
         1: {
             title: "Light Fountain",
-            unlocked() { return true },
-            conditionDisplay() { return "This should always be unlocked... why are you seeing this??"},
-            condition() { return true },
-            canAuto() { return player.pri.totalPrisms.gte(1) },
-            infiniteAuto() { return hasUpgrade("wel", 34) },
-            effectDisplay() { return "Boosts light gain by x" + formatSimple(layers.wel.fountains[1].getCompletionEffect(), 2)},
-            currencyLocation() { return player.wel },
-            currencyInternalName: "light",
-            currencyDisplayName: "Light",
+            completionEffectStat: "Light",
+            condition() {
+                return true
+            },
+            canAuto() {
+                return player.pri.totalPrisms.gte(1)
+            },
             getCompletionEffect() {
                 let completions = player.wel.fountains[1].completions.pow(0.9)
 
                 let s = completions.add(1).mul(completions.pow_base(1.06))
+
+                if (hasMilestone("prj", 206)) s = s.pow(player.pri.growth.technological.effect);
 
                 return s.floor()
             },
@@ -1751,7 +1793,7 @@ addLayer("wel", {
                     return unscaledBulk.mul(400).pow(0.5).floor()
                 } else return unscaledBulk.floor()
             },
-            getstatReq() {
+            getLightReq() {
                 let completions = player.wel.fountains[1].completions
                 let s = new Decimal(5)
 
@@ -1782,20 +1824,19 @@ addLayer("wel", {
         },
         2: {
             title: "Light Fountain II",
-            completionEffectStat: "light gain",
-            unlocked() { return true },
-            conditionDisplay() { return "1,500 Light"},
-            condition() { return player.wel.bestLight.gte(1.5e3) || hasMilestone('prj', 204) },
-            canAuto() { return player.pri.totalPrisms.gte(2) },
-            infiniteAuto() { return hasUpgrade("wel", 34) },
-            effectDisplay() { return "Boosts light gain by x" + formatSimple(layers.wel.fountains[2].getCompletionEffect(), 2)},
-            currencyLocation() { return player.wel },
-            currencyInternalName: "light",
-            currencyDisplayName: "Light",
+            completionEffectStat: "Light",
+            condition() {
+                return player.wel.bestLight.gte(1.5e3) || hasMilestone('prj', 204)
+            },
+            canAuto() {
+                return player.pri.totalPrisms.gte(2)
+            },
             getCompletionEffect() {
                 let completions = player.wel.fountains[2].completions.pow(0.9)
 
                 let s = completions.add(1).mul(completions.pow_base(1.04))
+
+                if (hasMilestone("prj", 206)) s = s.pow(player.pri.growth.technological.effect);
 
                 return s.floor()
             },
@@ -1819,7 +1860,7 @@ addLayer("wel", {
                     return unscaledBulk.mul(400).pow(0.5).floor()
                 } else return unscaledBulk.floor()
             },
-            getstatReq() {
+            getLightReq() {
                 let completions = player.wel.fountains[2].completions
                 let s = new Decimal(1.5e3)
 
@@ -1850,19 +1891,19 @@ addLayer("wel", {
         },
         3: {
             title: "Cycle Fountain",
-            unlocked() { return layers.wel.fountains[2].condition() },
-            conditionDisplay() { return "50,000 Light"},
-            condition() { return player.wel.bestLight.gte(5e4) || hasMilestone('prj', 204) },
-            canAuto() { return player.pri.totalPrisms.gte(3) },
-            infiniteAuto() { return hasUpgrade("wel", 34) },
-            effectDisplay() { return "Boosts light well ↻ gain by x" + formatSimple(layers.wel.fountains[3].getCompletionEffect(), 2)},
-            currencyLocation() { return player.wel },
-            currencyInternalName: "light",
-            currencyDisplayName: "Light",
+            completionEffectStat: "Light Well ↻",
+            condition() {
+                return player.wel.bestLight.gte(5e4) || hasMilestone('prj', 204)
+            },
+            canAuto() {
+                return player.pri.totalPrisms.gte(3)
+            },
             getCompletionEffect() {
                 let completions = player.wel.fountains[3].completions
 
                 let s = completions.pow(1.5).add(1).mul(completions.pow(0.9).pow_base(1.05))
+
+                if (hasMilestone("prj", 206)) s = s.pow(player.pri.growth.technological.effect);
 
                 return s.floor()
             },
@@ -1886,7 +1927,7 @@ addLayer("wel", {
                     return unscaledBulk.mul(400).pow(0.5).floor()
                 } else return unscaledBulk.floor()
             },
-            getstatReq() {
+            getLightReq() {
                 let completions = player.wel.fountains[3].completions
                 let s = new Decimal(5e4)
 
@@ -1917,19 +1958,19 @@ addLayer("wel", {
         },
         4: {
             title: "Speed Fountain",
-            unlocked() { return layers.wel.fountains[3].condition() },
-            conditionDisplay() { return "1,500,000 Light"},
-            condition() { return player.wel.bestLight.gte(1.5e6) || hasMilestone('prj', 204) },
-            canAuto() { return player.pri.totalPrisms.gte(4) },
-            infiniteAuto() { return hasUpgrade("wel", 34) },
-            effectDisplay() { return "Boosts light well speed by x" + formatSimple(layers.wel.fountains[4].getCompletionEffect(), 2)},
-            currencyLocation() { return player.wel },
-            currencyInternalName: "light",
-            currencyDisplayName: "Light",
+            completionEffectStat: "Light Well Speed",
+            condition() {
+                return player.wel.bestLight.gte(1.5e6) || hasMilestone('prj', 204)
+            },
+            canAuto() {
+                return player.pri.totalPrisms.gte(4)
+            },
             getCompletionEffect() {
                 let completions = player.wel.fountains[4].completions
 
                 let s = completions.mul(0.25).add(1)
+
+                if (hasMilestone("prj", 206)) s = s.pow(player.pri.growth.technological.effect);
 
                 return s
             },
@@ -1953,7 +1994,7 @@ addLayer("wel", {
                     return unscaledBulk.mul(400).pow(0.5).floor()
                 } else return unscaledBulk.floor()
             },
-            getstatReq() {
+            getLightReq() {
                 let completions = player.wel.fountains[4].completions
                 let s = new Decimal(1.5e6)
 
@@ -1982,19 +2023,11 @@ addLayer("wel", {
                 return s
             },
         },
-        /*
-            primaryColor: "#999999",
-            secondaryColor: "#666666",
-            progressFrontColor: "#ffffff",
-            progressBackColor: "#171717",
-            textColor: "#ffffff",
-            unaffordableTextColor: "#ffff00",
-        */
     },
     microtabs: {
         stuff: {
             "Upgrades": {
-                buttonStyle() { return { color: "white", borderRadius: "8px"} },
+                buttonStyle() { return { color: "white", borderWidth: "2px", borderRadius: "20px"} },
                 unlocked() { return true },
                 content() {
                     let look = [
@@ -2021,7 +2054,7 @@ addLayer("wel", {
                 },
             },
             "Wells": {
-                buttonStyle() { return { color: "white", borderRadius: "8px"} },
+                buttonStyle() { return { color: "white", borderWidth: "2px", borderRadius: "20px"} },
                 unlocked() { return hasUpgrade("wel", 11) },
                 content() {
                     let look = [
@@ -2041,7 +2074,7 @@ addLayer("wel", {
                                     player.blu.blueshifts[1].amount.add(1).pow_base(100)
                                     .min(player.blu.blueshifts[2].amount.add(1).pow_base(600))
                                     .min(player.blu.blueshifts[3].amount.add(1).pow_base(3000))
-                                    .min(player.blu.blueshifts[4].amount.add(1).pow_base(24190000))
+                                    .min(player.blu.blueshifts[4].amount.mul(0.5).add(1).pow_base(24190000))
                                 ) + "</h3> speed.</small>", {color: "white", textShadow: "1px 1px 0 #3f3fff, -1px 1px 0 #3f3fff, 1px -1px 0 #3f3fff, -1px -1px 0 #3f3fff", fontSize: "18px", fontFamily: "monospace"}],
                             ], {display: hasMilestone("prj", 301) ? "" : "none !important"}],
                             ["style-column", [
@@ -2053,7 +2086,7 @@ addLayer("wel", {
                                     ["raw-html", "<small>Base well focus duration is " + formatSimpleTime(player.prj.lightWellFocusExtension, 1) + ", decreased for each consecutive well.</small>", {color: "#dfffdf", fontSize: "18px", fontFamily: "monospace"}],
                                     ["raw-html", "<div class='bottomTooltip'>(Project Speed / 4)<sup>0.5</div>"],
                                 ], {}],
-                            ], {display: hasUpgrade("wel", 33) ? "" : "none !important"}],
+                            ], {display: hasUpgrade("wel", 33) && !hasMilestone("prj", 402) ? "" : "none !important"}],
                         ]],
                         ["blank", "25px"],
                         ["style-column", [/*
@@ -2084,6 +2117,31 @@ addLayer("wel", {
                                     ["blank", "3px"],
                                     ["hoverless-clickable", "lightWell1_collect"],
                                     ["hoverless-clickable", "lightWell1_focus"],
+                                    ["blank", "3px"],
+                                    ["style-column", [
+                                        ["style-column", [
+                                            ["left-row", [
+                                                ["left-row", [
+                                                ], {background: "#dfffdf", borderRadius: "0", width: (hasMilestone("prj", 402) ? "144" : player.wel.modules[1].focusTimer.div(player.wel.modules[1].focusTimerMax).min(1).max(0).mul(144)) + "px", height: "24px", marginLeft: "3px"}],
+                                            ], {background: "#0b1711", borderRadius: "0", width: "150px", height: "30px"}],
+                                        ], {width: "150px", height: "0"}],
+                                        ["style-column", [
+                                            ["left-row", [
+                                            ], {border: "3px solid " + "#4d9973", borderRadius: "0", width: "144px", height: "24px"}],
+                                        ], {width: "150px", height: "0"}],
+                                        ["left-row", [
+                                            ["style-row", [
+                                                ["raw-html", hasMilestone("prj", 402) ? "<h2>∞" : formatSimpleTime(player.wel.modules[1].focusTimer), {color: "#dfffdf", fontSize: "16px", fontFamily: "monospace", lineHeight: "18px", display: "block", marginLeft: "3px"}],
+                                            ], {width: "144px"}],
+                                        ], {width: "144px", height: "0"}],
+                                        ["left-row", [
+                                            ["left-row", [
+                                                ["style-row", [
+                                                    ["raw-html", hasMilestone("prj", 402) ? "<h2>∞" : formatSimpleTime(player.wel.modules[1].focusTimer), {color: "#0b1711", fontSize: "16px", fontFamily: "monospace", lineHeight: "18px", display: "block", marginLeft: "3px"}],
+                                                ], {width: "144px"}],
+                                            ], {width: (hasMilestone("prj", 402) ? "144" : player.wel.modules[1].focusTimer.div(player.wel.modules[1].focusTimerMax).min(1).max(0).mul(144).toNumber()) + "px", overflow: "hidden"}],
+                                        ], {width: "144px", height: "0"}],
+                                    ], {height: "30px"}],
                                     ["blank", "3px"],
                                     ["style-column", [
                                         ["tooltip-row", [
@@ -2131,7 +2189,32 @@ addLayer("wel", {
                                 ], {background: "#4d9973", borderRadius: "10px 10px 0px 0px", width: "150px", height:"25px"}],
                             ["blank", "3px"],
                             ["hoverless-clickable", "lightWell2_collect"],
-                            ["hoverless-clickable", "lightWell2_focus"],                            
+                            ["hoverless-clickable", "lightWell2_focus"],                     
+                            ["blank", "3px"],
+                            ["style-column", [
+                                ["style-column", [
+                                    ["left-row", [
+                                        ["left-row", [
+                                        ], {background: "#dfffdf", borderRadius: "0", width: (hasMilestone("prj", 402) ? "144" : player.wel.modules[2].focusTimer.div(player.wel.modules[2].focusTimerMax).min(1).max(0).mul(144)) + "px", height: "24px", marginLeft: "3px"}],
+                                    ], {background: "#0b1711", borderRadius: "0", width: "150px", height: "30px"}],
+                                ], {width: "150px", height: "0"}],
+                                ["style-column", [
+                                    ["left-row", [
+                                    ], {border: "3px solid " + "#4d9973", borderRadius: "0", width: "144px", height: "24px"}],
+                                ], {width: "150px", height: "0"}],
+                                ["left-row", [
+                                    ["style-row", [
+                                        ["raw-html", hasMilestone("prj", 402) ? "<h2>∞" : formatSimpleTime(player.wel.modules[2].focusTimer), {color: "#dfffdf", fontSize: "16px", fontFamily: "monospace", lineHeight: "18px", display: "block", marginLeft: "3px"}],
+                                    ], {width: "144px"}],
+                                ], {width: "144px", height: "0"}],
+                                ["left-row", [
+                                    ["left-row", [
+                                        ["style-row", [
+                                            ["raw-html", hasMilestone("prj", 402) ? "<h2>∞" : formatSimpleTime(player.wel.modules[2].focusTimer), {color: "#0b1711", fontSize: "16px", fontFamily: "monospace", lineHeight: "18px", display: "block", marginLeft: "3px"}],
+                                        ], {width: "144px"}],
+                                    ], {width: (hasMilestone("prj", 402) ? "144" : player.wel.modules[2].focusTimer.div(player.wel.modules[2].focusTimerMax).min(1).max(0).mul(144).toNumber()) + "px", overflow: "hidden"}],
+                                ], {width: "144px", height: "0"}],
+                            ], {height: "30px"}],
                             ["blank", "3px"],
                             ["style-column", [
                                 ["tooltip-row", [
@@ -2185,6 +2268,31 @@ addLayer("wel", {
                             ["hoverless-clickable", "lightWell3_focus"],                            
                             ["blank", "3px"],
                             ["style-column", [
+                                ["style-column", [
+                                    ["left-row", [
+                                        ["left-row", [
+                                        ], {background: "#dfffdf", borderRadius: "0", width: (hasMilestone("prj", 402) ? "144" : player.wel.modules[3].focusTimer.div(player.wel.modules[3].focusTimerMax).min(1).max(0).mul(144)) + "px", height: "24px", marginLeft: "3px"}],
+                                    ], {background: "#0b1711", borderRadius: "0", width: "150px", height: "30px"}],
+                                ], {width: "150px", height: "0"}],
+                                ["style-column", [
+                                    ["left-row", [
+                                    ], {border: "3px solid " + "#4d9973", borderRadius: "0", width: "144px", height: "24px"}],
+                                ], {width: "150px", height: "0"}],
+                                ["left-row", [
+                                    ["style-row", [
+                                        ["raw-html", hasMilestone("prj", 402) ? "<h2>∞" : formatSimpleTime(player.wel.modules[3].focusTimer), {color: "#dfffdf", fontSize: "16px", fontFamily: "monospace", lineHeight: "18px", display: "block", marginLeft: "3px"}],
+                                    ], {width: "144px"}],
+                                ], {width: "144px", height: "0"}],
+                                ["left-row", [
+                                    ["left-row", [
+                                        ["style-row", [
+                                            ["raw-html", hasMilestone("prj", 402) ? "<h2>∞" : formatSimpleTime(player.wel.modules[3].focusTimer), {color: "#0b1711", fontSize: "16px", fontFamily: "monospace", lineHeight: "18px", display: "block", marginLeft: "3px"}],
+                                        ], {width: "144px"}],
+                                    ], {width: (hasMilestone("prj", 402) ? "144" : player.wel.modules[3].focusTimer.div(player.wel.modules[3].focusTimerMax).min(1).max(0).mul(144).toNumber()) + "px", overflow: "hidden"}],
+                                ], {width: "144px", height: "0"}],
+                            ], {height: "30px"}],
+                            ["blank", "3px"],
+                            ["style-column", [
                                 ["tooltip-row", [
                                     ["raw-html", formatShortWhole(player.wel.modules[3].completions) + " γ ↻", {color: "white", fontSize: "16px", fontFamily: "monospace"}],
                                     ["raw-html", "<div class='bottomTooltip'>Best: " + formatShortWhole(player.wel.modules[3].bestCompletions) + " γ ↻</div>"],
@@ -2235,6 +2343,31 @@ addLayer("wel", {
                             ["blank", "3px"],
                             ["hoverless-clickable", "lightWell4_collect"],
                             ["hoverless-clickable", "lightWell4_focus"],                            
+                            ["blank", "3px"],
+                            ["style-column", [
+                                ["style-column", [
+                                    ["left-row", [
+                                        ["left-row", [
+                                        ], {background: "#dfffdf", borderRadius: "0", width: (hasMilestone("prj", 402) ? "144" : player.wel.modules[4].focusTimer.div(player.wel.modules[4].focusTimerMax).min(1).max(0).mul(144)) + "px", height: "24px", marginLeft: "3px"}],
+                                    ], {background: "#0b1711", borderRadius: "0", width: "150px", height: "30px"}],
+                                ], {width: "150px", height: "0"}],
+                                ["style-column", [
+                                    ["left-row", [
+                                    ], {border: "3px solid " + "#4d9973", borderRadius: "0", width: "144px", height: "24px"}],
+                                ], {width: "150px", height: "0"}],
+                                ["left-row", [
+                                    ["style-row", [
+                                        ["raw-html", hasMilestone("prj", 402) ? "<h2>∞" : formatSimpleTime(player.wel.modules[4].focusTimer), {color: "#dfffdf", fontSize: "16px", fontFamily: "monospace", lineHeight: "18px", display: "block", marginLeft: "3px"}],
+                                    ], {width: "144px"}],
+                                ], {width: "144px", height: "0"}],
+                                ["left-row", [
+                                    ["left-row", [
+                                        ["style-row", [
+                                            ["raw-html", hasMilestone("prj", 402) ? "<h2>∞" : formatSimpleTime(player.wel.modules[4].focusTimer), {color: "#0b1711", fontSize: "16px", fontFamily: "monospace", lineHeight: "18px", display: "block", marginLeft: "3px"}],
+                                        ], {width: "144px"}],
+                                    ], {width: (hasMilestone("prj", 402) ? "144" : player.wel.modules[4].focusTimer.div(player.wel.modules[4].focusTimerMax).min(1).max(0).mul(144).toNumber()) + "px", overflow: "hidden"}],
+                                ], {width: "144px", height: "0"}],
+                            ], {height: "30px"}],
                             ["blank", "3px"],
                             ["style-column", [
                                 ["tooltip-row", [
@@ -2446,68 +2579,85 @@ addLayer("wel", {
                 },
             },
             "Fountains": {
-                buttonStyle() { return { color: "white", borderRadius: "8px"} },
+                buttonStyle() { return { color: "white", borderWidth: "2px", borderRadius: "20px"} },
                 unlocked() { return hasUpgrade("wel", 12) },
                 content() {
                     let look = [
-                        ["blank", "25px"],
-                        ["raw-html", "Light fountains operate at <h3>x" + formatWhole(player.wel.light.mul(player.prj.projectSpeed)) + "</h3> speed.", {color: "white", fontSize: "18px", fontFamily: "monospace"}],
-                        ["raw-html", "<small>Light speeds up light fountains by x" + formatSimple(player.wel.light) + ".</small>", {color: "white", fontSize: "18px", fontFamily: "monospace"}],
-                        ["blank", "25px"],
-                        ["raw-html", "You are using " + formatWhole(player.prj.focused) + "/" + formatWhole(player.prj.maxFocused) + " focus.", {color: "white", fontSize: "18px", fontFamily: "monospace"}],
                         ["style-column", [
-                            ["raw-html", "<small>Fountain requirements are reduced by /" + formatSimple(player.wel.lightFountainReqDivisor, 2) + ".</small>", {color: "white", fontSize: "18px", fontFamily: "monospace"}],
-                        ], {display: player.wel.lightFountainReqDivisor.gt(1) ? "" : "none !important"}],
-                        ["style-column", [
-                            ["tooltip-row", [
-                                ["raw-html", "<small>Base fountain focus duration is " + formatSimpleTime(player.prj.lightFountainFocusExtension.mul(4), 1) + ", reduced for each consecutive fountain.</small>", {color: "#dfffdf", fontSize: "18px", fontFamily: "monospace"}],
-                                ["raw-html", "<div class='bottomTooltip'>2 * (Project Speed)<sup>0.75</div>"],
-                            ], {}],
-                        ], {display: hasMilestone("prj", 201) && !hasUpgrade("wel", 34) ? "" : "none !important"}],
-                        ["blank", "10px"],
-                        ["style-row", [
-                            component_fountain("wel", 1, {
-                                primaryColor: "#4d9973",
-                                secondaryColor: "#336659",
-                                progressFrontColor: "#ffdfdf",
-                                progressBackColor: "#1a332d",
-                                textColor: "#ffffff",
-                                rightAdjacent: true,
-                                bottomAdjacent: layers.wel.fountains[3].unlocked(),
-                            }),
-                            component_fountain("wel", 2, {
-                                primaryColor: "#4d9973",
-                                secondaryColor: "#336659",
-                                progressFrontColor: "#ffdfdf",
-                                progressBackColor: "#1a332d",
-                                textColor: "#ffffff",
-                                leftAdjacent: true,
-                                bottomAdjacent: layers.wel.fountains[4].unlocked(),
-                            }),
+                            ["blank", "25px"],
+                            ["raw-html", "You are gaining <h3>" + formatWhole(player.wel.light.mul(player.prj.projectSpeed)) + "</h3> fountain progress /s.", {color: "white", fontSize: "18px", fontFamily: "monospace"}],
+                            ["raw-html", "<small>Light gives a base progress rate of " + formatWhole(player.wel.light) + ".</small>", {color: "white", fontSize: "18px", fontFamily: "monospace"}],
+                            ["blank", "25px"],
+                            ["raw-html", "You are using " + formatWhole(player.prj.focused) + "/" + formatWhole(player.prj.maxFocused) + " focus.", {color: "white", fontSize: "18px", fontFamily: "monospace"}],
+                            ["style-column", [
+                                ["raw-html", "<small>Fountain requirements are reduced by /" + formatSimple(player.wel.lightFountainReqDivisor, 2) + ".</small>", {color: "white", fontSize: "18px", fontFamily: "monospace"}],
+                            ], {display: player.wel.lightFountainReqDivisor.gt(1) ? "" : "none !important"}],
+                            ["style-column", [
+                                ["tooltip-row", [
+                                    ["raw-html", "<small>Base fountain focus duration is " + formatSimpleTime(player.prj.lightFountainFocusExtension.mul(4), 1) + ", reduced for each consecutive fountain.</small>", {color: "#dfffdf", fontSize: "18px", fontFamily: "monospace"}],
+                                    ["raw-html", "<div class='bottomTooltip'>2 * (Project Speed)<sup>0.75</div>"],
+                                ], {}],
+                            ], {display: hasMilestone("prj", 201) && !hasUpgrade("wel", 33) ? "" : "none !important"}],
+                            ["blank", "10px"],
                         ]],
                         ["style-row", [
-                            component_fountain("wel", 3, {
-                                primaryColor: "#4d9973",
-                                secondaryColor: "#336659",
-                                progressFrontColor: "#ffdfdf",
-                                progressBackColor: "#1a332d",
-                                textColor: "#ffffff",
-                                rightAdjacent: layers.wel.fountains[4].unlocked(),
-                                topAdjacent: true,
-                            }),
-                            component_fountain("wel", 4, {
-                                primaryColor: "#4d9973",
-                                secondaryColor: "#336659",
-                                progressFrontColor: "#ffdfdf",
-                                progressBackColor: "#1a332d",
-                                textColor: "#ffffff",
-                                leftAdjacent: layers.wel.fountains[3].unlocked(),
-                                topAdjacent: true,
-                            }),
+
                         ]],
+                        ["blank", "6px"],
+                        ["style-row", [
+
+                        ]],
+                        ["blank", "25px"],
                         ["clickable", "lightFountains_respecFocus"],
                         ["blank", "25px"],
                     ]
+                    if (hasUpgrade("wel", 12)) {
+                        look[1][1].push(
+                            makeWellFountain(1, true)
+                        )
+                        if (layers.wel.fountains[2].condition()) {
+                            look[1][1].push(
+                                ["blank", "6px", {width: "6px"}],
+                                makeWellFountain(2, true)
+                            )
+                        } else {
+                            look[1][1].push(
+                                ["blank", "6px", {width: "6px"}],
+                                ["style-column", [
+                                    ["raw-html", "Light Fountain II<br><small>Req: 1,500 Light</small>", {color: "white", fontSize: "16px"}],
+                                ], {background: "black", border: "3px solid #663737", width: "253px", height: "216px", borderRadius: "10px", lineHeight: "1"}],
+                            )
+                        }
+                        if (layers.wel.fountains[2].condition()) {
+                            if (layers.wel.fountains[3].condition()) {
+                                look[3][1].push(
+                                    makeWellFountain(3, true)
+                                )
+                            } else {
+                                look[3][1].push(
+                                ["blank", "6px", {width: "6px"}],
+                                ["style-column", [
+                                    ["raw-html", "Cycle Fountain<br><small>Req: 50,000 Light</small>", {color: "white", fontSize: "16px"}],
+                                ], {background: "black", border: "3px solid #663737", width: "253px", height: "216px", borderRadius: "10px", lineHeight: "1"}],
+                                )
+                            }
+                        }
+                        if (layers.wel.fountains[3].condition()) {
+                            if (layers.wel.fountains[4].condition()) {
+                                look[3][1].push(
+                                    ["blank", "6px", {width: "6px"}],
+                                    makeWellFountain(4, false)
+                                )
+                            } else {
+                                look[3][1].push(
+                                ["blank", "6px", {width: "6px"}],
+                                ["style-column", [
+                                    ["raw-html", "Speed Fountain<br><small>Req: 1,500,000 Light</small>", {color: "white", fontSize: "16px"}],
+                                ], {background: "black", border: "3px solid #663737", width: "253px", height: "216px", borderRadius: "10px", lineHeight: "1"}],
+                                )
+                            }
+                        }
+                    }
                     return look
                 }
             }
@@ -2516,6 +2666,9 @@ addLayer("wel", {
     tabFormat() {
         let look = [
             ["raw-html", "You have <h3>" + formatWhole(player.wel.light) + "</h3> light.", {color: "#ffdfdf", fontSize: "24px", fontFamily: "monospace"}],
+            ["style-column", [
+                ["raw-html", "Boosts project speed by x" + format(player.wel.lightEffect) + ".", {color: "#ffdfdf", fontSize: "18px", fontFamily: "monospace"}],
+            ], {display: player.bum.starshines.gt(0) ? "" : "none !important"}],
             ["microtabs", "stuff", { 'border-width': '0px' }],
         ]
         return look
@@ -2552,21 +2705,6 @@ addLayer("wel", {
         },
 	]
 })
-
-const tickProjects = function (time) {
-    Object.keys(layers.prj.projects).forEach(i => {
-        let module = player.prj.modules[i]
-        if (module.focused) {
-            module.time = module.time.add(module.timeSpeed.mul(time))
-            if (module.time.gte(module.timeReq)) {
-                module.focused = false
-                module.completions = module.completions.add(1)
-                module.time = new Decimal(0)
-                player.prj.focused = player.prj.focused.sub(1)
-            }
-        }
-    });
-}
 
 const component_fountain = function (layer, id, data = {}) {
     if (!data.primaryColor) data.primaryColor = "#999999"
@@ -2683,7 +2821,7 @@ const component_fountain = function (layer, id, data = {}) {
             container = ["style-column", [
                 ["raw-html", layerFountain.title, {color: "white", fontSize: "16px", fontFamily: "monospace"}],
                 ["raw-html", "<small>Req: " + layerFountain.conditionDisplay(), {color: "white", fontSize: "16px", fontFamily: "monospace"}],
-            ], {background: "black", border: "3px solid #663737", borderRadius: (data.topAdjacent || data.leftAdjacent ? "0" : "25px") + " " + (data.topAdjacent || data.rightAdjacent ? "0" : "25px") + " " + (data.bottomAdjacent || data.rightAdjacent ? "0" : "25px") + " " + (data.bottomAdjacent || data.leftAdjacent ? "0" : "25px"), height: "160px", width: "265px", margin: "3px"}]
+            ], {background: "black", border: "3px solid #663737", borderRadius: (data.topAdjacent || data.leftAdjacent ? "0" : "25px") + " " + (data.topAdjacent || data.rightAdjacent ? "0" : "25px") + " " + (data.bottomAdjacent || data.rightAdjacent ? "0" : "25px") + " " + (data.bottomAdjacent || data.leftAdjacent ? "0" : "25px"), height: "160px", width: "259px", margin: "3px"}]
         }
     } else {
         container = ["style-row", []]

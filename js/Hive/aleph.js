@@ -661,7 +661,7 @@ addLayer("al", {
         127: {
             title: "Honeycomb <small>(9, 3)</small>",
             unlocked() {return hasChallenge("fu", 12)},
-            description: "Automate nectar upgrades when on pollen path.",
+            description: "Automate nectar and honey upgrades when on pollen path.",
             cost: new Decimal(1e25),
             currencyLocation() { return player.al },
             currencyDisplayName: "Honeycombs",

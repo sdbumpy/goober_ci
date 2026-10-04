@@ -776,8 +776,8 @@
                 pauseUniverse("SB")
             },
             style() {
-                let look = {width: "200px", minHeight: "50px", border: "3px solid rgba(0,0,0,0.5)", borderRadius: "0 0 12px 12px"}
-                if (player.uni.SB.paused) {look.backgroundColor = "#00007f"} else {look.backgroundColor = "#453aab"}
+                let look = {width: "200px", minHeight: "50px", border: "3px solid #5e4ee67f", borderRadius: "0 0 12px 12px", color: "white"}
+                if (player.uni.SB.paused) {look.backgroundColor = "#00005f"} else {look.backgroundColor = "#00009f"}
                 return look
             }
         },
@@ -791,6 +791,19 @@
             style() {
                 let look = {width: "200px", minHeight: "50px", border: "3px solid rgba(0,0,0,0.2)", borderRadius: "0 0 12px 12px"}
                 if (player.uni.UD.paused) {look.backgroundColor = "#bf78bf"} else {look.backgroundColor = "#ffa1ff"}
+                return look
+            }
+        },
+        502: {
+            title() {return player.uni.UD_C.paused ? "PAUSED<br>▶" : "UNPAUSED<br>⏸"},
+            canClick: true,
+            unlocked() {return uniShown("UD_C")},
+            onClick() {
+                pauseUniverse("UD_C")
+            },
+            style() {
+                let look = {width: "200px", minHeight: "50px", border: "3px solid rgba(0,0,0,0.2)", borderRadius: "0 0 12px 12px"}
+                if (player.uni.UD_C.paused) {look.backgroundColor = "#bf789c"} else {look.backgroundColor = "#ffa1d0"}
                 return look
             }
         },
@@ -938,13 +951,19 @@
                                     ["raw-html", "Ship Battle", {color: "white", fontSize: "20px", fontFamily: "monospace"}],
                                 ], {width: "200px", height: "47px", borderBottom: "3px solid #5e4ee6"}],
                                 ["clickable", 404],
-                            ], () => {return uniShown("BH") ? {width: "200px", height: "100px", background: "#00003f", border: "3px solid #5e4ee6", borderRadius: "15px", margin: "5px"} : {display: "none !important"}}],
+                            ], () => {return uniShown("BH") ? {width: "200px", height: "100px", background: "#00007f", border: "3px solid #5e4ee6", borderRadius: "15px", margin: "5px"} : {display: "none !important"}}],
                             ["style-column", [
                                 ["style-column", [
                                     ["raw-html", "Universe δ", {color: "black", fontSize: "20px", fontFamily: "monospace"}],
                                 ], {width: "200px", height: "47px", borderBottom: "3px solid #9e649e"}],
                                 ["clickable", 501],
                             ], () => {return uniShown("UD") ? {width: "200px", height: "100px", background: "#de8cde", border: "3px solid #9e649e", borderRadius: "15px", margin: "5px"} : {display: "none !important"}}],
+                            ["style-column", [
+                                ["style-column", [
+                                    ["raw-html", "Universe ƍ", {color: "black", fontSize: "20px", fontFamily: "monospace"}],
+                                ], {width: "200px", height: "47px", borderBottom: "3px solid #9e6481"}],
+                                ["clickable", 502],
+                            ], () => {return uniShown("UD_C") ? {width: "200px", height: "100px", background: "#de8cb5", border: "3px solid #9e6481", borderRadius: "15px", margin: "5px"} : {display: "none !important"}}],
                         ]],
                     ], {background: "rgba(0,0,0,0.3)", border: "3px solid white", borderRadius: "15px", padding: "10px"}],
                 ],

@@ -745,7 +745,7 @@ addLayer("n", {
         },
         27: {
             requirementDescription: "50 Nest Resets",
-            effectDescription() { return "Automate aleph upgrades" },
+            effectDescription() { return "Automate aleph upgrades, and you can equip another twig skill" },
             done() { return player.n.nestReset.gte(50) },
             style() {
                 let look = {width: "500px", minHeight: "75px", color: "black", border: "3px solid #9e6a55", borderTop: "0px", borderRadius: "0px"}

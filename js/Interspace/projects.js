@@ -2302,6 +2302,18 @@
                     return look
                 },
             },
+            "Research": {
+                buttonStyle() { return { color: "white", borderWidth: "2px", borderRadius: "20px"} },
+                unlocked() { return hasUpgrade("bum", 24) },
+                content() {
+                    let look = [
+                        ["blank", "25px"],
+                        
+                        ["blank", "25px"],
+                    ]
+                    return look
+                },
+            },
             "Pylon": {
                 buttonStyle() { return { color: "white", borderRadius: "8px" } },
                 unlocked() { return false },

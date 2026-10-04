@@ -318,7 +318,7 @@ addLayer("wel", {
         if (hasAchievement("achievements", 1208)) player.wel.lightGain = player.wel.lightGain.mul(1.2)
 
         player.wel.lightEffect = player.wel.light.add(1).log(10).add(1).pow(0.75).sub(1).pow_base(10).pow(0.1)
-        if (player.wel.lightEffect.gte(1e3)) player.wel.lightEffect = player.wel.lightEffect.div(1e3).log(10).add(1).pow(0.75).sub(1).pow_base(10).sub(1).mul(0.25).add(1).mul(1e3)
+        if (player.wel.lightEffect.gte(1e3)) player.wel.lightEffect = player.wel.lightEffect.div(1e3).log(10).add(1).pow(0.75).sub(1).pow_base(10).sub(1).mul(0.5).add(1).mul(1e3)
         
         // WELL CYCLE SPEED
 

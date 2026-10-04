@@ -1206,7 +1206,7 @@
             getCompletionEffect() {
                 let completions = player.pri.fountains[10].completions
 
-                s = completions.pow(0.5).mul(0.05).add(1)
+                s = completions.pow(0.75).mul(0.04).add(1)
 
                 return s
             },
@@ -1316,7 +1316,7 @@
             getCompletionEffect() {
                 let completions = player.pri.fountains[12].completions
 
-                s = completions.pow(0.75).pow_base(1.5)
+                let s = completions.add(1).mul(completions).div(2).add(1)
 
                 return s
             },

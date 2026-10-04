@@ -161,7 +161,7 @@
         if (!player.prj.upgrade22Condition && player.blu.totalBlueshifts.add(player.blu.extraBlueshifts).gte(20)) player.prj.upgrade22Condition = true;
         if (!player.prj.upgrade23Condition && player.au2.stars.gte(1e40)) player.prj.upgrade23Condition = true;
         if (!player.prj.upgrade24Condition && player.pri.fountains[12].completions.gte(1)) player.prj.upgrade24Condition = true;
-        if (!player.prj.upgrade33Condition && player.tw.twigs.gte(1e18)) player.prj.upgrade33Condition = true;
+        if (!player.prj.upgrade33Condition && player.tw.twigs.gte(1e15)) player.prj.upgrade33Condition = true;
 
         // STARLIGHT
         player.bum.starlightToGet = player.wel.light.add(1).log(10).sub(90).div(8).pow_base(2)
@@ -924,7 +924,7 @@
             fullDisplay() {
                 let s = "<h2>"
                 if (hasUpgrade(this.layer, this.id) || this.condition()) {
-                    s += "Unlock the second row of starlight fountains.</h2><br><br><h3>Cost: " + formatWhole(this.cost) + " " + this.currencyDisplayName + "</h3>"
+                    s += "Unlock research projects.</h2><br><br><h3>Cost: " + formatWhole(this.cost) + " " + this.currencyDisplayName + "</h3>"
                 } else {
                     s += "???</h2><br><h3>Req: 1 Star ↻</h3>"
                 }
@@ -1034,7 +1034,7 @@
                 if (hasUpgrade(this.layer, this.id) || this.condition()) {
                     s += "Extend greenhouse content.</h2><br><br><h3>Cost: " + formatWhole(this.cost) + " " + this.currencyDisplayName + "</h3>"
                 } else {
-                    s += "???</h2><br><h3>Req: 1e18 Twigs</h3>"
+                    s += "???</h2><br><h3>Req: 1e15 Twigs</h3>"
                 }
                 return s
             },
@@ -1291,6 +1291,7 @@
 
                 s = s.mul(player.bum.fountains[1].statInvested.add(adder).pow(2))
                 if (hasUpgrade("bum", 22)) s = s.mul(10);
+                s = s.mul(player.pri.fountains[12].completionEffect)
 
                 return s
             },
@@ -1336,6 +1337,7 @@
 
                 s = s.mul(player.bum.fountains[2].statInvested.add(adder).pow(2))
                 if (hasUpgrade("bum", 22)) s = s.mul(10);
+                s = s.mul(player.pri.fountains[12].completionEffect)
 
                 return s
             },
@@ -1381,6 +1383,7 @@
 
                 s = s.mul(player.bum.fountains[3].statInvested.add(adder).pow(2))
                 if (hasUpgrade("bum", 22)) s = s.mul(10);
+                s = s.mul(player.pri.fountains[12].completionEffect)
 
                 return s
             },
@@ -1427,6 +1430,7 @@
 
                 s = s.mul(player.bum.fountains[4].statInvested.add(adder).pow(2))
                 if (hasUpgrade("bum", 22)) s = s.mul(10);
+                s = s.mul(player.pri.fountains[12].completionEffect)
 
                 return s
             },
@@ -1473,6 +1477,7 @@
 
                 s = s.mul(player.bum.fountains[5].statInvested.add(adder).pow(2))
                 if (hasUpgrade("bum", 22)) s = s.mul(10);
+                s = s.mul(player.pri.fountains[12].completionEffect)
 
                 return s
             },
@@ -1519,6 +1524,7 @@
 
                 s = s.mul(player.bum.fountains[6].statInvested.add(adder).pow(2))
                 if (hasUpgrade("bum", 22)) s = s.mul(10);
+                s = s.mul(player.pri.fountains[12].completionEffect)
 
                 return s
             },

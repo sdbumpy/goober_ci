@@ -3882,8 +3882,8 @@ addLayer("pet", {
             effect() {
                 let amt = getLevelableAmount(this.layer, this.id).add(getLevelableTier(this.layer, this.id).mul(5).min(40))
                 return [
-                    player.au2.stars.div(1e25).add(1).log(10).add(1).pow(amt.pow(0.5).mul(0.125)).pow(Decimal.pow(2, getLevelableTier(this.layer, this.id))), // Light (Based on Stars)
-                    player.sdim.starPower.div(1e25).add(1).log(10).add(1).pow(amt.pow(0.5).mul(0.125)).pow(Decimal.pow(2, getLevelableTier(this.layer, this.id))), // Light (Based on Stars)
+                    player.au2.stars.add(1).log(10).div(30).add(1).pow(amt.pow(0.5).mul(0.5)).pow(Decimal.pow(2, getLevelableTier(this.layer, this.id))), // Light (Based on Stars)
+                    player.sdim.starPower.add(1).log(10).div(30).add(1).pow(amt.pow(0.5).mul(0.25)).pow(Decimal.pow(2, getLevelableTier(this.layer, this.id))), // Twigs (Based on Star Power)
                     player.prj.projectSpeed.log(10).pow(amt.pow(0.5).mul(0.5)).div(20).pow(Decimal.pow(1.25, getLevelableTier(this.layer, this.id))).add(1) // Rare pet button yield (Based on Project Speed)
                 ]
             },

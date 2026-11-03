@@ -109,7 +109,7 @@
         player.le.starmetalAlloyToGetTrue = player.le.starmetalAlloyToGetTrue.mul(levelableEffect("car", 410)[0])
         player.le.starmetalAlloyToGetTrue = player.le.starmetalAlloyToGetTrue.mul(buyableEffect("funify", 13))
         player.le.starmetalAlloyToGetTrue = player.le.starmetalAlloyToGetTrue.mul(player.prj.modules[1].completionEffect)
-        if (hasMilestone("prj", 104)) player.le.starmetalAlloyToGetTrue = player.le.starmetalAlloyToGetTrue.mul(player.sma.starmetalExitTime.min(21600).div(600).add(1).pow(0.5));
+        if (hasMilestone("prj", 104)) player.le.starmetalAlloyToGetTrue = player.le.starmetalAlloyToGetTrue.mul(player.sma.starmetalExitTime.min(Decimal.mul(player.sma.exitTimeCapMult, 21600)).div(600).add(1).pow(0.5));
 
         player.le.starmetalAlloyValue = new Decimal(1)
         player.le.starmetalAlloyValue = player.le.starmetalAlloyValue.mul(buyableEffect("ep1", 15))
@@ -134,7 +134,7 @@
         if (hasMilestone("db", 102)) player.le.eclipseShardsToGetTrue = player.le.eclipseShardsToGetTrue.mul(1.2)
         if (hasMilestone("db", 108)) player.le.eclipseShardsToGetTrue = player.le.eclipseShardsToGetTrue.mul(1.2)
         player.le.eclipseShardsToGetTrue = player.le.eclipseShardsToGetTrue.mul(levelableEffect("spet", 307)[0])
-        if (hasMilestone("prj", 104)) player.le.eclipseShardsToGetTrue = player.le.eclipseShardsToGetTrue.mul(player.sma.eclipseExitTime.min(86400).div(1800).add(1).pow(0.4));
+        if (hasMilestone("prj", 104)) player.le.eclipseShardsToGetTrue = player.le.eclipseShardsToGetTrue.mul(player.sma.eclipseExitTime.min(Decimal.mul(player.sma.exitTimeCapMult, 86400)).div(1800).add(1).pow(0.4));
 
         player.le.eclipseShardsValue = new Decimal(5)
         player.le.eclipseShardsValue = player.le.eclipseShardsValue.mul(buyableEffect("le", 11))

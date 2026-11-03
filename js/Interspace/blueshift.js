@@ -644,10 +644,10 @@
                         ], {display: player.blu.blueshiftEffectStrength.gt(1) ? "" : "none !important"}],
                         ["raw-html", "<small>Boosts light well ↻ gain by x" + formatSimple(player.blu.blueshiftEffect) + ".</small>", {color: "white", fontSize: "18px", fontFamily: "monospace"}],
                         ["style-column", [
-                            ["raw-html", player.blu.totalBlueshifts.lt(4) ? "<small style='color:#ffffff9f'>Unlock at 4 blueshifts.</small>" : "<small>Boosts prism gain by x" + formatSimple(player.blu.blueshiftEffect2) + ".</small>", {color: "white", fontSize: "18px", fontFamily: "monospace"}],
+                            ["raw-html", player.blu.effectiveBlueshifts.lt(4) ? "<small style='color:#ffffff9f'>Unlock at 4 blueshifts.</small>" : "<small>Boosts prism gain by x" + formatSimple(player.blu.blueshiftEffect2) + ".</small>", {color: "white", fontSize: "18px", fontFamily: "monospace"}],
                         ], {display: hasMilestone("prj", 207) ? "" : "none !important"}],
                         ["style-column", [
-                            ["raw-html", player.blu.totalBlueshifts.lt(6) ? "<small style='color:#ffffff9f'>Unlock at 6 blueshifts.</small>" : "<small>Boosts light gain by x" + formatSimple(player.blu.blueshiftEffect3) + ".</small>", {color: "white", fontSize: "18px", fontFamily: "monospace"}],
+                            ["raw-html", player.blu.effectiveBlueshifts.lt(6) ? "<small style='color:#ffffff9f'>Unlock at 6 blueshifts.</small>" : "<small>Boosts light gain by x" + formatSimple(player.blu.blueshiftEffect3) + ".</small>", {color: "white", fontSize: "18px", fontFamily: "monospace"}],
                         ], {display: hasMilestone("prj", 304) ? "" : "none !important"}],
                         ["blank", "25px"],
                         ["style-column", [
@@ -753,7 +753,7 @@
                                 ], {border: "3px solid #408069", borderRadius: "0 0 10px 10px", width: "144px", height: "60px"}],
                             ], {backgroundColor: "#274d48", borderRadius: "13px", width: "150px", padding: "3px", display: (hasMilestone("prj", 303) && player.wel.modules[3].completions.gte(1e12)) || player.blu.blueshifts[4].amount.gt(0) ? "" : "none !important"}],
                         ]],
-                        ["blank", "10px"],
+                        ["blank", "6px"],
                         ["style-row", [
                             // epsilon
                             ["style-row", [
@@ -862,6 +862,7 @@
                 .min(player.blu.blueshifts[4].amount.mul(0.5).add(1).pow_base(24190000))
             ) + "</h3> speed.</small>"}, {color: "white", textShadow: "1px 1px 0 #3f3fff, -1px 1px 0 #3f3fff, 1px -1px 0 #3f3fff, -1px -1px 0 #3f3fff", fontSize: "18px", fontFamily: "monospace"}],
         ],  () => {return {display: hasMilestone("prj", 301) ? "" : "none !important"}}],
+        ["blank", "6px"],
         ["microtabs", "stuff", { 'border-width': '0px' }],
     ],
     layerShown() { return player.startedGame == true && hasMilestone("prj", 301)},
@@ -892,6 +893,34 @@
             description: "Blueshift light well δ",
             onPress() {
                 clickClickable(this.layer, "lightWell4_blueshift")
+            },
+        },
+        {
+            key: "%", 
+            description: "Blueshift prism well ε",
+            onPress() {
+                clickClickable(this.layer, "prismWell1_blueshift")
+            },
+        },
+        {
+            key: "^", 
+            description: "Blueshift prism well ζ",
+            onPress() {
+                clickClickable(this.layer, "prismWell2_blueshift")
+            },
+        },
+        {
+            key: "&", 
+            description: "Blueshift prism well η",
+            onPress() {
+                clickClickable(this.layer, "prismWell3_blueshift")
+            },
+        },
+        {
+            key: "*", 
+            description: "Blueshift prism well θ",
+            onPress() {
+                clickClickable(this.layer, "prismWell4_blueshift")
             },
         },
 	]

@@ -193,18 +193,7 @@
             module.pourSafety = false
             module.focusSafety = false
             player.bum.fountains[i].focusTimerMax = player.prj.starlightFountainFocusExtension.mul(60).div(Math.pow(2, i - 1))
-            if (player.bum.fountains[i].isFocused) {
-                player.bum.fountains[i].focusTimer = player.bum.fountains[i].focusTimer.sub(delta)
-                if (player.bum.starlight.gte(module.statReq) && module.timeSpeed.gt(0)) module.time = module.time.add(module.timeSpeed.mul(delta));
-                if (player.bum.fountains[i].focusTimer.lte(0)) {
-                    player.bum.fountains[i].isFocused = false
-                    player.bum.fountains[i].focusTimer = player.bum.fountains[i].focusTimerMax
-                    player.prj.focused = player.prj.focused.sub(1)
-                }
-            } else {
-                player.bum.fountains[i].focusTimer = player.bum.fountains[i].focusTimerMax
-            }
-            if (module.focused) {
+            if ((module.focused || module.isFocused) && module.timeSpeed.gt(0)) {
                 module.time = module.time.add(module.timeSpeed.mul(delta))
             }
             if (module.time.gte(module.timeReq)) {
@@ -930,7 +919,7 @@
                 }
                 return s
             },
-            cost: new Decimal(1e5),
+            cost: new Decimal(1e6),
             currencyLocation() { return player.bum },
             currencyDisplayName: "Starlight",
             currencyInternalName: "starlight",
@@ -1032,7 +1021,7 @@
             fullDisplay() {
                 let s = "<h2>"
                 if (hasUpgrade(this.layer, this.id) || this.condition()) {
-                    s += "Extend greenhouse content.</h2><br><br><h3>Cost: " + formatWhole(this.cost) + " " + this.currencyDisplayName + "</h3>"
+                    s += "Unlock new solar radiation fountains.</h2><br><br><h3>Cost: " + formatWhole(this.cost) + " " + this.currencyDisplayName + "</h3>"
                 } else {
                     s += "???</h2><br><h3>Req: 1e15 Twigs</h3>"
                 }
@@ -1063,14 +1052,14 @@
             },
         },
         34: {
-            unlocked() { return hasMilestone("prj", 406) },
+            unlocked() { return hasMilestone("prj", 406) && (hasUpgrade("bum", 31) || hasUpgrade("bum", 32)) },
             condition() { return player.prj.upgrade34Condition },
             fullDisplay() {
                 let s = "<h2>"
                 if (hasUpgrade(this.layer, this.id) || this.condition()) {
-                    s += "Unlock more light fountains. Starshines no longer reset project content.</h2><br><br><h3>Cost: " + formatWhole(this.cost) + " " + this.currencyDisplayName + "</h3>"
+                    s += "Unlock more light fountains.</h2><br><br><h3>Cost: " + formatWhole(this.cost) + " " + this.currencyDisplayName + "</h3>"
                 } else {
-                    s += "???</h2><br><h3>Req: 1,000 ε ↻</h3>"
+                    s += "???</h2><br><h3>Req: 500 ε ↻</h3>"
                 }
                 return s
             },
@@ -1140,7 +1129,7 @@
             fullDisplay() {
                 let s = "<h2>"
                 if (hasUpgrade(this.layer, this.id) || this.condition()) {
-                    s += "Reduce pyramid fountain requirements by /1,000.</h2><br><br><h3>Cost: " + formatWhole(this.cost) + " " + this.currencyDisplayName + "</h3>"
+                    s += "Reduce pyramid fountain requirements by /1,000,000.</h2><br><br><h3>Cost: " + formatWhole(this.cost) + " " + this.currencyDisplayName + "</h3>"
                 } else {
                     s += "???</h2><br><h3>Req: 36 non-free Blueshifts</h3>"
                 }
@@ -1176,7 +1165,7 @@
             fullDisplay() {
                 let s = "<h2>"
                 if (hasUpgrade(this.layer, this.id) || this.condition()) {
-                    s += "Unlock the final challenge.</h2><br><br><h3>Cost: " + formatWhole(this.cost) + " " + this.currencyDisplayName + "</h3>"
+                    s += "Unlock prism well θ.</h2><br><br><h3>Cost: " + formatWhole(this.cost) + " " + this.currencyDisplayName + "</h3>"
                 } else {
                     s += "???</h2><br><h3>Req: 40 non-free Blueshifts</h3>"
                 }
@@ -1253,8 +1242,8 @@
             unlocked() { return true },
             conditionDisplay() { return "This should always be unlocked... why are you seeing this??"},
             condition() { return true },
-            canAuto() { return false },
-            infiniteAuto() { return false },
+            canAuto() { return true },
+            infiniteAuto() { return true },
             effectDisplay() { return "Boosts light gain by x" + formatSimple(layers.bum.fountains[1].getCompletionEffect(), 2) + ", based on project speed"},
             currencyLocation() { return player.bum },
             currencyInternalName: "starlight",
@@ -1301,8 +1290,8 @@
             unlocked() { return true },
             conditionDisplay() { return "This should always be unlocked... why are you seeing this??"},
             condition() { return true },
-            canAuto() { return false },
-            infiniteAuto() { return false },
+            canAuto() { return true },
+            infiniteAuto() { return true },
             effectDisplay() { return "Boosts focus cap by +" + formatSimple(layers.bum.fountains[2].getCompletionEffect(), 2) + ", project speed by x" + formatSimple((player.bum.fountains[2].completions.pow(0.75)).pow_base(1.1), 2)},
             currencyLocation() { return player.bum },
             currencyInternalName: "starlight",
@@ -1347,8 +1336,8 @@
             unlocked() { return true },
             conditionDisplay() { return "This should always be unlocked... why are you seeing this??"},
             condition() { return true },
-            canAuto() { return false },
-            infiniteAuto() { return false },
+            canAuto() { return true },
+            infiniteAuto() { return true },
             effectDisplay() { return "Boosts effective blueshifts by +" + formatSimple(layers.bum.fountains[3].getCompletionEffect())},
             currencyLocation() { return player.bum },
             currencyInternalName: "starlight",
@@ -1707,7 +1696,7 @@
         ["blank", "25px"],
         ["style-column", [
             ["raw-html", 
-                "<small>Starshine resets everything blueshift does as well as blueshifts and most light upgrades. That includes stored time capsules. Maximize your starlight gain, but don't forget to ↻-up projects; they will remain important.</small>"
+                "<small>Starshine resets everything blueshift does as well as blueshifts and most light upgrades. Maximize your starlight gain, but don't forget to ↻-up projects; they will remain important.</small>"
             , {color: "white", fontSize: "18px", fontFamily: "monospace"}],
         ], {background: "linear-gradient(90deg, transparent, #dfffdf3f, transparent)", border: "3px solid #dfffdf7f", borderRadius: "25px", padding: "12px", width: "600px"}],
         ["blank", "25px"],

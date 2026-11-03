@@ -1,4 +1,10 @@
-﻿addLayer("pri", {
+﻿/*
+    NOTE:
+        * Prism well data is stored in `player.wel` / initialized in `Interspace/well.js`
+        * Prism well clickables are stored in this layer / initialized in this file
+*/
+
+addLayer("pri", {
     name: "Prismatic",
     symbol: "PR",
     universe: "UD",
@@ -253,29 +259,9 @@
             },
         },
 
-        growth: {
-            technological: {
-                amount: new Decimal(0),
-                best: new Decimal(0),
-                gain: new Decimal(0),
-                effect: new Decimal(1),
-                effect2: new Decimal(1),
-            },
-            natural: {
-                amount: new Decimal(0),
-                best: new Decimal(0),
-                gain: new Decimal(0),
-                effect: new Decimal(1),
-                effect2: new Decimal(1),
-            },
-            cosmic: {
-                amount: new Decimal(0),
-                best: new Decimal(0),
-                gain: new Decimal(0),
-                effect: new Decimal(1),
-                effect2: new Decimal(1),
-            },
-        },
+        solarRadiation: new Decimal(0),
+        solarRadiationGain: new Decimal(0),
+
     }},
     automate() {},
     nodeStyle() {
@@ -316,6 +302,9 @@
         player.pri.prismsToGet = player.pri.prismsToGet.mul(player.pri.fountains[8].completionEffect);
         if (player.wel.modules[3].completions.gte(1e12)) player.pri.prismsToGet = player.pri.prismsToGet.mul(player.wel.modules[4].completionEffect);
         if (hasMilestone("prj", 207)) player.pri.prismsToGet = player.pri.prismsToGet.mul(player.blu.blueshiftEffect2.max(1));
+        if (hasMilestone("prj", 406)) player.pri.prismsToGet = player.pri.prismsToGet.mul(player.wel.modules[5].completionEffect);
+        if (player.wel.modules[5].completions.gte(500)) player.pri.prismsToGet = player.pri.prismsToGet.mul(player.wel.modules[6].completionEffect);
+        if (player.wel.modules[6].completions.gte(1e6)) player.pri.prismsToGet = player.pri.prismsToGet.mul(player.wel.modules[7].completionEffect);
         if (hasAchievement("achievements", 1214)) player.pri.prismsToGet = player.pri.prismsToGet.mul(1.2);
 
         player.pri.prismsToGet = player.pri.prismsToGet.mul(player.pri.prismaticResetTime.div(30).min(1))
@@ -328,7 +317,7 @@
 
         // FOUNTAIN REQ DIVISOR
         player.pri.prismFountainReqDivisor = new Decimal(1)
-        //if (hasAchievement("achievements", 1209)) player.pri.prismFountainReqDivisor = player.pri.prismFountainReqDivisor.mul(1.25);
+        if (hasAchievement("achievements", 1223)) player.pri.prismFountainReqDivisor = player.pri.prismFountainReqDivisor.mul(1.25);
 
         // FOUNTAIN PROGRESS
         player.pri.totalFountainCycles = 0
@@ -343,11 +332,13 @@
 
             module.pourSafety = false
             module.focusSafety = false
-            player.pri.fountains[i].focusTimerMax = player.prj.prismFountainFocusExtension.mul(4).div(Math.pow(1.4, i - 1))
+            let seqDivisor = Math.pow(1.4, i - 1)
+            if (i > 9) seqDivisor = Math.pow(seqDivisor, 3);
+            player.pri.fountains[i].focusTimerMax = player.prj.prismFountainFocusExtension.mul(4).div(seqDivisor)
             if (player.pri.fountains[i].isFocused) {
                 player.pri.fountains[i].focusTimer = player.pri.fountains[i].focusTimer.sub(delta)
                 if (player.pri.prisms.gte(module.statReq) && module.timeSpeed.gt(0)) module.time = module.time.add(module.timeSpeed.div(player.pri.totalPrisms).mul(player.pri.totalPrisms.sub(module.statReq)).mul(delta));
-                if (player.pri.fountains[i].focusTimer.lte(0) && !hasUpgrade("bum", 11)) {
+                if (player.pri.fountains[i].focusTimer.lte(0) && ((!hasUpgrade("bum", 11) && i <= 9) || (i > 9))) {
                     player.pri.fountains[i].isFocused = false
                     player.pri.fountains[i].focusTimer = player.pri.fountains[i].focusTimerMax
                     player.prj.focused = player.prj.focused.sub(1)
@@ -380,6 +371,10 @@
                         break;
                     case '10': case '11': case '12':
                         if (player.pri.fountains[10].completions.gt(0) && player.pri.fountains[11].completions.gt(0) && player.pri.fountains[12].completions.gt(0) && !hasAchievement("achievements", 1223)) completeAchievement("achievements", 1223);
+                    case '13': case '14':
+                        if (player.pri.fountains[13].completions.gt(0) && player.pri.fountains[14].completions.gt(0) && !hasAchievement("achievements", 1307)) completeAchievement("achievements", 1307);
+                    case '15':
+                        if (player.pri.fountains[15].completions.gt(0) && !hasAchievement("achievements", 1310)) completeAchievement("achievements", 1310);
                     default:
                         break;
                 }
@@ -390,10 +385,17 @@
         // GREENHOUSE
 
         if (hasMilestone("prj", 206)) {
-            player.pri.growth.technological.gain = player.wel.lightWellSpeed.div(1e4).pow(2)
-            player.pri.growth.technological.amount = player.pri.growth.technological.amount.add(player.pri.growth.technological.gain.mul(delta))
-            player.pri.growth.technological.effect = player.pri.growth.technological.amount.div(60).add(1).log(10).add(1).pow(0.4).sub(1).mul(0.25).add(1).min(1)
-            player.pri.growth.technological.effect2 = player.pri.growth.technological.amount.add(1).log(10).add(1).pow(0.6).sub(1).pow_base(10).pow(2)
+            
+        }
+
+        // SOLAR RADIATION
+
+        if (true) { // ANICIFFO DEFEATED
+            player.pri.solarRadiationGain = new Decimal(1)
+
+            player.pri.solarRadiation = player.pri.solarRadiation.add(player.pri.solarRadiationGain.mul(delta))
+        } else {
+            player.pri.solarRadiationGain = new Decimal(0)
         }
 
         // MISC
@@ -759,6 +761,134 @@
                     look.background = "#335966"
                     look.border = "3px solid #4d9999"
                     look.color = "white"
+                }
+                return look
+            },
+        },
+        "prismWell1_collect": {
+            title() { return "<h3>Collect" },
+            canClick() { return player.wel.modules[5].time.gte(player.wel.modules[5].maxTime)},
+            unlocked() { return true },
+            onClick() {
+                tickProjects(player.wel.modules[5].maxTime.div(player.wel.modules[5].timeSpeed).div(2))
+                player.pri.prisms = player.pri.prisms.add(layers.pri.clickables[this.id].lightGain())
+                player.pri.totalPrisms = player.pri.totalPrisms.add(layers.pri.clickables[this.id].lightGain())
+                player.wel.modules[5].time = new Decimal(0)
+                player.wel.modules[5].completions = player.wel.modules[5].completions.add(player.wel.modules[5].completionsGain)
+            },
+            lightGain() {
+                let gain = player.pri.prismsToGet
+                gain = gain.mul(0.01)
+                gain = gain.mul(player.blu.blueshifts[5].cycleGainMul)
+                return gain.floor()
+            },
+            onHold() { clickClickable(this.layer, this.id) },
+            style() {
+                let look = {width: "150px", minHeight: "50px", maxHeight: "50px", borderRadius: "0"}
+                if (this.canClick()) {
+                    look.backgroundColor = "#a1ffff"
+                    look.color = "black"
+                    look.border = "3px solid #3366597f"
+                } else {
+                    look.background = "#361e1e"
+                    look.color = "white"
+                    look.border = "3px solid #3366597f"
+                }
+                return look
+            },
+        },
+        "prismWell2_collect": {
+            title() { return "<h3>Collect" },
+            canClick() { return player.wel.modules[6].time.gte(player.wel.modules[6].maxTime)},
+            unlocked() { return true },
+            onClick() {
+                tickProjects(player.wel.modules[6].maxTime.div(player.wel.modules[6].timeSpeed).div(2))
+                player.pri.prisms = player.pri.prisms.add(layers.pri.clickables[this.id].lightGain())
+                player.pri.totalPrisms = player.pri.totalPrisms.add(layers.pri.clickables[this.id].lightGain())
+                player.wel.modules[6].time = new Decimal(0)
+                player.wel.modules[6].completions = player.wel.modules[6].completions.add(player.wel.modules[6].completionsGain)
+            },
+            lightGain() {
+                let gain = player.pri.prismsToGet
+                gain = gain.mul(0.1)
+                gain = gain.mul(player.blu.blueshifts[6].cycleGainMul)
+                return gain.floor()
+            },
+            onHold() { clickClickable(this.layer, this.id) },
+            style() {
+                let look = {width: "150px", minHeight: "50px", maxHeight: "50px", borderRadius: "0"}
+                if (this.canClick()) {
+                    look.backgroundColor = "#a1ffff"
+                    look.color = "black"
+                    look.border = "3px solid #3366597f"
+                } else {
+                    look.background = "#361e1e"
+                    look.color = "white"
+                    look.border = "3px solid #3366597f"
+                }
+                return look
+            },
+        },
+        "prismWell3_collect": {
+            title() { return "<h3>Collect" },
+            canClick() { return player.wel.modules[7].time.gte(player.wel.modules[7].maxTime)},
+            unlocked() { return true },
+            onClick() {
+                tickProjects(player.wel.modules[7].maxTime.div(player.wel.modules[7].timeSpeed).div(2))
+                player.pri.prisms = player.pri.prisms.add(layers.pri.clickables[this.id].lightGain())
+                player.pri.totalPrisms = player.pri.totalPrisms.add(layers.pri.clickables[this.id].lightGain())
+                player.wel.modules[7].time = new Decimal(0)
+                player.wel.modules[7].completions = player.wel.modules[7].completions.add(player.wel.modules[7].completionsGain)
+            },
+            lightGain() {
+                let gain = player.pri.prismsToGet
+                gain = gain.mul(1)
+                gain = gain.mul(player.blu.blueshifts[7].cycleGainMul)
+                return gain.floor()
+            },
+            onHold() { clickClickable(this.layer, this.id) },
+            style() {
+                let look = {width: "150px", minHeight: "50px", maxHeight: "50px", borderRadius: "0"}
+                if (this.canClick()) {
+                    look.backgroundColor = "#a1ffff"
+                    look.color = "black"
+                    look.border = "3px solid #3366597f"
+                } else {
+                    look.background = "#361e1e"
+                    look.color = "white"
+                    look.border = "3px solid #3366597f"
+                }
+                return look
+            },
+        },
+        "prismWell4_collect": {
+            title() { return "<h3>Collect" },
+            canClick() { return player.wel.modules[8].time.gte(player.wel.modules[8].maxTime)},
+            unlocked() { return true },
+            onClick() {
+                tickProjects(player.wel.modules[8].maxTime.div(player.wel.modules[8].timeSpeed).div(2))
+                player.pri.prisms = player.pri.prisms.add(layers.pri.clickables[this.id].lightGain())
+                player.pri.totalPrisms = player.pri.totalPrisms.add(layers.pri.clickables[this.id].lightGain())
+                player.wel.modules[8].time = new Decimal(0)
+                player.wel.modules[8].completions = player.wel.modules[8].completions.add(player.wel.modules[8].completionsGain)
+            },
+            lightGain() {
+                let gain = player.pri.prismsToGet
+                gain = gain.mul(10)
+                gain = gain.mul(player.blu.blueshifts[8].cycleGainMul)
+                return gain.floor()
+            },
+            onHold() { clickClickable(this.layer, this.id) },
+            style() {
+                let look = {width: "150px", minHeight: "50px", maxHeight: "50px", borderRadius: "0"}
+                if (this.canClick()) {
+                    look.backgroundColor = "#a1ffff"
+                    look.color = "black"
+                    look.border = "3px solid #3366597f"
+                } else {
+                    look.background = "#361e1e"
+                    look.color = "white"
+                    look.border = "3px solid #3366597f"
                 }
                 return look
             },
@@ -1685,114 +1815,234 @@
                     return look
                 }
             },
-            "Greenhouse": {
+            "Prism Wells": {
                 buttonStyle() { return { color: "white", borderWidth: "2px", borderRadius: "20px"} },
-                unlocked() { return hasMilestone("prj", 206) && false },
+                unlocked() { return hasMilestone("prj", 406) },
                 content() {
                     let look = [
-                        ["blank", "5px"],
-                        ["microtabs", "greenhouse", {borderWidth: "0"}],
-                    ]
-                    return look
-                }
-            },
-        },
-        greenhouse: {
-            "Technological Growth": {
-                buttonStyle() { return { color: "white", background: "linear-gradient(120deg, #595A5C3f 0%, #9c9c9c3f 100%)", borderColor: "#9c9c9c", outline: "2px solid #d6ebff", borderRadius: "20px", marginLeft: "7px", marginRight: "7px"} },
-                unlocked() { return true },
-                content() {
-                    let look = [
-                        ["blank", "12px"],
-                        ["style-row", [
-                            ["top-column", [
-                                ["style-column", [
-                                ], {width: "25px", height: "450px"}],
-                                ["style-column", [
-                                ], {background: "#9c9c9c", width: "25px", height: "150px"}],
-                            ], {background: "#0000003f", border: "2px solid #9c9c9c", outline: "2px solid #d6ebff", borderRadius: "25px 0 0 25px", width: "25px", height: "600px", overflow: "hidden"}],
-                            ["blank", "6px", {width: "18px"}],
-                            ["top-column", [
-                                ["style-column", [
-                                    ["raw-html", "You have <h3>" + format(player.pri.growth.technological.amount, 2) + "m</h3> of<br>technological growth.", {color: "#ffffff", fontSize: "20px", fontFamily: "monospace"}],
-                                    ["raw-html", "<small>Boosts light fountain effects by ^" + format(player.pri.growth.technological.effect, 3) + ".</small>", {color: "#ffffff", fontSize: "16px", fontFamily: "monospace"}],
-                                    ["raw-html", "<small>Boosts star gain by x" + format(player.pri.growth.technological.effect2, 2) + ".</small>", {color: "#ffffff", fontSize: "16px", fontFamily: "monospace"}],
-                                ], {height: "100px"}],
-                                ["style-column", [
-                                ], {background: "#9c9c9c", width: "450px", height: "3px"}],
-                                ["top-column", [
-                                    ["blank", "6px"],
-                                    ["raw-html", "Light well speed provides a base growth rate of <br><h3>+" + format(player.pri.growth.technological.gain, 2) + "m/s", {color: "#ffffff", fontSize: "16px", fontFamily: "monospace"}],
-                                ], {height: "100px"}],
-                            ], {background: "linear-gradient(120deg, #595A5C3f 0%, #9c9c9c3f 100%)", border: "2px solid #9c9c9c", outline: "2px solid #d6ebff", borderRadius: "0 25px 25px 0", width: "450px", height: "600px"}],
+                        ["style-column", [], {width: "0", height: "0"}],
+                        ["style-column", [
+                            ["style-column", [
+                                ["blank", "25px"],
+                            ], {display: player.wel.prismWellCycleYield.gt(1) || player.wel.prismWellSpeed.gt(1) ? "" : "none !important"}],
+                            ["style-column", [
+                                ["raw-html", "Prism wells yield a base of <h3>" + formatSimple(player.wel.prismWellCycleYield) + "</h3> ↻.", {color: "white", fontSize: "18px", fontFamily: "monospace"}],
+                            ], {display: player.wel.prismWellCycleYield.gt(1) ? "" : "none !important"}],
+                            ["style-column", [
+                                ["raw-html", "Prism wells operate at <h3>x" + formatSimple(player.wel.prismWellSpeed, 2) + "</h3> speed.", {color: "white", fontSize: "18px", fontFamily: "monospace"}],
+                            ], {display: player.wel.prismWellSpeed.gt(1) ? "" : "none !important"}],
+                            ["style-column", [
+                                ["raw-html", "<small>Next blueshift at <h3>x" + formatWhole(
+                                    player.blu.blueshifts[5].amount.add(1).pow_base(600)
+                                    .min(player.blu.blueshifts[6].amount.add(1).pow_base(1800))
+                                    .min(player.blu.blueshifts[7].amount.add(1).pow_base(21600))
+                                    .min(player.blu.blueshifts[8].amount.mul(0.5).add(1).pow_base(259200))
+                                ) + "</h3> speed.</small>", {color: "white", textShadow: "1px 1px 0 #3f3fff, -1px 1px 0 #3f3fff, 1px -1px 0 #3f3fff, -1px -1px 0 #3f3fff", fontSize: "18px", fontFamily: "monospace"}],
+                            ], {display: hasMilestone("prj", 311) ? "" : "none !important"}],
+                            ["style-column", [
+                                ["blank", "15px"],
+                                ["raw-html", "You are using " + formatWhole(player.prj.focused) + "/" + formatWhole(player.prj.maxFocused) + " focus.", {color: "white", fontSize: "18px", fontFamily: "monospace"}],
+                            ], {display: hasUpgrade("wel", 33) && false ? "" : "none !important"}],
+                            ["style-column", [
+                                ["tooltip-row", [
+                                    ["raw-html", "<small>Base well focus duration is " + formatSimpleTime(player.prj.lightWellFocusExtension, 1) + ", decreased for each consecutive well.</small>", {color: "#dfffdf", fontSize: "18px", fontFamily: "monospace"}],
+                                    ["raw-html", "<div class='bottomTooltip'>(Project Speed / 4)<sup>0.5</div>"],
+                                ], {}],
+                            ], {display: hasUpgrade("wel", 33) && !hasMilestone("prj", 402) && false ? "" : "none !important"}],
                         ]],
-                    ]
-                    return look
-                }
-            },
-            "Natural Growth": {
-                buttonStyle() { return { color: "white", background: "linear-gradient(120deg, #63C9643f 0%, #0079173f 100%)", borderColor: "#63C964", outline: "2px solid #d6ebff", borderRadius: "20px", marginLeft: "7px", marginRight: "7px"} },
-                unlocked() { return true },
-                content() {
-                    let look = [
-                        ["blank", "12px"],
-                        ["style-row", [
-                            ["top-column", [
-                                ["style-column", [
-                                ], {width: "25px", height: "450px"}],
-                                ["style-column", [
-                                ], {background: "#63C964", width: "25px", height: "150px"}],
-                            ], {background: "#0000003f", border: "2px solid #63C964", outline: "2px solid #d6ebff", borderRadius: "25px 0 0 25px", width: "25px", height: "600px", overflow: "hidden"}],
-                            ["blank", "6px", {width: "18px"}],
-                            ["top-column", [
-                                ["style-column", [
-                                    ["raw-html", "You have <h3>" + format(player.pri.growth.natural.amount, 2) + "m</h3> of<br>natural growth.", {color: "#ffffff", fontSize: "20px", fontFamily: "monospace"}],
-                                    ["raw-html", "<small>Boosts pyramid fountain effects by ^" + format(player.pri.growth.natural.effect, 3) + ".</small>", {color: "#ffffff", fontSize: "16px", fontFamily: "monospace"}],
-                                    ["raw-html", "<small>Boosts base technological growth gain by ^" + format(player.pri.growth.natural.effect2, 3) + ".</small>", {color: "#ffffff", fontSize: "16px", fontFamily: "monospace"}],
-                                ], {height: "100px"}],
-                                ["style-column", [
-                                ], {background: "#63C964", width: "450px", height: "3px"}],
-                                ["top-column", [
-                                    ["blank", "6px"],
-                                    ["raw-html", "Light well ↻ provides a base growth rate of <br><h3>+" + format(player.pri.growth.natural.gain, 2) + "m/s", {color: "#ffffff", fontSize: "16px", fontFamily: "monospace"}],
-                                ], {height: "100px"}],
-                            ], {background: "linear-gradient(120deg, #0079173f 0%, #63C9643f 100%)", border: "2px solid #63C964", outline: "2px solid #d6ebff", borderRadius: "0 25px 25px 0", width: "450px", height: "600px"}],
+                        ["blank", "25px"],
+                        ["row", [
+
                         ]],
+                        ["blank", "6px"],
+                        ["style-column", [
+                            ["raw-html", "All well cycle effect scaling is ^" + formatSimple(player.wel.lightWellCycleEffectSoftcap, 2) + " after 1,000 ↻!", {color: "yellow", fontSize: "16px", fontFamily: "monospace", display: (player.wel.modules[5].completions.gte(1e3) ? "" : "none !important")}],
+                            ["blank", "10px"],
+                            ["clickable", "lightWells_respecFocus"],
+                            ["blank", "6px"],
+                        ], {}],
+                        ["raw-html", "Prism well content is reset on blueshift.", {color: "#ffffff7f", fontSize: "16px", fontFamily: "monospace"}],
+                        ["blank", "25px"],
                     ]
-                    return look
-                }
-            },
-            "Cosmic Growth": {
-                buttonStyle() { return { color: "white", background: "linear-gradient(15deg, #0112473f 0%, #37078f3f 50%, #5d14823f 100%)", borderColor: "#5d1482", outline: "2px solid #d6ebff", borderRadius: "20px", marginLeft: "7px", marginRight: "7px"} },
-                unlocked() { return true },
-                content() {
-                    let look = [
-                        ["blank", "12px"],
-                        ["style-row", [
-                            ["top-column", [
+                    if (hasMilestone("prj", 406)) {
+                        // prism well epsilon
+                        look[3][1].push(["blank", "1px"])
+                        look[3][1].push(
+                        ["style-column", [
+                            ["style-column", [
+                                    ["style-column", [
+                                        ["style-column", [
+                                            ["style-column", [
+                                                ["raw-html", formatSimple(player.wel.modules[5].time.div(player.wel.modules[5].maxTime).min(1).max(0).mul(100), 0) + "%", {color: "white", fontSize: "24px", fontFamily: "monospace"}],
+                                            ], {background: "#4d9999", border: "3px solid #335966", borderRadius: "100px", width: "75px", height:"75px"}],
+                                        ], {borderRadius: "50%", width: "125px", height:"125px", margin: "9.5px", border: "3px solid #335966",
+                                            background: player.wel.modules[5].time.lt(player.wel.modules[5].maxTime) ?
+                                            "conic-gradient(#d6ebff " + (player.wel.modules[5].time.div(player.wel.modules[5].maxTime)).min(1).max(0) * 360 + "deg, #0b1417 0deg)" : "#a1ffff"
+                                        }],
+                                    ], {background: "linear-gradient(0deg, #335966 50%, #4d9999 50% )", height: "150px", borderRadius: "75px 75px 0 0"}],
+                            ["raw-html", "Prism Well ε", {color: "white", fontSize: "16px", fontFamily: "monospace"}],
+                            ["raw-html", player.wel.modules[5].time.lt(player.wel.modules[5].maxTime) ? formatSimpleTime(player.wel.modules[5].maxTime.sub(player.wel.modules[5].time).div(player.wel.modules[5].timeSpeed), 2) : formatSimpleTime(player.wel.modules[5].maxTime.div(player.wel.modules[5].timeSpeed), 2) + " CD", {color: "white", fontSize: "16px", fontFamily: "monospace"}],
+                            ["blank", "9px"],
+                            ["style-column", [
+                                    ["raw-html", "+" + formatShortWhole(layers.pri.clickables["prismWell1_collect"].lightGain()) + " Prisms", {color: "white", fontSize: "16px", fontFamily: "monospace"}],
+                                ], {background: "#4d9999", borderRadius: "10px 10px 0px 0px", width: "150px", height:"25px"}],
+                            ["blank", "3px"],
+                            ["hoverless-clickable", "prismWell1_collect"],
+                            ["blank", "3px"],
+                            ["style-column", [
+                                ["raw-html", formatShortWhole(player.wel.modules[5].completions) + " ε ↻", {color: "white", fontSize: "16px", fontFamily: "monospace"}],
+                                ["raw-html", "(x" + formatShort(player.wel.modules[5].completionEffect) + " Prisms)", {color: "white", fontSize: "12px", fontFamily: "monospace"}],
+                            ], {border: "3px solid #4d9999", borderRadius: "0 0 10px 10px", height: "44px"}],
+                        
+                        ], {background: "#335966",border: "3px solid #335966", borderRadius: "103px 103px 16px 16px", width: "150px"}],
+                        ["blank", "6px"],
+                    ]],
+                    )
+                    }
+                    if (player.wel.modules[5].completions.gte(500)) {
+                        // prism well zeta
+                        look[3][1].push(["blank", "1px"])
+                        look[3][1].push(
+                        ["style-column", [
+                            ["style-column", [
+                                    ["style-column", [
+                                        ["style-column", [
+                                            ["style-column", [
+                                                ["raw-html", formatSimple(player.wel.modules[6].time.div(player.wel.modules[6].maxTime).min(1).max(0).mul(100), 0) + "%", {color: "white", fontSize: "24px", fontFamily: "monospace"}],
+                                            ], {background: "#4d9999", border: "3px solid #335966", borderRadius: "100px", width: "75px", height:"75px"}],
+                                        ], {borderRadius: "50%", width: "125px", height:"125px", margin: "9.5px", border: "3px solid #335966",
+                                            background: player.wel.modules[6].time.lt(player.wel.modules[6].maxTime) ?
+                                            "conic-gradient(#d6ebff " + (player.wel.modules[6].time.div(player.wel.modules[6].maxTime)).min(1).max(0) * 360 + "deg, #0b1417 0deg)" : "#a1ffff"
+                                        }],
+                                    ], {background: "linear-gradient(0deg, #335966 50%, #4d9999 50% )", height: "150px", borderRadius: "75px 75px 0 0"}],
+                            ["raw-html", "Prism Well ζ", {color: "white", fontSize: "16px", fontFamily: "monospace"}],
+                            ["raw-html", player.wel.modules[6].time.lt(player.wel.modules[6].maxTime) ? formatSimpleTime(player.wel.modules[6].maxTime.sub(player.wel.modules[6].time).div(player.wel.modules[6].timeSpeed), 2) : formatSimpleTime(player.wel.modules[6].maxTime.div(player.wel.modules[6].timeSpeed), 2) + " CD", {color: "white", fontSize: "16px", fontFamily: "monospace"}],
+                            ["blank", "9px"],
+                            ["style-column", [
+                                    ["raw-html", "+" + formatShortWhole(layers.pri.clickables["prismWell2_collect"].lightGain()) + " Prisms", {color: "white", fontSize: "16px", fontFamily: "monospace"}],
+                                ], {background: "#4d9999", borderRadius: "10px 10px 0px 0px", width: "150px", height:"25px"}],
+                            ["blank", "3px"],
+                            ["hoverless-clickable", "prismWell2_collect"],
+                            ["blank", "3px"],
+                            ["style-column", [
+                                ["raw-html", formatShortWhole(player.wel.modules[6].completions) + " ζ ↻", {color: "white", fontSize: "16px", fontFamily: "monospace"}],
+                                ["raw-html", "(x" + formatShort(player.wel.modules[6].completionEffect) + " Prisms)", {color: "white", fontSize: "12px", fontFamily: "monospace"}],
+                            ], {border: "3px solid #4d9999", borderRadius: "0 0 10px 10px", height: "44px"}],
+                        
+                        ], {background: "#335966",border: "3px solid #335966", borderRadius: "103px 103px 16px 16px", width: "150px"}],
+                        ["blank", "9px"],
+                    ]],
+                    )
+                    } else {
+                            // prism well zeta locked
+                        look[3][1].push(["blank", "1px"])
+                        look[3][1].push(
+                            ["style-column", [
                                 ["style-column", [
-                                ], {width: "25px", height: "450px"}],
-                                ["style-column", [
-                                ], {background: "#5d1482", width: "25px", height: "150px"}],
-                            ], {background: "#0000003f", border: "2px solid #5d1482", outline: "2px solid #d6ebff", borderRadius: "25px 0 0 25px", width: "25px", height: "600px", overflow: "hidden"}],
-                            ["blank", "6px", {width: "18px"}],
-                            ["top-column", [
-                                ["style-column", [
-                                    ["raw-html", "You have <h3>" + format(player.pri.growth.cosmic.amount, 2) + "m</h3> of<br>cosmic growth.", {color: "#ffffff", fontSize: "20px", fontFamily: "monospace"}],
-                                    ["raw-html", "<small>Boosts project speed by x" + format(player.pri.growth.cosmic.effect, 2) + ".</small>", {color: "#ffffff", fontSize: "16px", fontFamily: "monospace"}],
-                                    ["raw-html", "<small>Boosts base natural growth gain by ^" + format(player.pri.growth.cosmic.effect2, 3) + ".</small>", {color: "#ffffff", fontSize: "16px", fontFamily: "monospace"}],
-                                ], {height: "100px"}],
-                                ["style-column", [
-                                ], {background: "#5d1482", width: "450px", height: "3px"}],
-                                ["top-column", [
-                                    ["blank", "6px"],
-                                    ["raw-html", "Light provides a base growth rate of <br><h3>+" + format(player.pri.growth.cosmic.gain, 2) + "m/s", {color: "#ffffff", fontSize: "16px", fontFamily: "monospace"}],
-                                ], {height: "100px"}],
-                            ], {background: "linear-gradient(15deg, #0112473f 0%, #37078f3f 50%, #5d14823f 100%)", border: "2px solid #5d1482", outline: "2px solid #d6ebff", borderRadius: "0 25px 25px 0", width: "450px", height: "600px"}],
+                                    ["raw-html", "Prism Well ζ<br><small>Req: 500 ε ↻</small>", {color: "white", fontSize: "16px"}],
+                                ], {background: "black",border: "3px solid #663737", borderRadius: "103px 103px 16px 16px", width: "150px", height: "330px", lineHeight: "1"}],
+                            ["blank", "9px"],
                         ]],
-                    ]
+                    )
+                    }
+                    if (player.wel.modules[5].completions.gte(500)) {
+                        if (player.wel.modules[6].completions.gte(1e6)) {
+                            // prism well eta
+                            look[3][1].push(["blank", "1px"])
+                            look[3][1].push(
+                            ["style-column", [
+                                ["style-column", [
+                                        ["style-column", [
+                                            ["style-column", [
+                                                ["style-column", [
+                                                    ["raw-html", formatSimple(player.wel.modules[7].time.div(player.wel.modules[7].maxTime).min(1).max(0).mul(100), 0) + "%", {color: "white", fontSize: "24px", fontFamily: "monospace"}],
+                                                ], {background: "#4d9999", border: "3px solid #335966", borderRadius: "100px", width: "75px", height:"75px"}],
+                                            ], {borderRadius: "50%", width: "125px", height:"125px", margin: "9.5px", border: "3px solid #335966",
+                                                background: player.wel.modules[7].time.lt(player.wel.modules[7].maxTime) ?
+                                                "conic-gradient(#d6ebff " + (player.wel.modules[7].time.div(player.wel.modules[7].maxTime)).min(1).max(0) * 360 + "deg, #0b1417 0deg)" : "#a1ffff"
+                                            }],
+                                        ], {background: "linear-gradient(0deg, #335966 50%, #4d9999 50% )", height: "150px", borderRadius: "75px 75px 0 0"}],
+                                ["raw-html", "Prism Well η", {color: "white", fontSize: "16px", fontFamily: "monospace"}],
+                                ["raw-html", player.wel.modules[7].time.lt(player.wel.modules[7].maxTime) ? formatSimpleTime(player.wel.modules[7].maxTime.sub(player.wel.modules[7].time).div(player.wel.modules[7].timeSpeed), 2) : formatSimpleTime(player.wel.modules[7].maxTime.div(player.wel.modules[7].timeSpeed), 2) + " CD", {color: "white", fontSize: "16px", fontFamily: "monospace"}],
+                                ["blank", "9px"],
+                                ["style-column", [
+                                        ["raw-html", "+" + formatShortWhole(layers.pri.clickables["prismWell3_collect"].lightGain()) + " Prisms", {color: "white", fontSize: "16px", fontFamily: "monospace"}],
+                                    ], {background: "#4d9999", borderRadius: "10px 10px 0px 0px", width: "150px", height:"25px"}],
+                                ["blank", "3px"],
+                                ["hoverless-clickable", "prismWell3_collect"],
+                                ["blank", "3px"],
+                                ["style-column", [
+                                    ["raw-html", formatShortWhole(player.wel.modules[7].completions) + " η ↻", {color: "white", fontSize: "16px", fontFamily: "monospace"}],
+                                    ["raw-html", "(x" + formatShort(player.wel.modules[7].completionEffect) + " Prisms)", {color: "white", fontSize: "12px", fontFamily: "monospace"}],
+                                ], {border: "3px solid #4d9999", borderRadius: "0 0 10px 10px", height: "44px"}],
+                            
+                            ], {background: "#335966",border: "3px solid #335966", borderRadius: "103px 103px 16px 16px", width: "150px"}],
+                            ["blank", "9px"],
+                        ]],
+                        )
+                        } else {
+                                // prism well eta locked
+                            look[3][1].push(["blank", "1px"])
+                            look[3][1].push(
+                                ["style-column", [
+                                    ["style-column", [
+                                        ["raw-html", "Prism Well η<br><small>Req: 1,000,000 ζ ↻</small>", {color: "white", fontSize: "16px"}],
+                                    ], {background: "black",border: "3px solid #663737", borderRadius: "103px 103px 16px 16px", width: "150px", height: "330px", lineHeight: "1"}],
+                                ["blank", "9px"],
+                            ]],
+                        )
+                        }
+                    }
+                    if (player.wel.modules[6].completions.gte(1e6)) {
+                        if (player.wel.modules[7].completions.gte(1e12)) {
+                            // prism well theta
+                            look[3][1].push(["blank", "1px"])
+                            look[3][1].push(
+                            ["style-column", [
+                                ["style-column", [
+                                        ["style-column", [
+                                            ["style-column", [
+                                                ["style-column", [
+                                                    ["raw-html", formatSimple(player.wel.modules[8].time.div(player.wel.modules[8].maxTime).min(1).max(0).mul(100), 0) + "%", {color: "white", fontSize: "24px", fontFamily: "monospace"}],
+                                                ], {background: "#4d9999", border: "3px solid #335966", borderRadius: "100px", width: "75px", height:"75px"}],
+                                            ], {borderRadius: "50%", width: "125px", height:"125px", margin: "9.5px", border: "3px solid #335966",
+                                                background: player.wel.modules[8].time.lt(player.wel.modules[8].maxTime) ?
+                                                "conic-gradient(#d6ebff " + (player.wel.modules[8].time.div(player.wel.modules[8].maxTime)).min(1).max(0) * 360 + "deg, #0b1417 0deg)" : "#a1ffff"
+                                            }],
+                                        ], {background: "linear-gradient(0deg, #335966 50%, #4d9999 50% )", height: "150px", borderRadius: "75px 75px 0 0"}],
+                                ["raw-html", "Prism Well θ", {color: "white", fontSize: "16px", fontFamily: "monospace"}],
+                                ["raw-html", player.wel.modules[8].time.lt(player.wel.modules[8].maxTime) ? formatSimpleTime(player.wel.modules[8].maxTime.sub(player.wel.modules[8].time).div(player.wel.modules[8].timeSpeed), 2) : formatSimpleTime(player.wel.modules[8].maxTime.div(player.wel.modules[8].timeSpeed), 2) + " CD", {color: "white", fontSize: "16px", fontFamily: "monospace"}],
+                                ["blank", "9px"],
+                                ["style-column", [
+                                        ["raw-html", "+" + formatShortWhole(layers.pri.clickables["prismWell4_collect"].lightGain()) + " Prisms", {color: "white", fontSize: "16px", fontFamily: "monospace"}],
+                                    ], {background: "#4d9999", borderRadius: "10px 10px 0px 0px", width: "150px", height:"25px"}],
+                                ["blank", "3px"],
+                                ["hoverless-clickable", "prismWell4_collect"],
+                                ["blank", "3px"],
+                                ["style-column", [
+                                    ["raw-html", formatShortWhole(player.wel.modules[8].completions) + " θ ↻", {color: "white", fontSize: "16px", fontFamily: "monospace"}],
+                                    ["raw-html", "(x" + formatShort(player.wel.modules[8].completionEffect) + " Prisms)", {color: "white", fontSize: "12px", fontFamily: "monospace"}],
+                                ], {border: "3px solid #4d9999", borderRadius: "0 0 10px 10px", height: "44px"}],
+                            
+                            ], {background: "#335966",border: "3px solid #335966", borderRadius: "103px 103px 16px 16px", width: "150px"}],
+                            ["blank", "9px"],
+                        ]],
+                        )
+                        } else {
+                                // prism well theta locked
+                            look[3][1].push(["blank", "1px"])
+                            look[3][1].push(
+                                ["style-column", [
+                                    ["style-column", [
+                                        ["raw-html", "Prism Well θ<br><small>Req: 1e12 η ↻</small>", {color: "white", fontSize: "16px"}],
+                                    ], {background: "black",border: "3px solid #663737", borderRadius: "103px 103px 16px 16px", width: "150px", height: "330px", lineHeight: "1"}],
+                                ["blank", "9px"],
+                            ]],
+                        )
+                        }
+                    }
                     return look
-                }
+                },
             },
         },
     },

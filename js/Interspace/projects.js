@@ -225,9 +225,9 @@
             player.prj.pylonEnergyMax = Decimal.pow(1e6, player.prj.pylonTier)
 
             player.prj.pylonEnergyPerSecond = new Decimal(1)
-            player.prj.pylonEnergyPerSecond = player.prj.pylonEnergyPerSecond.mul(buyableEffect("prj", 11))
-            player.prj.pylonEnergyPerSecond = player.prj.pylonEnergyPerSecond.mul(buyableEffect("prj", 12))
-            player.prj.pylonEnergyPerSecond = player.prj.pylonEnergyPerSecond.mul(buyableEffect("prj", 13))
+            player.prj.pylonEnergyPerSecond = player.prj.pylonEnergyPerSecond.mul(buyableEffect("prj", 101))
+            player.prj.pylonEnergyPerSecond = player.prj.pylonEnergyPerSecond.mul(buyableEffect("prj", 102))
+            player.prj.pylonEnergyPerSecond = player.prj.pylonEnergyPerSecond.mul(buyableEffect("prj", 103))
 
             player.prj.pylonPassiveEffect = player.bum.starlight.add(1).log(10).div(10).pow(0.5).div(40).mul(player.prj.pylonTierEffect).add(1)
         } else
@@ -244,7 +244,7 @@
         }
         player.prj.pylonEnergy = player.prj.pylonEnergy.add(player.prj.pylonEnergyPerSecond.mul(delta).div(player.uni["UD"].tickspeed))
 
-        player.prj.pylonEnergyEffect = player.prj.pylonEnergy.add(1).pow(player.prj.pylonTierEffect).log(10).add(1).pow(3).div(100).add(1)
+        player.prj.pylonEnergyEffect = player.prj.pylonEnergy.add(1).pow(player.prj.pylonTierEffect).log(10).add(1).pow(2).div(40).add(1)
         player.prj.pylonEnergyEffect2 = player.prj.pylonEnergy.add(1).pow(player.prj.pylonTierEffect).log(10).add(1).pow(0.5).sub(1).pow_base(10).pow(2).div(40).add(1)
         player.prj.pylonEnergyEffect3 = player.prj.pylonEnergy.add(1).pow(player.prj.pylonTierEffect).log(10).add(1).pow(0.875).sub(1).pow_base(10).pow(0.25).sub(1).div(10).add(1)
         player.prj.pylonEnergyEffect4 = player.prj.pylonEnergy.add(1).log(10).add(1).pow(3).pow(player.prj.pylonTierEffect).div(100).add(1)
@@ -479,15 +479,15 @@
             },
         },
         201: {
-            title() { return "<h2>Build the Technological Shard Pylon</h2><br><h3 style='color:#2f2f2f'>Cost: 1e9 Technological Core Fragments</h3>" },
-            canClick() { return player.cof.coreFragments[2].gte(1e9) },
+            title() { return "<h2>Build the Technological Shard Pylon</h2><br><h3 style='color:#ffffff9f'>Cost: 1e12 Technological Core Fragments</h3>" },
+            canClick() { return player.cof.coreFragments[2].gte(1e12) },
             unlocked() { return !player.prj.pylonBuilt},
             onClick() {
-                player.cof.coreFragments[2] = player.cof.coreFragments[2].sub(1e9)
+                player.cof.coreFragments[2] = player.cof.coreFragments[2].sub(1e12)
 
                 player.prj.pylonBuilt = true
             },
-            style: {width: "600px", minHeight: "100px", maxHeight: "100px", color: "black", backgroundImage: "linear-gradient(120deg, #595A5C 0%, #9c9c9c 100%)", border: "2px solid #2f2f2f", borderRadius: "15px"},
+            style: {width: "600px", minHeight: "100px", maxHeight: "100px", color: "white", backgroundImage: "linear-gradient(120deg, #595A5C 0%, #9c9c9c 100%)", border: "2px solid #2f2f2f", borderRadius: "15px"},
         },
         202: {
             title() { return "Tier up the Technological Pylon" },
@@ -550,7 +550,7 @@
             },
         },
         101: {
-            costBase() { return new Decimal(1e8) },
+            costBase() { return new Decimal(1e11) },
             costGrowth() { return new Decimal(1.25) },
             purchaseLimit() { return new Decimal(500) },
             currency() { return player.cof.coreFragments[2] },
@@ -585,7 +585,7 @@
             progressColor: "#9c9c9c",
         },
         102: {
-            costBase() { return new Decimal(8e8) },
+            costBase() { return new Decimal(4e12) },
             costGrowth() { return new Decimal(1.3) },
             purchaseLimit() { return new Decimal(500) },
             currency() { return player.cof.coreFragments[2] },
@@ -620,7 +620,7 @@
             progressColor: "#9c9c9c",
         },
         103: {
-            costBase() { return new Decimal(6.4e9) },
+            costBase() { return new Decimal(1.6e14) },
             costGrowth() { return new Decimal(1.35) },
             purchaseLimit() { return new Decimal(500) },
             currency() { return player.cof.coreFragments[2] },
@@ -1459,7 +1459,7 @@
         },
         309: {
             requirementDescription() {return formatWhole(this.cycleReq()) + " " + layers.prj.projects[this.projectId()].title + " Project ↻"},
-            effectDescription() { return "<small>???.</small>" },
+            effectDescription() { return "<small>Extend D1 exit time effect caps by x4.</small>" },
             cycleReq() { return new Decimal(9) },
             projectId() { return 3 },
             unlocked() { return hasMilestone(this.layer, this.id - 3) && hasMilestone("prj", 401) },
@@ -1574,7 +1574,7 @@
         },
         404: {
             requirementDescription() {return formatWhole(this.cycleReq()) + " " + layers.prj.projects[this.projectId()].title + " Project ↻"},
-            effectDescription() { return "<small>Extend the AU2 star trees.</small>" },
+            effectDescription() { return "<small>x2 growth gain and growth speed.</small>" },
             cycleReq() { return new Decimal(4) },
             projectId() { return 4 },
             unlocked() { return hasMilestone(this.layer, this.id - 3) },
@@ -1593,7 +1593,7 @@
         },
         405: {
             requirementDescription() {return formatWhole(this.cycleReq()) + " " + layers.prj.projects[this.projectId()].title + " Project ↻"},
-            effectDescription() { return "<small>Automate light upgrades. Unlock research projects.</small>" },
+            effectDescription() { return "<small>Automate light upgrades.</small>" },
             cycleReq() { return new Decimal(5) },
             projectId() { return 4 },
             unlocked() { return hasMilestone(this.layer, this.id - 3) },
@@ -2297,26 +2297,16 @@
                         ["microtabs", "floors", {border: "0"}],
                         ["blank", "6px"],
                         ["clickable", "projects_respecFocus"],
-                        ["blank", "25px"],
-                    ]
-                    return look
-                },
-            },
-            "Research": {
-                buttonStyle() { return { color: "white", borderWidth: "2px", borderRadius: "20px"} },
-                unlocked() { return hasUpgrade("bum", 24) },
-                content() {
-                    let look = [
-                        ["blank", "25px"],
-                        
+                        ["blank", "6px"],
+                        ["raw-html", "Project content is kept on resets.", {color: "#ffffff7f", fontSize: "16px", fontFamily: "monospace", display: (hasMilestone("prj", 201) ? "" : "none !important")}],
                         ["blank", "25px"],
                     ]
                     return look
                 },
             },
             "Pylon": {
-                buttonStyle() { return { color: "white", borderRadius: "8px" } },
-                unlocked() { return false },
+                buttonStyle() { return { color: "white", borderWidth: "2px", borderRadius: "20px"} },
+                unlocked() { return hasUpgrade("cer", 104) },
                 content: [
                     ["blank", "25px"],
                     ["left-row", [
@@ -2331,10 +2321,10 @@
                     ["raw-html", () => { return player.prj.pylonBuilt ? "You have <h3>" + format(player.prj.pylonEnergy) + "/" + format(player.prj.pylonEnergyMax) +  "</h3> technological pylon energy (+" + format(player.prj.pylonEnergyPerSecond) + "/s)." : "" }, {color: "white", fontSize: "16px", fontFamily: "monospace"}],
                     ["blank", "10px"],
                     ["raw-html", () => {return player.prj.pylonBuilt ? "Boosts UD tickspeed by x" + format(player.prj.pylonEnergyEffect) + "." : ""}, {color: "white", fontSize: "12px", fontFamily: "monospace"}],
-                    ["raw-html", () => {return player.prj.pylonBuilt ? "Boosts light and prism well speeds by x" + format(player.prj.pylonEnergyEffect2) + "." : ""}, {color: "white", fontSize: "12px", fontFamily: "monospace"}],
-                    ["raw-html", () => {return player.prj.pylonBuilt ? "Boosts [COMING SOON] gain by x" + format(player.prj.pylonEnergyEffect3) + "." : ""}, {color: "white", fontSize: "12px", fontFamily: "monospace"}],
+                    ["raw-html", () => {return player.prj.pylonBuilt ? "Boosts light well and prism well speeds by x" + format(player.prj.pylonEnergyEffect2) + "." : ""}, {color: "white", fontSize: "12px", fontFamily: "monospace"}],
+                    ["raw-html", () => {return player.prj.pylonBuilt ? "Boosts ring gain by x" + format(player.prj.pylonEnergyEffect3) + "." : ""}, {color: "white", fontSize: "12px", fontFamily: "monospace"}],
                     ["raw-html", () => {return player.prj.pylonBuilt ? "Boosts radioactive pylon energy gain by x" + format(player.prj.pylonEnergyEffect4) + "." : ""}, {color: "white", fontSize: "12px", fontFamily: "monospace"}],
-                    ["raw-html", () => {return player.prj.pylonBuilt ? "Passive effect: Boosts dark celestial point gain by ^" + format(player.prj.pylonPassiveEffect, 4) + " (Based on starlight)" : ""}, {color: "white", fontSize: "12px", fontFamily: "monospace"}],
+                    ["raw-html", () => {return player.prj.pylonBuilt ? "Passive effect: Boosts steel gain by ^" + format(player.prj.pylonPassiveEffect, 4) + " (Based on starlight)" : ""}, {color: "white", fontSize: "12px", fontFamily: "monospace"}],
                     ["raw-html", () => {return player.prj.pylonBuilt ? "Your technological pylon is tier " + formatWhole(player.prj.pylonTier) + ", which boosts effective pylon energy and the passive effect by ^" + formatSimple(player.prj.pylonTierEffect) + "." : ""}, {color: "white", fontSize: "12px", fontFamily: "monospace"}],
                     ["blank", "10px"],
                     ["row", [["rounded-ex-buyable", 101], ["blank", "3px", {width: "3px"}], ["rounded-ex-buyable", 102], ["blank", "3px", {width: "3px"}], ["rounded-ex-buyable", 103],]], 
@@ -2346,6 +2336,7 @@
     },
     tabFormat: [
         ["raw-html", () => { return "You have <h3>" + formatWhole(player.wel.light) + "</h3> light." }, {color: "white", fontSize: "18px", fontFamily: "monospace"}],
+        ["blank", "10px"],
         ["microtabs", "stuff", { 'border-width': '0px' }],
     ],
     layerShown() { return player.startedGame == true && hasUpgrade("wel", 21)},

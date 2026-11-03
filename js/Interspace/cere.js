@@ -24,7 +24,9 @@ let createRingUpgrade = function(type, id, xy) {
 
 addLayer("cer", {
     name: "Cere",
-    symbol: "⇕",
+    symbol() {
+        return !false ? "CY" : "⇕"
+    },
     universe: "UD",
     row: 4,
     position: 0,
@@ -34,18 +36,22 @@ addLayer("cer", {
         rings: new Decimal(0),
         ringsToGet: new Decimal(0),
 
+        cycles: new Decimal(0),
+
         lowestBlueshift: new Decimal(1e3),
     }},
     automate() {},
     nodeStyle() {
         return {
-            color: "#ff7fbf",
+            color: "#b35986",
             background: "linear-gradient(90deg, #ffbfdf 0%, white 50%, #ffbfdf 100%)",
             "background-origin": "border-box",
-            "border-color": "#ff7fbf",
+            "border-color": "#b35986",
         };
     },
-    tooltip: "Cere, the Celestial of Cycles",
+    tooltip() {
+        return !false ? "Cycle" : "Cere, the Celestial of Cycles"
+    },
     color: "#ffdfef",
     update(delta) {
     },
@@ -206,7 +212,7 @@ addLayer("cer", {
                 return tmp.cer.upgrades[this.id].condition
             },
             title: "Full Focus",
-            description() { return "+2 focus cap."},
+            description() { return "x1.2 focus cap."},
             currencyLocation() { return player.cer },
             currencyDisplayName: "Rings",
             currencyInternalName: "rings",
@@ -249,6 +255,233 @@ addLayer("cer", {
             },
         },
 
+        // PATH OF DARK
+
+        301: {
+            fullDisplay() {
+                return !(tmp.cer.upgrades[this.id].condition || hasUpgrade(this.layer, this.id)) ? "<h3>???</h3><br><br>Req: 5 Cycle Resets" : "<div style='height:25px;display:flex;align-items:center'><div>" +
+                "<h3 style='text-shadow:0 0 8px white'>" + this.title + "</h3>" + // TOP
+                "</div></div><div style='height:" + this.style().borderWidth + ";background-color:" + this.style().borderColor + "'></div><div style='padding-left:4px;padding-right:4px;height:90px;display:flex;align-items:center'><div>" + 
+                this.description() + // MIDDLE
+                "</div></div><div style='height:" + this.style().borderWidth + ";background-color:" + this.style().borderColor + "'></div><div style='height:25px;display:flex;align-items:center'><div>" + 
+                "<span style='color: #bfffff;text-shadow:0 0 8px #bfffff'>" + formatWhole(tmp.cer.upgrades[this.id].cost) + " " + this.currencyDisplayName + "</span>" // BOTTOM
+                "</div></div>"
+            },
+            canAfford() {
+                return tmp.cer.upgrades[this.id].condition
+            },
+            title: "Is that you?",
+            description() { return "Unlock the Cere punchcard.<br><br><small style='color:#ffff00'>(Multiplies the cost of \"Who are you?\" by x1e6)</small>"},
+            currencyLocation() { return player.cer },
+            currencyDisplayName: "Rings",
+            currencyInternalName: "rings",
+            cost() {return hasUpgrade("cer", 302) ? new Decimal(5e8) : new Decimal(500)},
+            unlocked() { return true },
+            condition() { return true },
+            style() {
+                let look = {borderRadius: "10px", color: "white", borderWidth: "3px", borderColor: "#994d4d", outline: "3px solid #ffdfef", width: "200px", maxHeight: "150px", minHeight: "150px", fontSize: "12px", margin: "6px", padding: "0"}
+                hasUpgrade(this.layer, this.id) ? look.backgroundColor = "#1a3b0f" : !canAffordUpgrade(this.layer, this.id) ? look.backgroundColor =  "#361e1e" : look.backgroundColor = "#37078f"
+                look.backgroundColor = !(tmp.cer.upgrades[this.id].condition || hasUpgrade(this.layer, this.id)) ? "#000000" : hasUpgrade(this.layer, this.id) ? "#1a3b0f" : !this.currencyLocation()[this.currencyInternalName].gte(tmp.cer.upgrades[this.id].cost) ? "#361e1e" : "#204040"
+                return look
+            },
+        },
+        302: {
+            fullDisplay() {
+                return !(tmp.cer.upgrades[this.id].condition || hasUpgrade(this.layer, this.id)) ? "<h3>???</h3><br><br>Req: 5 Cycle Resets" : "<div style='height:25px;display:flex;align-items:center'><div>" +
+                "<h3 style='text-shadow:0 0 8px white'>" + this.title + "</h3>" + // TOP
+                "</div></div><div style='height:" + this.style().borderWidth + ";background-color:" + this.style().borderColor + "'></div><div style='padding-left:4px;padding-right:4px;height:90px;display:flex;align-items:center'><div>" + 
+                this.description() + // MIDDLE
+                "</div></div><div style='height:" + this.style().borderWidth + ";background-color:" + this.style().borderColor + "'></div><div style='height:25px;display:flex;align-items:center'><div>" + 
+                "<span style='color: #bfffff;text-shadow:0 0 8px #bfffff'>" + formatWhole(tmp.cer.upgrades[this.id].cost) + " " + this.currencyDisplayName + "</span>" // BOTTOM
+                "</div></div>"
+            },
+            canAfford() {
+                return tmp.cer.upgrades[this.id].condition
+            },
+            title: "Who are you?",
+            description() { return "Unlock the Bumpy punchcard.<br><br><small style='color:#ffff00'>(Multiplies the cost of \"Is that you?\" by x1e6)</small>"},
+            currencyLocation() { return player.cer },
+            currencyDisplayName: "Rings",
+            currencyInternalName: "rings",
+            cost() {return hasUpgrade("cer", 301) ? new Decimal(5e8) : new Decimal(500)},
+            unlocked() { return true },
+            condition() { return true },
+            style() {
+                let look = {borderRadius: "10px", color: "white", borderWidth: "3px", borderColor: "#994d4d", outline: "3px solid #ffdfef", width: "200px", maxHeight: "150px", minHeight: "150px", fontSize: "12px", margin: "6px", padding: "0"}
+                hasUpgrade(this.layer, this.id) ? look.backgroundColor = "#1a3b0f" : !canAffordUpgrade(this.layer, this.id) ? look.backgroundColor =  "#361e1e" : look.backgroundColor = "#37078f"
+                look.backgroundColor = !(tmp.cer.upgrades[this.id].condition || hasUpgrade(this.layer, this.id)) ? "#000000" : hasUpgrade(this.layer, this.id) ? "#1a3b0f" : !this.currencyLocation()[this.currencyInternalName].gte(tmp.cer.upgrades[this.id].cost) ? "#361e1e" : "#204040"
+                return look
+            },
+        },
+        303: {
+            fullDisplay() {
+                return !(tmp.cer.upgrades[this.id].condition || hasUpgrade(this.layer, this.id)) ? "<h3>???</h3><br><br>Req: 5 Cycle Resets" : "<div style='height:25px;display:flex;align-items:center'><div>" +
+                "<h3 style='text-shadow:0 0 8px white'>" + this.title + "</h3>" + // TOP
+                "</div></div><div style='height:" + this.style().borderWidth + ";background-color:" + this.style().borderColor + "'></div><div style='padding-left:4px;padding-right:4px;height:90px;display:flex;align-items:center'><div>" + 
+                this.description() + // MIDDLE
+                "</div></div><div style='height:" + this.style().borderWidth + ";background-color:" + this.style().borderColor + "'></div><div style='height:25px;display:flex;align-items:center'><div>" + 
+                "<span style='color: #bfffff;text-shadow:0 0 8px #bfffff'>" + formatWhole(tmp.cer.upgrades[this.id].cost) + " " + this.currencyDisplayName + "</span>" // BOTTOM
+                "</div></div>"
+            },
+            canAfford() {
+                return tmp.cer.upgrades[this.id].condition
+            },
+            title: "Shattered Memory",
+            description() { return "Boost core fragments scores by x3.<br><br><small style='color:#ffff00'>(Multiplies the cost of \"Fragmented Mind\" by x1e9)</small>"},
+            currencyLocation() { return player.cer },
+            currencyDisplayName: "Rings",
+            currencyInternalName: "rings",
+            cost() {return hasUpgrade("cer", 304) ? new Decimal(5e12) : new Decimal(5e3)},
+            unlocked() { return true },
+            condition() { return true },
+            style() {
+                let look = {borderRadius: "10px", color: "white", borderWidth: "3px", borderColor: "#994d4d", outline: "3px solid #ffdfef", width: "200px", maxHeight: "150px", minHeight: "150px", fontSize: "12px", margin: "6px", padding: "0"}
+                hasUpgrade(this.layer, this.id) ? look.backgroundColor = "#1a3b0f" : !canAffordUpgrade(this.layer, this.id) ? look.backgroundColor =  "#361e1e" : look.backgroundColor = "#37078f"
+                look.backgroundColor = !(tmp.cer.upgrades[this.id].condition || hasUpgrade(this.layer, this.id)) ? "#000000" : hasUpgrade(this.layer, this.id) ? "#1a3b0f" : !this.currencyLocation()[this.currencyInternalName].gte(tmp.cer.upgrades[this.id].cost) ? "#361e1e" : "#204040"
+                return look
+            },
+        },
+        304: {
+            fullDisplay() {
+                return !(tmp.cer.upgrades[this.id].condition || hasUpgrade(this.layer, this.id)) ? "<h3>???</h3><br><br>Req: 5 Cycle Resets" : "<div style='height:25px;display:flex;align-items:center'><div>" +
+                "<h3 style='text-shadow:0 0 8px white'>" + this.title + "</h3>" + // TOP
+                "</div></div><div style='height:" + this.style().borderWidth + ";background-color:" + this.style().borderColor + "'></div><div style='padding-left:4px;padding-right:4px;height:90px;display:flex;align-items:center'><div>" + 
+                this.description() + // MIDDLE
+                "</div></div><div style='height:" + this.style().borderWidth + ";background-color:" + this.style().borderColor + "'></div><div style='height:25px;display:flex;align-items:center'><div>" + 
+                "<span style='color: #bfffff;text-shadow:0 0 8px #bfffff'>" + formatWhole(tmp.cer.upgrades[this.id].cost) + " " + this.currencyDisplayName + "</span>" // BOTTOM
+                "</div></div>"
+            },
+            canAfford() {
+                return tmp.cer.upgrades[this.id].condition
+            },
+            title: "Fragmented Mind",
+            description() { return "Boost starmetal essence gain by x3.<br><br><small style='color:#ffff00'>(Multiplies the cost of \"Shattered Memory\" by x1e9)</small>"},
+            currencyLocation() { return player.cer },
+            currencyDisplayName: "Rings",
+            currencyInternalName: "rings",
+            cost() {return hasUpgrade("cer", 303) ? new Decimal(5e12) : new Decimal(5e3)},
+            unlocked() { return true },
+            condition() { return true },
+            style() {
+                let look = {borderRadius: "10px", color: "white", borderWidth: "3px", borderColor: "#994d4d", outline: "3px solid #ffdfef", width: "200px", maxHeight: "150px", minHeight: "150px", fontSize: "12px", margin: "6px", padding: "0"}
+                hasUpgrade(this.layer, this.id) ? look.backgroundColor = "#1a3b0f" : !canAffordUpgrade(this.layer, this.id) ? look.backgroundColor =  "#361e1e" : look.backgroundColor = "#37078f"
+                look.backgroundColor = !(tmp.cer.upgrades[this.id].condition || hasUpgrade(this.layer, this.id)) ? "#000000" : hasUpgrade(this.layer, this.id) ? "#1a3b0f" : !this.currencyLocation()[this.currencyInternalName].gte(tmp.cer.upgrades[this.id].cost) ? "#361e1e" : "#204040"
+                return look
+            },
+        },
+        305: {
+            fullDisplay() {
+                return !(tmp.cer.upgrades[this.id].condition || hasUpgrade(this.layer, this.id)) ? "<h3>???</h3><br><br>Req: 5 Cycle Resets" : "<div style='height:25px;display:flex;align-items:center'><div>" +
+                "<h3 style='text-shadow:0 0 8px white'>" + this.title + "</h3>" + // TOP
+                "</div></div><div style='height:" + this.style().borderWidth + ";background-color:" + this.style().borderColor + "'></div><div style='padding-left:4px;padding-right:4px;height:90px;display:flex;align-items:center'><div>" + 
+                this.description() + // MIDDLE
+                "</div></div><div style='height:" + this.style().borderWidth + ";background-color:" + this.style().borderColor + "'></div><div style='height:25px;display:flex;align-items:center'><div>" + 
+                "<span style='color: #bfffff;text-shadow:0 0 8px #bfffff'>" + formatWhole(tmp.cer.upgrades[this.id].cost) + " " + this.currencyDisplayName + "</span>" // BOTTOM
+                "</div></div>"
+            },
+            canAfford() {
+                return tmp.cer.upgrades[this.id].condition
+            },
+            title: "Our Beautiful Home",
+            description() { return "Boost all eclipse exit rewards by x2.<br><br><small style='color:#ffff00'>(Multiplies the cost of \"Our Beautiful City\" by x1e11)</small>"},
+            currencyLocation() { return player.cer },
+            currencyDisplayName: "Rings",
+            currencyInternalName: "rings",
+            cost() {return hasUpgrade("cer", 306) ? new Decimal(2.5e15) : new Decimal(2.5e4)},
+            unlocked() { return true },
+            condition() { return true },
+            style() {
+                let look = {borderRadius: "10px", color: "white", borderWidth: "3px", borderColor: "#994d4d", outline: "3px solid #ffdfef", width: "200px", maxHeight: "150px", minHeight: "150px", fontSize: "12px", margin: "6px", padding: "0"}
+                hasUpgrade(this.layer, this.id) ? look.backgroundColor = "#1a3b0f" : !canAffordUpgrade(this.layer, this.id) ? look.backgroundColor =  "#361e1e" : look.backgroundColor = "#37078f"
+                look.backgroundColor = !(tmp.cer.upgrades[this.id].condition || hasUpgrade(this.layer, this.id)) ? "#000000" : hasUpgrade(this.layer, this.id) ? "#1a3b0f" : !this.currencyLocation()[this.currencyInternalName].gte(tmp.cer.upgrades[this.id].cost) ? "#361e1e" : "#204040"
+                return look
+            },
+        },
+        306: {
+            fullDisplay() {
+                return !(tmp.cer.upgrades[this.id].condition || hasUpgrade(this.layer, this.id)) ? "<h3>???</h3><br><br>Req: 5 Cycle Resets" : "<div style='height:25px;display:flex;align-items:center'><div>" +
+                "<h3 style='text-shadow:0 0 8px white'>" + this.title + "</h3>" + // TOP
+                "</div></div><div style='height:" + this.style().borderWidth + ";background-color:" + this.style().borderColor + "'></div><div style='padding-left:4px;padding-right:4px;height:90px;display:flex;align-items:center'><div>" + 
+                this.description() + // MIDDLE
+                "</div></div><div style='height:" + this.style().borderWidth + ";background-color:" + this.style().borderColor + "'></div><div style='height:25px;display:flex;align-items:center'><div>" + 
+                "<span style='color: #bfffff;text-shadow:0 0 8px #bfffff'>" + formatWhole(tmp.cer.upgrades[this.id].cost) + " " + this.currencyDisplayName + "</span>" // BOTTOM
+                "</div></div>"
+            },
+            canAfford() {
+                return tmp.cer.upgrades[this.id].condition
+            },
+            title: "Our Beautiful City",
+            description() { return "Boost all starmetal exit rewards by x2.<br><br><small style='color:#ffff00'>(Multiplies the cost of \"Our Beautiful Home\" by x1e11)</small>"},
+            currencyLocation() { return player.cer },
+            currencyDisplayName: "Rings",
+            currencyInternalName: "rings",
+            cost() {return hasUpgrade("cer", 305) ? new Decimal(2.5e15) : new Decimal(2.5e4)},
+            unlocked() { return true },
+            condition() { return true },
+            style() {
+                let look = {borderRadius: "10px", color: "white", borderWidth: "3px", borderColor: "#994d4d", outline: "3px solid #ffdfef", width: "200px", maxHeight: "150px", minHeight: "150px", fontSize: "12px", margin: "6px", padding: "0"}
+                hasUpgrade(this.layer, this.id) ? look.backgroundColor = "#1a3b0f" : !canAffordUpgrade(this.layer, this.id) ? look.backgroundColor =  "#361e1e" : look.backgroundColor = "#37078f"
+                look.backgroundColor = !(tmp.cer.upgrades[this.id].condition || hasUpgrade(this.layer, this.id)) ? "#000000" : hasUpgrade(this.layer, this.id) ? "#1a3b0f" : !this.currencyLocation()[this.currencyInternalName].gte(tmp.cer.upgrades[this.id].cost) ? "#361e1e" : "#204040"
+                return look
+            },
+        },
+        307: {
+            fullDisplay() {
+                return !(tmp.cer.upgrades[this.id].condition || hasUpgrade(this.layer, this.id)) ? "<h3>???</h3><br><br>Req: 5 Cycle Resets" : "<div style='height:25px;display:flex;align-items:center'><div>" +
+                "<h3 style='text-shadow:0 0 8px white'>" + this.title + "</h3>" + // TOP
+                "</div></div><div style='height:" + this.style().borderWidth + ";background-color:" + this.style().borderColor + "'></div><div style='padding-left:4px;padding-right:4px;height:90px;display:flex;align-items:center'><div>" + 
+                this.description() + // MIDDLE
+                "</div></div><div style='height:" + this.style().borderWidth + ";background-color:" + this.style().borderColor + "'></div><div style='height:25px;display:flex;align-items:center'><div>" + 
+                "<span style='color: #bfffff;text-shadow:0 0 8px #bfffff'>" + formatWhole(tmp.cer.upgrades[this.id].cost) + " " + this.currencyDisplayName + "</span>" // BOTTOM
+                "</div></div>"
+            },
+            canAfford() {
+                return tmp.cer.upgrades[this.id].condition
+            },
+            title: "The Tainted Angel",
+            description() { return "He shall not forget you.<br><br><small style='color:#ffff00'>(You can only have one)</small>"},
+            currencyLocation() { return player.cer },
+            currencyDisplayName: "Rings",
+            currencyInternalName: "rings",
+            cost() {return hasUpgrade("cer", 308) ? new Decimal("1e1000") : new Decimal(1e8)},
+            unlocked() { return true },
+            condition() { return true },
+            style() {
+                let look = {borderRadius: "10px", color: "white", borderWidth: "3px", borderColor: "#994d4d", outline: "3px solid #ffdfef", width: "200px", maxHeight: "150px", minHeight: "150px", fontSize: "12px", margin: "6px", padding: "0"}
+                hasUpgrade(this.layer, this.id) ? look.backgroundColor = "#1a3b0f" : !canAffordUpgrade(this.layer, this.id) ? look.backgroundColor =  "#361e1e" : look.backgroundColor = "#37078f"
+                look.backgroundColor = !(tmp.cer.upgrades[this.id].condition || hasUpgrade(this.layer, this.id)) ? "#000000" : hasUpgrade(this.layer, this.id) ? "#1a3b0f" : !this.currencyLocation()[this.currencyInternalName].gte(tmp.cer.upgrades[this.id].cost) ? "#361e1e" : "#204040"
+                return look
+            },
+        },
+        308: {
+            fullDisplay() {
+                return !(tmp.cer.upgrades[this.id].condition || hasUpgrade(this.layer, this.id)) ? "<h3>???</h3><br><br>Req: 5 Cycle Resets" : "<div style='height:25px;display:flex;align-items:center'><div>" +
+                "<h3 style='text-shadow:0 0 8px white'>" + this.title + "</h3>" + // TOP
+                "</div></div><div style='height:" + this.style().borderWidth + ";background-color:" + this.style().borderColor + "'></div><div style='padding-left:4px;padding-right:4px;height:90px;display:flex;align-items:center'><div>" + 
+                this.description() + // MIDDLE
+                "</div></div><div style='height:" + this.style().borderWidth + ";background-color:" + this.style().borderColor + "'></div><div style='height:25px;display:flex;align-items:center'><div>" + 
+                "<span style='color: #bfffff;text-shadow:0 0 8px #bfffff'>" + formatWhole(tmp.cer.upgrades[this.id].cost) + " " + this.currencyDisplayName + "</span>" // BOTTOM
+                "</div></div>"
+            },
+            canAfford() {
+                return tmp.cer.upgrades[this.id].condition
+            },
+            title: "The Forgotten Developer",
+            description() { return "He shall not forget you.<br><br><small style='color:#ffff00'>(You can only have one)</small>"},
+            currencyLocation() { return player.cer },
+            currencyDisplayName: "Rings",
+            currencyInternalName: "rings",
+            cost() {return hasUpgrade("cer", 307) ? new Decimal("1e1000") : new Decimal(1e8)},
+            unlocked() { return true },
+            condition() { return true },
+            style() {
+                let look = {borderRadius: "10px", color: "white", borderWidth: "3px", borderColor: "#994d4d", outline: "3px solid #ffdfef", width: "200px", maxHeight: "150px", minHeight: "150px", fontSize: "12px", margin: "6px", padding: "0"}
+                hasUpgrade(this.layer, this.id) ? look.backgroundColor = "#1a3b0f" : !canAffordUpgrade(this.layer, this.id) ? look.backgroundColor =  "#361e1e" : look.backgroundColor = "#37078f"
+                look.backgroundColor = !(tmp.cer.upgrades[this.id].condition || hasUpgrade(this.layer, this.id)) ? "#000000" : hasUpgrade(this.layer, this.id) ? "#1a3b0f" : !this.currencyLocation()[this.currencyInternalName].gte(tmp.cer.upgrades[this.id].cost) ? "#361e1e" : "#204040"
+                return look
+            },
+        },
+
         // PATH OF CYCLES
 
         401: {
@@ -264,7 +497,7 @@ addLayer("cer", {
             canAfford() {
                 return tmp.cer.upgrades[this.id].condition
             },
-            title: "Teamwork",
+            title: "Working with You",
             description() { return "+1 research cap."},
             currencyLocation() { return player.cer },
             currencyDisplayName: "Rings",
@@ -292,12 +525,68 @@ addLayer("cer", {
             canAfford() {
                 return tmp.cer.upgrades[this.id].condition
             },
-            title: "In the Loop",//Α
+            title: "Like Old Times",
             description() { return "Automate the first two blacklight fountains at x0.5 speed."},
             currencyLocation() { return player.cer },
             currencyDisplayName: "Rings",
             currencyInternalName: "rings",
             cost: new Decimal(24),
+            unlocked() { return true },
+            condition() { return true },
+            style() {
+                let look = {borderRadius: "10px", color: "white", borderWidth: "3px", borderColor: "#b35986", outline: "3px solid #ffdfef", width: "200px", maxHeight: "150px", minHeight: "150px", fontSize: "12px", margin: "6px", padding: "0"}
+                hasUpgrade(this.layer, this.id) ? look.backgroundColor = "#1a3b0f" : !canAffordUpgrade(this.layer, this.id) ? look.backgroundColor =  "#361e1e" : look.backgroundColor = "#37078f"
+                look.backgroundColor = !(tmp.cer.upgrades[this.id].condition || hasUpgrade(this.layer, this.id)) ? "#000000" : hasUpgrade(this.layer, this.id) ? "#1a3b0f" : !this.currencyLocation()[this.currencyInternalName].gte(tmp.cer.upgrades[this.id].cost) ? "#361e1e" : "#204040"
+                return look
+            },
+        },
+        403: {
+            fullDisplay() {
+                return !(tmp.cer.upgrades[this.id].condition || hasUpgrade(this.layer, this.id)) ? "<h3>???</h3><br><br>Req: 5 Cycle Resets" : "<div style='height:25px;display:flex;align-items:center'><div>" +
+                "<h3 style='text-shadow:0 0 8px white'>" + this.title + "</h3>" + // TOP
+                "</div></div><div style='height:" + this.style().borderWidth + ";background-color:" + this.style().borderColor + "'></div><div style='padding-left:4px;padding-right:4px;height:90px;display:flex;align-items:center'><div>" + 
+                this.description() + // MIDDLE
+                "</div></div><div style='height:" + this.style().borderWidth + ";background-color:" + this.style().borderColor + "'></div><div style='height:25px;display:flex;align-items:center'><div>" + 
+                "<span style='color: #bfffff;text-shadow:0 0 8px #bfffff'>" + formatWhole(this.cost) + " " + this.currencyDisplayName + "</span>" // BOTTOM
+                "</div></div>"
+            },
+            canAfford() {
+                return tmp.cer.upgrades[this.id].condition
+            },
+            title: "Having Fun Together",
+            description() { return "+1 research cap again."},
+            currencyLocation() { return player.cer },
+            currencyDisplayName: "Rings",
+            currencyInternalName: "rings",
+            cost: new Decimal(96),
+            unlocked() { return true },
+            condition() { return true },
+            style() {
+                let look = {borderRadius: "10px", color: "white", borderWidth: "3px", borderColor: "#b35986", outline: "3px solid #ffdfef", width: "200px", maxHeight: "150px", minHeight: "150px", fontSize: "12px", margin: "6px", padding: "0"}
+                hasUpgrade(this.layer, this.id) ? look.backgroundColor = "#1a3b0f" : !canAffordUpgrade(this.layer, this.id) ? look.backgroundColor =  "#361e1e" : look.backgroundColor = "#37078f"
+                look.backgroundColor = !(tmp.cer.upgrades[this.id].condition || hasUpgrade(this.layer, this.id)) ? "#000000" : hasUpgrade(this.layer, this.id) ? "#1a3b0f" : !this.currencyLocation()[this.currencyInternalName].gte(tmp.cer.upgrades[this.id].cost) ? "#361e1e" : "#204040"
+                return look
+            },
+        },
+        404: {
+            fullDisplay() {
+                return !(tmp.cer.upgrades[this.id].condition || hasUpgrade(this.layer, this.id)) ? "<h3>???</h3><br><br>Req: 5 Cycle Resets" : "<div style='height:25px;display:flex;align-items:center'><div>" +
+                "<h3 style='text-shadow:0 0 8px white'>" + this.title + "</h3>" + // TOP
+                "</div></div><div style='height:" + this.style().borderWidth + ";background-color:" + this.style().borderColor + "'></div><div style='padding-left:4px;padding-right:4px;height:90px;display:flex;align-items:center'><div>" + 
+                this.description() + // MIDDLE
+                "</div></div><div style='height:" + this.style().borderWidth + ";background-color:" + this.style().borderColor + "'></div><div style='height:25px;display:flex;align-items:center'><div>" + 
+                "<span style='color: #bfffff;text-shadow:0 0 8px #bfffff'>" + formatWhole(this.cost) + " " + this.currencyDisplayName + "</span>" // BOTTOM
+                "</div></div>"
+            },
+            canAfford() {
+                return tmp.cer.upgrades[this.id].condition
+            },
+            title: "Just The Three of Us",
+            description() { return "Automate all blacklight fountains at full speed."},
+            currencyLocation() { return player.cer },
+            currencyDisplayName: "Rings",
+            currencyInternalName: "rings",
+            cost: new Decimal(32),
             unlocked() { return true },
             condition() { return true },
             style() {
@@ -540,13 +829,13 @@ addLayer("cer", {
             purchaseLimit() { return new Decimal(20) },
             currency() { return player.cer.rings},
             pay(amt) { player.cer.rings = this.currency().sub(amt) },
-            effect(x) { return getBuyableAmount(this.layer, this.id).mul(0.5).add(1) },
+            effect(x) { return getBuyableAmount(this.layer, this.id).pow_base(1.25) },
             unlocked() { return true },
             cost(x) { return this.costGrowth().pow(x || getBuyableAmount(this.layer, this.id)).mul(this.costBase()).floor() },
             canAfford() { return (tmp.cer.buyables[this.id].condition || getBuyableAmount(this.layer, this.id).gt(0)) && this.currency().gte(this.cost()) },
             condition() { return true },
             description() {
-                return "Boosts light gain by +x0.5.<br>(x" + formatSimple(this.effect()) + ")"
+                return "Boosts light gain by x1.25.<br>(x" + formatSimple(this.effect()) + ")"
             },
             currencyDisplayName: "Rings",
             display() {
@@ -575,6 +864,459 @@ addLayer("cer", {
             },
             style() {
                 let look = {borderRadius: "10px", color: "white", borderWidth: "3px", borderColor: "#4d9973", outline: "3px solid #ffdfef", width: "200px", maxHeight: "150px", minHeight: "150px", fontSize: "12px", margin: "6px", padding: "0"}
+                getBuyableAmount(this.layer, this.id).gte(this.purchaseLimit()) ? look.backgroundColor = "#1a3b0f" : !this.canAfford() ? look.backgroundColor =  "#361e1e" : look.backgroundColor = "#204040"
+                return look
+            },
+        },
+        301: {
+            costBase() { return new Decimal(16) },
+            costGrowth() { return new Decimal(1.25) },
+            purchaseLimit() { return new Decimal(50) },
+            currency() { return player.cer.rings},
+            pay(amt) { player.cer.rings = this.currency().sub(amt) },
+            effect(x) { return getBuyableAmount(this.layer, this.id).pow(2).mul(4).pow_base(player.cer.cycles.add(1)) },
+            unlocked() { return true },
+            cost(x) { return this.costGrowth().pow(x || getBuyableAmount(this.layer, this.id)).mul(this.costBase()).floor() },
+            canAfford() { return (tmp.cer.buyables[this.id].condition || getBuyableAmount(this.layer, this.id).gt(0)) && this.currency().gte(this.cost()) },
+            condition() { return true },
+            description() {
+                return "Boosts singularity point gain based on cycles.<br>(x" + formatSimple(this.effect(), 2) + ")"
+            },
+            currencyDisplayName: "Rings",
+            display() {
+                return "<div style='height:40px;display:flex;align-items:center'><div>" +
+                "<h3 style='text-shadow:0 0 8px white'>" + "Blurring Resets" + "<br>(" + formatWhole(getBuyableAmount(this.layer, this.id)) + "/" + formatWhole(this.purchaseLimit()) + ")</h3>" + // TOP
+                "</div></div><div style='height:" + this.style().borderWidth + ";background-color:" + this.style().borderColor + "'></div><div style='padding-left:4px;padding-right:4px;height:75px;display:flex;align-items:center'><div>" + 
+                this.description() + // MIDDLE
+                "</div></div><div style='height:" + this.style().borderWidth + ";background-color:" + this.style().borderColor + "'></div><div style='height:25px;display:flex;align-items:center'><div>" + 
+                "<span style='color: #bfffff;text-shadow:0 0 8px #bfffff'>" + formatWhole(this.cost()) + " " + this.currencyDisplayName + "</span>" // BOTTOM
+                "</div></div>"
+            },
+            buy(mult) {
+                if (mult != true) {
+                    let buyonecost = new Decimal(this.costGrowth()).pow(getBuyableAmount(this.layer, this.id)).mul(this.costBase()).floor()
+                    this.pay(buyonecost)
+
+                    setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+                } else {
+                    let max = Decimal.affordGeometricSeries(this.currency(), this.costBase(), this.costGrowth(), getBuyableAmount(this.layer, this.id))
+                    if (max.gt(this.purchaseLimit().sub(getBuyableAmount(this.layer, this.id)))) { max = this.purchaseLimit().sub(getBuyableAmount(this.layer, this.id)) }
+                    let cost = Decimal.sumGeometricSeries(max, this.costBase(), this.costGrowth(), getBuyableAmount(this.layer, this.id)).floor()
+                    this.pay(cost)
+
+                    setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(max))
+                }
+            },
+            style() {
+                let look = {borderRadius: "10px", color: "white", borderWidth: "3px", borderColor: "#994d4d", outline: "3px solid #ffdfef", width: "200px", maxHeight: "150px", minHeight: "150px", fontSize: "12px", margin: "6px", padding: "0"}
+                getBuyableAmount(this.layer, this.id).gte(this.purchaseLimit()) ? look.backgroundColor = "#1a3b0f" : !this.canAfford() ? look.backgroundColor =  "#361e1e" : look.backgroundColor = "#204040"
+                return look
+            },
+        },
+        302: {
+            costBase() { return new Decimal(64) },
+            costGrowth() { return new Decimal(1.35) },
+            purchaseLimit() { return new Decimal(50) },
+            currency() { return player.cer.rings},
+            pay(amt) { player.cer.rings = this.currency().sub(amt) },
+            effect(x) { return Decimal.pow("1.8e308", getBuyableAmount(this.layer, this.id).div(50).pow(1.25)) },
+            unlocked() { return true },
+            cost(x) { return this.costGrowth().pow(x || getBuyableAmount(this.layer, this.id)).mul(this.costBase()).floor() },
+            canAfford() { return (tmp.cer.buyables[this.id].condition || getBuyableAmount(this.layer, this.id).gt(0)) && this.currency().gte(this.cost()) },
+            condition() { return true },
+            description() {
+                return "Delay the dark celestial point softcap².<br>(x" + formatSimple(this.effect()) + ")"
+            },
+            currencyDisplayName: "Rings",
+            display() {
+                return "<div style='height:40px;display:flex;align-items:center'><div>" +
+                "<h3 style='text-shadow:0 0 8px white'>" + "Overflowing Darkness" + "<br>(" + formatWhole(getBuyableAmount(this.layer, this.id)) + "/" + formatWhole(this.purchaseLimit()) + ")</h3>" + // TOP
+                "</div></div><div style='height:" + this.style().borderWidth + ";background-color:" + this.style().borderColor + "'></div><div style='padding-left:4px;padding-right:4px;height:75px;display:flex;align-items:center'><div>" + 
+                this.description() + // MIDDLE
+                "</div></div><div style='height:" + this.style().borderWidth + ";background-color:" + this.style().borderColor + "'></div><div style='height:25px;display:flex;align-items:center'><div>" + 
+                "<span style='color: #bfffff;text-shadow:0 0 8px #bfffff'>" + formatWhole(this.cost()) + " " + this.currencyDisplayName + "</span>" // BOTTOM
+                "</div></div>"
+            },
+            buy(mult) {
+                if (mult != true) {
+                    let buyonecost = new Decimal(this.costGrowth()).pow(getBuyableAmount(this.layer, this.id)).mul(this.costBase()).floor()
+                    this.pay(buyonecost)
+
+                    setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+                } else {
+                    let max = Decimal.affordGeometricSeries(this.currency(), this.costBase(), this.costGrowth(), getBuyableAmount(this.layer, this.id))
+                    if (max.gt(this.purchaseLimit().sub(getBuyableAmount(this.layer, this.id)))) { max = this.purchaseLimit().sub(getBuyableAmount(this.layer, this.id)) }
+                    let cost = Decimal.sumGeometricSeries(max, this.costBase(), this.costGrowth(), getBuyableAmount(this.layer, this.id)).floor()
+                    this.pay(cost)
+
+                    setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(max))
+                }
+            },
+            style() {
+                let look = {borderRadius: "10px", color: "white", borderWidth: "3px", borderColor: "#994d4d", outline: "3px solid #ffdfef", width: "200px", maxHeight: "150px", minHeight: "150px", fontSize: "12px", margin: "6px", padding: "0"}
+                getBuyableAmount(this.layer, this.id).gte(this.purchaseLimit()) ? look.backgroundColor = "#1a3b0f" : !this.canAfford() ? look.backgroundColor =  "#361e1e" : look.backgroundColor = "#204040"
+                return look
+            },
+        },
+        303: {
+            costBase() { return new Decimal(1e3) },
+            costGrowth() { return new Decimal(1.3) },
+            purchaseLimit() { return new Decimal(50) },
+            currency() { return player.cer.rings},
+            pay(amt) { player.cer.rings = this.currency().sub(amt) },
+            effect(x) { return getBuyableAmount(this.layer, this.id).pow(1.25).mul(0.03125).pow_base(player.s.singularities.add(1)) },
+            unlocked() { return true },
+            cost(x) { return this.costGrowth().pow(x || getBuyableAmount(this.layer, this.id)).mul(this.costBase()).floor() },
+            canAfford() { return (tmp.cer.buyables[this.id].condition || getBuyableAmount(this.layer, this.id).gt(0)) && this.currency().gte(this.cost()) },
+            condition() { return true },
+            description() {
+                return "Multiply radiation gain based on singularities.<br>(x" + formatSimple(this.effect(), 2) + ")"
+            },
+            currencyDisplayName: "Rings",
+            display() {
+                return "<div style='height:40px;display:flex;align-items:center'><div>" +
+                "<h3 style='text-shadow:0 0 8px white'>" + "Losing Energy" + "<br>(" + formatWhole(getBuyableAmount(this.layer, this.id)) + "/" + formatWhole(this.purchaseLimit()) + ")</h3>" + // TOP
+                "</div></div><div style='height:" + this.style().borderWidth + ";background-color:" + this.style().borderColor + "'></div><div style='padding-left:4px;padding-right:4px;height:75px;display:flex;align-items:center'><div>" + 
+                this.description() + // MIDDLE
+                "</div></div><div style='height:" + this.style().borderWidth + ";background-color:" + this.style().borderColor + "'></div><div style='height:25px;display:flex;align-items:center'><div>" + 
+                "<span style='color: #bfffff;text-shadow:0 0 8px #bfffff'>" + formatWhole(this.cost()) + " " + this.currencyDisplayName + "</span>" // BOTTOM
+                "</div></div>"
+            },
+            buy(mult) {
+                if (mult != true) {
+                    let buyonecost = new Decimal(this.costGrowth()).pow(getBuyableAmount(this.layer, this.id)).mul(this.costBase()).floor()
+                    this.pay(buyonecost)
+
+                    setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+                } else {
+                    let max = Decimal.affordGeometricSeries(this.currency(), this.costBase(), this.costGrowth(), getBuyableAmount(this.layer, this.id))
+                    if (max.gt(this.purchaseLimit().sub(getBuyableAmount(this.layer, this.id)))) { max = this.purchaseLimit().sub(getBuyableAmount(this.layer, this.id)) }
+                    let cost = Decimal.sumGeometricSeries(max, this.costBase(), this.costGrowth(), getBuyableAmount(this.layer, this.id)).floor()
+                    this.pay(cost)
+
+                    setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(max))
+                }
+            },
+            style() {
+                let look = {borderRadius: "10px", color: "white", borderWidth: "3px", borderColor: "#994d4d", outline: "3px solid #ffdfef", width: "200px", maxHeight: "150px", minHeight: "150px", fontSize: "12px", margin: "6px", padding: "0"}
+                getBuyableAmount(this.layer, this.id).gte(this.purchaseLimit()) ? look.backgroundColor = "#1a3b0f" : !this.canAfford() ? look.backgroundColor =  "#361e1e" : look.backgroundColor = "#204040"
+                return look
+            },
+        },
+        304: {
+            costBase() { return new Decimal(1e4) },
+            costGrowth() { return new Decimal(1.4) },
+            purchaseLimit() { return new Decimal(50) },
+            currency() { return player.cer.rings},
+            pay(amt) { player.cer.rings = this.currency().sub(amt) },
+            effect(x) { return Decimal.pow(1.5, getBuyableAmount(this.layer, this.id).div(50).pow(1.125)) },
+            unlocked() { return true },
+            cost(x) { return this.costGrowth().pow(x || getBuyableAmount(this.layer, this.id)).mul(this.costBase()).floor() },
+            canAfford() { return (tmp.cer.buyables[this.id].condition || getBuyableAmount(this.layer, this.id).gt(0)) && this.currency().gte(this.cost()) },
+            condition() { return true },
+            description() {
+                return "Boost base stored time capsule gain.<br>(^" + formatSimple(this.effect(), 3) + ")"
+            },
+            currencyDisplayName: "Rings",
+            display() {
+                return "<div style='height:40px;display:flex;align-items:center'><div>" +
+                "<h3 style='text-shadow:0 0 8px white'>" + "Fleeting Choices" + "<br>(" + formatWhole(getBuyableAmount(this.layer, this.id)) + "/" + formatWhole(this.purchaseLimit()) + ")</h3>" + // TOP
+                "</div></div><div style='height:" + this.style().borderWidth + ";background-color:" + this.style().borderColor + "'></div><div style='padding-left:4px;padding-right:4px;height:75px;display:flex;align-items:center'><div>" + 
+                this.description() + // MIDDLE
+                "</div></div><div style='height:" + this.style().borderWidth + ";background-color:" + this.style().borderColor + "'></div><div style='height:25px;display:flex;align-items:center'><div>" + 
+                "<span style='color: #bfffff;text-shadow:0 0 8px #bfffff'>" + formatWhole(this.cost()) + " " + this.currencyDisplayName + "</span>" // BOTTOM
+                "</div></div>"
+            },
+            buy(mult) {
+                if (mult != true) {
+                    let buyonecost = new Decimal(this.costGrowth()).pow(getBuyableAmount(this.layer, this.id)).mul(this.costBase()).floor()
+                    this.pay(buyonecost)
+
+                    setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+                } else {
+                    let max = Decimal.affordGeometricSeries(this.currency(), this.costBase(), this.costGrowth(), getBuyableAmount(this.layer, this.id))
+                    if (max.gt(this.purchaseLimit().sub(getBuyableAmount(this.layer, this.id)))) { max = this.purchaseLimit().sub(getBuyableAmount(this.layer, this.id)) }
+                    let cost = Decimal.sumGeometricSeries(max, this.costBase(), this.costGrowth(), getBuyableAmount(this.layer, this.id)).floor()
+                    this.pay(cost)
+
+                    setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(max))
+                }
+            },
+            style() {
+                let look = {borderRadius: "10px", color: "white", borderWidth: "3px", borderColor: "#994d4d", outline: "3px solid #ffdfef", width: "200px", maxHeight: "150px", minHeight: "150px", fontSize: "12px", margin: "6px", padding: "0"}
+                getBuyableAmount(this.layer, this.id).gte(this.purchaseLimit()) ? look.backgroundColor = "#1a3b0f" : !this.canAfford() ? look.backgroundColor =  "#361e1e" : look.backgroundColor = "#204040"
+                return look
+            },
+        },
+        305: {
+            costBase() { return new Decimal(4e4) },
+            costGrowth() { return new Decimal(1.5) },
+            purchaseLimit() { return new Decimal(50) },
+            currency() { return player.cer.rings},
+            pay(amt) { player.cer.rings = this.currency().sub(amt) },
+            effect(x) { return Decimal.pow(1.5, getBuyableAmount(this.layer, this.id).div(50).pow(1.125)) },
+            unlocked() { return true },
+            cost(x) { return this.costGrowth().pow(x || getBuyableAmount(this.layer, this.id)).mul(this.costBase()).floor() },
+            canAfford() { return (tmp.cer.buyables[this.id].condition || getBuyableAmount(this.layer, this.id).gt(0)) && this.currency().gte(this.cost()) },
+            condition() { return true },
+            description() {
+                return "Boost base stored space energy gain.<br>(^" + formatSimple(this.effect(), 3) + ")"
+            },
+            currencyDisplayName: "Rings",
+            display() {
+                return "<div style='height:40px;display:flex;align-items:center'><div>" +
+                "<h3 style='text-shadow:0 0 8px white'>" + "Expanding Rift" + "<br>(" + formatWhole(getBuyableAmount(this.layer, this.id)) + "/" + formatWhole(this.purchaseLimit()) + ")</h3>" + // TOP
+                "</div></div><div style='height:" + this.style().borderWidth + ";background-color:" + this.style().borderColor + "'></div><div style='padding-left:4px;padding-right:4px;height:75px;display:flex;align-items:center'><div>" + 
+                this.description() + // MIDDLE
+                "</div></div><div style='height:" + this.style().borderWidth + ";background-color:" + this.style().borderColor + "'></div><div style='height:25px;display:flex;align-items:center'><div>" + 
+                "<span style='color: #bfffff;text-shadow:0 0 8px #bfffff'>" + formatWhole(this.cost()) + " " + this.currencyDisplayName + "</span>" // BOTTOM
+                "</div></div>"
+            },
+            buy(mult) {
+                if (mult != true) {
+                    let buyonecost = new Decimal(this.costGrowth()).pow(getBuyableAmount(this.layer, this.id)).mul(this.costBase()).floor()
+                    this.pay(buyonecost)
+
+                    setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+                } else {
+                    let max = Decimal.affordGeometricSeries(this.currency(), this.costBase(), this.costGrowth(), getBuyableAmount(this.layer, this.id))
+                    if (max.gt(this.purchaseLimit().sub(getBuyableAmount(this.layer, this.id)))) { max = this.purchaseLimit().sub(getBuyableAmount(this.layer, this.id)) }
+                    let cost = Decimal.sumGeometricSeries(max, this.costBase(), this.costGrowth(), getBuyableAmount(this.layer, this.id)).floor()
+                    this.pay(cost)
+
+                    setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(max))
+                }
+            },
+            style() {
+                let look = {borderRadius: "10px", color: "white", borderWidth: "3px", borderColor: "#994d4d", outline: "3px solid #ffdfef", width: "200px", maxHeight: "150px", minHeight: "150px", fontSize: "12px", margin: "6px", padding: "0"}
+                getBuyableAmount(this.layer, this.id).gte(this.purchaseLimit()) ? look.backgroundColor = "#1a3b0f" : !this.canAfford() ? look.backgroundColor =  "#361e1e" : look.backgroundColor = "#204040"
+                return look
+            },
+        },
+
+        // PATH OF CYCLES
+
+        401: {
+            costBase() { return new Decimal(3) },
+            costGrowth() { return new Decimal(3) },
+            purchaseLimit() { return new Decimal(4) },
+            currency() { return player.cer.rings},
+            pay(amt) { player.cer.rings = this.currency().sub(amt) },
+            effect(x) { return getBuyableAmount(this.layer, this.id).add(1) },
+            unlocked() { return true },
+            cost(x) { return this.costGrowth().pow(x || getBuyableAmount(this.layer, this.id)).mul(this.costBase()).floor() },
+            canAfford() { return (tmp.cer.buyables[this.id].condition || getBuyableAmount(this.layer, this.id).gt(0)) && this.currency().gte(this.cost()) },
+            condition() { return true },
+            description() {
+                return "Boosts blacklight well ↻ gain by +x1.<br>(x" + formatSimple(this.effect()) + ")"
+            },
+            currencyDisplayName: "Rings",
+            display() {
+                return "<div style='height:40px;display:flex;align-items:center'><div>" +
+                "<h3 style='text-shadow:0 0 8px white'>" + "We're Unstoppable" + "<br>(" + formatWhole(getBuyableAmount(this.layer, this.id)) + "/" + formatWhole(this.purchaseLimit()) + ")</h3>" + // TOP
+                "</div></div><div style='height:" + this.style().borderWidth + ";background-color:" + this.style().borderColor + "'></div><div style='padding-left:4px;padding-right:4px;height:75px;display:flex;align-items:center'><div>" + 
+                this.description() + // MIDDLE
+                "</div></div><div style='height:" + this.style().borderWidth + ";background-color:" + this.style().borderColor + "'></div><div style='height:25px;display:flex;align-items:center'><div>" + 
+                "<span style='color: #bfffff;text-shadow:0 0 8px #bfffff'>" + formatWhole(this.cost()) + " " + this.currencyDisplayName + "</span>" // BOTTOM
+                "</div></div>"
+            },
+            buy(mult) {
+                if (mult != true) {
+                    let buyonecost = new Decimal(this.costGrowth()).pow(getBuyableAmount(this.layer, this.id)).mul(this.costBase()).floor()
+                    this.pay(buyonecost)
+
+                    setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+                } else {
+                    let max = Decimal.affordGeometricSeries(this.currency(), this.costBase(), this.costGrowth(), getBuyableAmount(this.layer, this.id))
+                    if (max.gt(this.purchaseLimit().sub(getBuyableAmount(this.layer, this.id)))) { max = this.purchaseLimit().sub(getBuyableAmount(this.layer, this.id)) }
+                    let cost = Decimal.sumGeometricSeries(max, this.costBase(), this.costGrowth(), getBuyableAmount(this.layer, this.id)).floor()
+                    this.pay(cost)
+
+                    setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(max))
+                }
+            },
+            style() {
+                let look = {borderRadius: "10px", color: "white", borderWidth: "3px", borderColor: "#b35986", outline: "3px solid #ffdfef", width: "200px", maxHeight: "150px", minHeight: "150px", fontSize: "12px", margin: "6px", padding: "0"}
+                getBuyableAmount(this.layer, this.id).gte(this.purchaseLimit()) ? look.backgroundColor = "#1a3b0f" : !this.canAfford() ? look.backgroundColor =  "#361e1e" : look.backgroundColor = "#204040"
+                return look
+            },
+        },
+        402: {
+            costBase() { return new Decimal(12) },
+            costGrowth() { return new Decimal(2) },
+            purchaseLimit() { return new Decimal(20) },
+            currency() { return player.cer.rings},
+            pay(amt) { player.cer.rings = this.currency().sub(amt) },
+            effect(x) { return getBuyableAmount(this.layer, this.id).mul(0.2).add(1) },
+            unlocked() { return true },
+            cost(x) { return this.costGrowth().pow(x || getBuyableAmount(this.layer, this.id)).mul(this.costBase()).floor() },
+            canAfford() { return (tmp.cer.buyables[this.id].condition || getBuyableAmount(this.layer, this.id).gt(0)) && this.currency().gte(this.cost()) },
+            condition() { return true },
+            description() {
+                return "Boosts stat multiplier gain on cycle resets by +x0.2.<br>(x" + formatSimple(this.effect()) + ")"
+            },
+            currencyDisplayName: "Rings",
+            display() {
+                return "<div style='height:40px;display:flex;align-items:center'><div>" +
+                "<h3 style='text-shadow:0 0 8px white'>" + "Making New Memories" + "<br>(" + formatWhole(getBuyableAmount(this.layer, this.id)) + "/" + formatWhole(this.purchaseLimit()) + ")</h3>" + // TOP
+                "</div></div><div style='height:" + this.style().borderWidth + ";background-color:" + this.style().borderColor + "'></div><div style='padding-left:4px;padding-right:4px;height:75px;display:flex;align-items:center'><div>" + 
+                this.description() + // MIDDLE
+                "</div></div><div style='height:" + this.style().borderWidth + ";background-color:" + this.style().borderColor + "'></div><div style='height:25px;display:flex;align-items:center'><div>" + 
+                "<span style='color: #bfffff;text-shadow:0 0 8px #bfffff'>" + formatWhole(this.cost()) + " " + this.currencyDisplayName + "</span>" // BOTTOM
+                "</div></div>"
+            },
+            buy(mult) {
+                if (mult != true) {
+                    let buyonecost = new Decimal(this.costGrowth()).pow(getBuyableAmount(this.layer, this.id)).mul(this.costBase()).floor()
+                    this.pay(buyonecost)
+
+                    setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+                } else {
+                    let max = Decimal.affordGeometricSeries(this.currency(), this.costBase(), this.costGrowth(), getBuyableAmount(this.layer, this.id))
+                    if (max.gt(this.purchaseLimit().sub(getBuyableAmount(this.layer, this.id)))) { max = this.purchaseLimit().sub(getBuyableAmount(this.layer, this.id)) }
+                    let cost = Decimal.sumGeometricSeries(max, this.costBase(), this.costGrowth(), getBuyableAmount(this.layer, this.id)).floor()
+                    this.pay(cost)
+
+                    setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(max))
+                }
+            },
+            style() {
+                let look = {borderRadius: "10px", color: "white", borderWidth: "3px", borderColor: "#b35986", outline: "3px solid #ffdfef", width: "200px", maxHeight: "150px", minHeight: "150px", fontSize: "12px", margin: "6px", padding: "0"}
+                getBuyableAmount(this.layer, this.id).gte(this.purchaseLimit()) ? look.backgroundColor = "#1a3b0f" : !this.canAfford() ? look.backgroundColor =  "#361e1e" : look.backgroundColor = "#204040"
+                return look
+            },
+        },
+        403: {
+            costBase() { return new Decimal(4) },
+            costGrowth() { return new Decimal(2) },
+            purchaseLimit() { return new Decimal(20) },
+            currency() { return player.cer.rings},
+            pay(amt) { player.cer.rings = this.currency().sub(amt) },
+            effect(x) { return getBuyableAmount(this.layer, this.id).mul(0.2).add(1) },
+            unlocked() { return true },
+            cost(x) { return this.costGrowth().pow(x || getBuyableAmount(this.layer, this.id)).mul(this.costBase()).floor() },
+            canAfford() { return (tmp.cer.buyables[this.id].condition || getBuyableAmount(this.layer, this.id).gt(0)) && this.currency().gte(this.cost()) },
+            condition() { return true },
+            description() {
+                return "Boosts haste by +x0.2.<br>(x" + formatSimple(this.effect()) + ")"
+            },
+            currencyDisplayName: "Rings",
+            display() {
+                return "<div style='height:40px;display:flex;align-items:center'><div>" +
+                "<h3 style='text-shadow:0 0 8px white'>" + "Wasting Our Time" + "<br>(" + formatWhole(getBuyableAmount(this.layer, this.id)) + "/" + formatWhole(this.purchaseLimit()) + ")</h3>" + // TOP
+                "</div></div><div style='height:" + this.style().borderWidth + ";background-color:" + this.style().borderColor + "'></div><div style='padding-left:4px;padding-right:4px;height:75px;display:flex;align-items:center'><div>" + 
+                this.description() + // MIDDLE
+                "</div></div><div style='height:" + this.style().borderWidth + ";background-color:" + this.style().borderColor + "'></div><div style='height:25px;display:flex;align-items:center'><div>" + 
+                "<span style='color: #bfffff;text-shadow:0 0 8px #bfffff'>" + formatWhole(this.cost()) + " " + this.currencyDisplayName + "</span>" // BOTTOM
+                "</div></div>"
+            },
+            buy(mult) {
+                if (mult != true) {
+                    let buyonecost = new Decimal(this.costGrowth()).pow(getBuyableAmount(this.layer, this.id)).mul(this.costBase()).floor()
+                    this.pay(buyonecost)
+
+                    setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+                } else {
+                    let max = Decimal.affordGeometricSeries(this.currency(), this.costBase(), this.costGrowth(), getBuyableAmount(this.layer, this.id))
+                    if (max.gt(this.purchaseLimit().sub(getBuyableAmount(this.layer, this.id)))) { max = this.purchaseLimit().sub(getBuyableAmount(this.layer, this.id)) }
+                    let cost = Decimal.sumGeometricSeries(max, this.costBase(), this.costGrowth(), getBuyableAmount(this.layer, this.id)).floor()
+                    this.pay(cost)
+
+                    setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(max))
+                }
+            },
+            style() {
+                let look = {borderRadius: "10px", color: "white", borderWidth: "3px", borderColor: "#b35986", outline: "3px solid #ffdfef", width: "200px", maxHeight: "150px", minHeight: "150px", fontSize: "12px", margin: "6px", padding: "0"}
+                getBuyableAmount(this.layer, this.id).gte(this.purchaseLimit()) ? look.backgroundColor = "#1a3b0f" : !this.canAfford() ? look.backgroundColor =  "#361e1e" : look.backgroundColor = "#204040"
+                return look
+            },
+        },
+        404: {
+            costBase() { return new Decimal(40) },
+            costGrowth() { return new Decimal(1.4) },
+            purchaseLimit() { return new Decimal(20) },
+            currency() { return player.cer.rings},
+            pay(amt) { player.cer.rings = this.currency().sub(amt) },
+            effect(x) { return getBuyableAmount(this.layer, this.id).pow_base(1.25) },
+            unlocked() { return true },
+            cost(x) { return this.costGrowth().pow(x || getBuyableAmount(this.layer, this.id)).mul(this.costBase()).floor() },
+            canAfford() { return (tmp.cer.buyables[this.id].condition || getBuyableAmount(this.layer, this.id).gt(0)) && this.currency().gte(this.cost()) },
+            condition() { return true },
+            description() {
+                return "Boosts blacklight gain by x1.25.<br>(x" + formatSimple(this.effect(), 2) + ")"
+            },
+            currencyDisplayName: "Rings",
+            display() {
+                return "<div style='height:40px;display:flex;align-items:center'><div>" +
+                "<h3 style='text-shadow:0 0 8px white'>" + "Bright, Bright Future" + "<br>(" + formatWhole(getBuyableAmount(this.layer, this.id)) + "/" + formatWhole(this.purchaseLimit()) + ")</h3>" + // TOP
+                "</div></div><div style='height:" + this.style().borderWidth + ";background-color:" + this.style().borderColor + "'></div><div style='padding-left:4px;padding-right:4px;height:75px;display:flex;align-items:center'><div>" + 
+                this.description() + // MIDDLE
+                "</div></div><div style='height:" + this.style().borderWidth + ";background-color:" + this.style().borderColor + "'></div><div style='height:25px;display:flex;align-items:center'><div>" + 
+                "<span style='color: #bfffff;text-shadow:0 0 8px #bfffff'>" + formatWhole(this.cost()) + " " + this.currencyDisplayName + "</span>" // BOTTOM
+                "</div></div>"
+            },
+            buy(mult) {
+                if (mult != true) {
+                    let buyonecost = new Decimal(this.costGrowth()).pow(getBuyableAmount(this.layer, this.id)).mul(this.costBase()).floor()
+                    this.pay(buyonecost)
+
+                    setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+                } else {
+                    let max = Decimal.affordGeometricSeries(this.currency(), this.costBase(), this.costGrowth(), getBuyableAmount(this.layer, this.id))
+                    if (max.gt(this.purchaseLimit().sub(getBuyableAmount(this.layer, this.id)))) { max = this.purchaseLimit().sub(getBuyableAmount(this.layer, this.id)) }
+                    let cost = Decimal.sumGeometricSeries(max, this.costBase(), this.costGrowth(), getBuyableAmount(this.layer, this.id)).floor()
+                    this.pay(cost)
+
+                    setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(max))
+                }
+            },
+            style() {
+                let look = {borderRadius: "10px", color: "white", borderWidth: "3px", borderColor: "#b35986", outline: "3px solid #ffdfef", width: "200px", maxHeight: "150px", minHeight: "150px", fontSize: "12px", margin: "6px", padding: "0"}
+                getBuyableAmount(this.layer, this.id).gte(this.purchaseLimit()) ? look.backgroundColor = "#1a3b0f" : !this.canAfford() ? look.backgroundColor =  "#361e1e" : look.backgroundColor = "#204040"
+                return look
+            },
+        },
+        409: {
+            costBase() { return new Decimal(1e6) },
+            costGrowth() { return new Decimal(1.15) },
+            purchaseLimit() { return new Decimal(100) },
+            currency() { return player.cer.rings},
+            pay(amt) { player.cer.rings = this.currency().sub(amt) },
+            effect(x) { return getBuyableAmount(this.layer, this.id).add(1) },
+            unlocked() { return true },
+            cost(x) { return this.costGrowth().pow(x || getBuyableAmount(this.layer, this.id)).mul(this.costBase()).floor() },
+            canAfford() { return (tmp.cer.buyables[this.id].condition || getBuyableAmount(this.layer, this.id).gt(0)) && this.currency().gte(this.cost()) },
+            condition() { return true },
+            description() {
+                return "Boosts blacklight gain by +x1.<br>(x" + formatSimple(this.effect()) + ")"
+            },
+            currencyDisplayName: "Rings",
+            display() {
+                return "<div style='height:40px;display:flex;align-items:center'><div>" +
+                "<h3 style='text-shadow:0 0 8px white'>" + "That's Enough of Us" + "<br>(" + formatWhole(getBuyableAmount(this.layer, this.id)) + "/" + formatWhole(this.purchaseLimit()) + ")</h3>" + // TOP
+                "</div></div><div style='height:" + this.style().borderWidth + ";background-color:" + this.style().borderColor + "'></div><div style='padding-left:4px;padding-right:4px;height:75px;display:flex;align-items:center'><div>" + 
+                this.description() + // MIDDLE
+                "</div></div><div style='height:" + this.style().borderWidth + ";background-color:" + this.style().borderColor + "'></div><div style='height:25px;display:flex;align-items:center'><div>" + 
+                "<span style='color: #bfffff;text-shadow:0 0 8px #bfffff'>" + formatWhole(this.cost()) + " " + this.currencyDisplayName + "</span>" // BOTTOM
+                "</div></div>"
+            },
+            buy(mult) {
+                if (mult != true) {
+                    let buyonecost = new Decimal(this.costGrowth()).pow(getBuyableAmount(this.layer, this.id)).mul(this.costBase()).floor()
+                    this.pay(buyonecost)
+
+                    setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+                } else {
+                    let max = Decimal.affordGeometricSeries(this.currency(), this.costBase(), this.costGrowth(), getBuyableAmount(this.layer, this.id))
+                    if (max.gt(this.purchaseLimit().sub(getBuyableAmount(this.layer, this.id)))) { max = this.purchaseLimit().sub(getBuyableAmount(this.layer, this.id)) }
+                    let cost = Decimal.sumGeometricSeries(max, this.costBase(), this.costGrowth(), getBuyableAmount(this.layer, this.id)).floor()
+                    this.pay(cost)
+
+                    setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(max))
+                }
+            },
+            style() {
+                let look = {borderRadius: "10px", color: "white", borderWidth: "3px", borderColor: "#b35986", outline: "3px solid #ffdfef", width: "200px", maxHeight: "150px", minHeight: "150px", fontSize: "12px", margin: "6px", padding: "0"}
                 getBuyableAmount(this.layer, this.id).gte(this.purchaseLimit()) ? look.backgroundColor = "#1a3b0f" : !this.canAfford() ? look.backgroundColor =  "#361e1e" : look.backgroundColor = "#204040"
                 return look
             },
@@ -764,14 +1506,42 @@ addLayer("cer", {
                             createRingUpgradeConnection([1, 0], [1, 1]),
                             createRingUpgradeConnection([1, 0], [1, -1]),
 
+                            // PATH OF DARK
+                            createRingUpgradeConnection([0, 1], [0, 2]),
+                            createRingUpgradeConnection([0, 2], [0, 3]),
+                            createRingUpgradeConnection([0, 2], [-1, 2]),
+                            createRingUpgradeConnection([0, 2], [1, 2]),
+                            createRingUpgradeConnection([0, 3], [-1, 3]),
+                            createRingUpgradeConnection([0, 3], [1, 3]),
+                            createRingUpgradeConnection([0, 3], [0, 4]),
+                            createRingUpgradeConnection([0, 4], [-1, 4]),
+                            createRingUpgradeConnection([0, 4], [1, 4]),
+                            createRingUpgradeConnection([0, 4], [0, 5]),
+                            createRingUpgradeConnection([0, 5], [-1, 5]),
+                            createRingUpgradeConnection([0, 5], [1, 5]),
+                            createRingUpgradeConnection([0, 5], [0, 6]),
+                            
+                            createRingUpgradeConnection([0, 6], [0, 7]),
+                            createRingUpgradeConnection([0, 7], [-1, 7]),
+                            createRingUpgradeConnection([0, 7], [1, 7]),
+
                             // PATH OF CYCLES
+                            createRingUpgradeConnection([-1, 0], [-1, 1]),
+                            createRingUpgradeConnection([-1, 0], [-1, -1]),
+                            createRingUpgradeConnection([-1, -1], [-2, -1]),
+                            createRingUpgradeConnection([-1, 0], [-2, 0]),
+                            createRingUpgradeConnection([-1, 1], [-2, 1]),
+                            createRingUpgradeConnection([-2, 0], [-3, 0]),
+                            createRingUpgradeConnection([-3, 0], [-3, -1]),
+                            createRingUpgradeConnection([-3, 0], [-3, 1]),
+                            createRingUpgradeConnection([-2, -1], [-2, -2]),
+                            createRingUpgradeConnection([-2, 1], [-2, 2]),
+                            createRingUpgradeConnection([-3, 0], [-4, 0]),
 
                             // ULTIMATES
 
                             //// UPGRADES ////
 
-                            createRingUpgradeConnection([-1, 0], [-1, 1]),
-                            createRingUpgradeConnection([-1, 0], [-1, -1]),
                             // CENTER
                             createRingUpgrade("buyable", 101, [0, 0]),
                             createRingUpgrade("buyable", 102, [1, 0]),
@@ -784,9 +1554,31 @@ addLayer("cer", {
                             createRingUpgrade("upgrade", 201, [1, 1]),
                             createRingUpgrade("upgrade", 202, [1, -1]),
 
+                            // PATH OF DARK
+                            createRingUpgrade("buyable", 301, [0, 2]),
+                            createRingUpgrade("buyable", 302, [0, 3]),
+                            createRingUpgrade("upgrade", 301, [-1, 3]),
+                            createRingUpgrade("upgrade", 302, [1, 3]),
+                            createRingUpgrade("buyable", 303, [0, 4]),
+                            createRingUpgrade("upgrade", 303, [-1, 4]),
+                            createRingUpgrade("upgrade", 304, [1, 4]),
+                            createRingUpgrade("buyable", 304, [0, 5]),
+                            createRingUpgrade("upgrade", 305, [-1, 5]),
+                            createRingUpgrade("upgrade", 306, [1, 5]),
+                            createRingUpgrade("buyable", 305, [0, 6]),
+                            createRingUpgrade("upgrade", 307, [-1, 7]),
+                            createRingUpgrade("upgrade", 308, [1, 7]),
+
                             // PATH OF CYCLES
                             createRingUpgrade("upgrade", 401, [-1, 1]),
                             createRingUpgrade("upgrade", 402, [-1, -1]),
+                            createRingUpgrade("buyable", 401, [-2, 0]),
+                            createRingUpgrade("buyable", 402, [-2, -1]),
+                            createRingUpgrade("buyable", 403, [-2, 1]),
+                            createRingUpgrade("buyable", 404, [-3, 0]),
+                            createRingUpgrade("upgrade", 403, [-2, 2]),
+                            createRingUpgrade("upgrade", 404, [-2, -2]),
+                            createRingUpgrade("buyable", 409, [-4, 0]),
 
                             // ULTIMATES
                             createRingUpgrade("upgrade", 101, [7, 0]),

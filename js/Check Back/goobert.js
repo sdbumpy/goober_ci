@@ -7,6 +7,10 @@ addLayer("ep3", {
     startData() { return {
         unlocked: true,
         
+        menu: 0,
+
+        vaultCounter: 0,
+        vaultSuccess: 0,
     }},
     nodeStyle: {
         background: "linear-gradient(-45deg, #804080, #608060)",
@@ -18,6 +22,92 @@ addLayer("ep3", {
     color: "#ffe0ff",
     update(delta) {
         let onepersec = player.cb.cbTickspeed
+    },
+    clickables: {
+        "menu_main": {
+            title() {
+                return "BACK"
+            },
+            canClick() { return true },
+            unlocked: true,
+            onClick() {
+                player.ep3.menu = 0
+                
+                player.ep3.vaultSuccess = 0
+            },
+            style: {background: "#232e23", border: "3px solid #485e48", color: "#efffef", width: '426px', minHeight: '64px', fontSize: "18px", borderRadius: "13px 13px 0 0"},
+        },
+        "menu_shop": {
+            title() {
+                return "SHOP"
+            },
+            canClick() { return true },
+            unlocked: true,
+            onClick() {
+            },
+            style: {background: "#232e23", border: "3px solid #485e48", color: "#efffef", width: '207px', minHeight: '283px', fontSize: "18px", margin: "6px", borderRadius: "13px 0 0 0"},
+        },
+        "menu_milestones": {
+            title() {
+                return "MILESTONES"
+            },
+            canClick() { return true },
+            unlocked: true,
+            onClick() {
+            },
+            style: {background: "#232e23", border: "3px solid #485e48", color: "#efffef", width: '207px', minHeight: '283px', fontSize: "18px", margin: "6px", borderRadius: "0 13px 0 0"},
+        },
+        "menu_m3": {
+            title() {
+                return "???"
+            },
+            canClick() { return true },
+            unlocked: true,
+            onClick() {
+            },
+            style: {background: "#232e23", border: "3px solid #485e48", color: "#efffef", width: '207px', minHeight: '283px', fontSize: "18px", margin: "6px", borderRadius: "0 0 0 13px"},
+        },
+        "menu_vault": {
+            title() {
+                return "..."
+            },
+            canClick() { return true },
+            unlocked: true,
+            onClick() {
+                player.ep3.menu = 4
+            },
+            style: {background: "#232e23", border: "3px solid #485e48", color: "#485e48", width: '207px', minHeight: '283px', fontSize: "18px", margin: "6px", borderRadius: "0 0 13px 0"},
+        },
+
+        "vault_open": {
+            title() {
+                return "OPEN"
+            },
+            canClick() { return true },
+            unlocked: true,
+            onClick() {
+                player.ep3.vaultSuccess = 1
+
+                player.ep3.vaultCounter = 0
+                setGridData("ep3", 101, [0])
+                setGridData("ep3", 102, [0])
+                setGridData("ep3", 103, [0])
+                setGridData("ep3", 104, [0])
+                setGridData("ep3", 201, [0])
+                setGridData("ep3", 202, [0])
+                setGridData("ep3", 203, [0])
+                setGridData("ep3", 204, [0])
+                setGridData("ep3", 301, [0])
+                setGridData("ep3", 302, [0])
+                setGridData("ep3", 303, [0])
+                setGridData("ep3", 304, [0])
+                setGridData("ep3", 401, [0])
+                setGridData("ep3", 402, [0])
+                setGridData("ep3", 403, [0])
+                setGridData("ep3", 404, [0])
+            },
+            style: {background: "#232e23", border: "3px solid #485e48", color: "#efffef", width: '426px', minHeight: '64px', fontSize: "18px", borderRadius: "0 0 13px 13px"},
+        },
     },
     buyables: {
         11: {
@@ -56,24 +146,113 @@ addLayer("ep3", {
             style: { width: '275px', height: '150px', backgroundColor: "#F1CE6B", backgroundImage: 'linear-gradient(90deg, #e7c97c, #fad25a)'}
         },
     },
+    grid: {
+        rows: 4,
+        cols: 4,
+        getStartData(id) {
+            return [
+                0, // Order
+            ]
+        },
+        getTitle(data, id) {
+            let order = getGridData("ep3", id)[0]
+            if (order === 0) return "_";
+            else return ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F"][order - 1];
+        },
+        getCanClick(data, id) {return true},
+        onClick(data, id) {
+            let order = getGridData("ep3", id)[0]
+            if (order === 0) {
+                player.ep3.vaultCounter++
+                setGridData("ep3", id, [player.ep3.vaultCounter])
+            } else {
+                player.ep3.vaultCounter = 0
+                setGridData("ep3", 101, [0])
+                setGridData("ep3", 102, [0])
+                setGridData("ep3", 103, [0])
+                setGridData("ep3", 104, [0])
+                setGridData("ep3", 201, [0])
+                setGridData("ep3", 202, [0])
+                setGridData("ep3", 203, [0])
+                setGridData("ep3", 204, [0])
+                setGridData("ep3", 301, [0])
+                setGridData("ep3", 302, [0])
+                setGridData("ep3", 303, [0])
+                setGridData("ep3", 304, [0])
+                setGridData("ep3", 401, [0])
+                setGridData("ep3", 402, [0])
+                setGridData("ep3", 403, [0])
+                setGridData("ep3", 404, [0])
+            };
+        },
+        onHover(data, id) {
+        },
+        getStyle(data, id) {
+            let look = {width: "90px", height: "90px", fontSize: "24px", color: "#efffef", border: "3px solid #485e48", borderRadius: "0", padding: "0", margin: "6px", cursor: "default"}
+            
+            if (getGridData("ep3", id)[0] == 0) {
+                look.background = "transparent"
+                look.color = "#efffef"
+            } else {
+                look.background = "#efffef"
+                look.color = "#485e48"
+            }
+
+            return look
+        }
+    },
     microtabs: {
         stuff: {
-            "Projects": {
+            "Main": {
                 buttonStyle() { return { color: "white", borderRadius: "8px"} },
                 unlocked() { return true },
                 content() {
-                    // #663366
-                    // #994d86
-                    // #ffa8d3
-                    // #dfffdf
+                    // #232e23
+                    // #485e48
+                    // #efffef
                     let look = [
-                        ["style-row", [
-                            ["style-row", [
-                                
-                            ], {background: "#232e23", border: "3px solid #485e48", borderRadius: "10px", width: "450px", height: "600px"}],
-                        ], {border: "3px solid #efffef", borderRadius: "13px"}],
+                        ["style-column", [], {background: "#232e23", border: "3px solid #485e48", borderRadius: "22px", width: "450px", height: "600px"}],
                         ["blank", "25px"],
                     ]
+                    let m
+                    switch (player.ep3.menu) {
+                        case 4: {
+                            switch (player.ep3.vaultSuccess) {
+                                case 1: {
+                                    m = ["style-column", [
+                                        ["clickable", "menu_main"],
+                                        ["style-column", [
+                                            ["raw-html", "Hello.", {color: "#efffef", fontSize: "16px", fontFamily: "monospace" }],
+                                            ["blank", "16px"],
+                                            ["raw-html", "I'm impressed you made it this far.", {color: "#efffef", fontSize: "16px", fontFamily: "monospace" }],
+                                            ["blank", "16px"],
+                                            ["raw-html", "This is <span style='color:yellow'>The Vault</span>, a secure container for superphysical information.", {color: "#efffef", fontSize: "16px", fontFamily: "monospace" }],
+                                            ["blank", "16px"],
+                                            ["raw-html", "You need a code of sixteen numbers to access anything inside.", {color: "#efffef", fontSize: "16px", fontFamily: "monospace" }],
+                                            ["blank", "16px"],
+                                            ["raw-html", "Good luck finding any.", {color: "#efffef", fontSize: "16px", fontFamily: "monospace" }],
+                                        ], {background: "#232e23", border: "3px solid #485e48", borderRadius: "0 0 13px 13px", padding: "6px", margin: "12px", marginBottom: "0", width: "408px", height: "484px"}]
+                                    ]]
+                                break; }
+                                default: {
+                                    m = ["style-column", [
+                                        ["clickable", "menu_main"],
+                                        ["style-column", ["grid"], {background: "#232e23", border: "3px solid #485e48", borderRadius: "0", margin: "12px", width: "420px", height: "420px"}],
+                                        ["clickable", "vault_open"],
+                                    ]]
+                                break; }
+                            }
+                        break; }
+                        default: {
+                            m = ["style-row", [
+                                ["clickable", "menu_shop"],
+                                ["clickable", "menu_milestones"],
+                                ["clickable", "menu_m3"],
+                                ["clickable", "menu_vault"],
+                            ]]
+                        break; }
+                    }
+                    look[0][1].push(m)
                     return look
                 },
             },

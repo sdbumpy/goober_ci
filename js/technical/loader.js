@@ -87,7 +87,7 @@ const createSpecPourClickable = function (layer, id, data = {}) {
         title() { return "<h3>Pour</h3>" },
         canClick() {
             let fountain = layers[layer].fountains[id]
-            return (player.prj.focused.lt(player.prj.maxFocused) || player[layer].fountains[id].focused) && fountain.currencyLocation()[fountain.currencyInvestInternalName].gt(0)
+            return fountain.currencyLocation()[fountain.currencyInvestInternalName].gt(0)
         },
         unlocked() { return true },
         onClick() {
@@ -97,11 +97,6 @@ const createSpecPourClickable = function (layer, id, data = {}) {
             let fountain = layers[layer].fountains[id]
             fountain.currencyLocation()[fountain.currencyInternalName] = fountain.currencyLocation()[fountain.currencyInternalName].sub(fountain.currencyLocation()[fountain.currencyInvestInternalName])
             player[layer].fountains[id].statInvested = player[layer].fountains[id].statInvested.add(fountain.currencyLocation()[fountain.currencyInvestInternalName])
-
-            if (!player[layer].fountains[id].focused) {
-                player.prj.focused = player.prj.focused.add(1)
-                player[layer].fountains[id].focused = true
-            }
         },
         style() {
             let look = {width: "75px", minHeight: "30px", borderRadius: "0px"}

@@ -36,7 +36,7 @@
 		"Singularity/lightRift.js",
 		"Interspace/well.js", "Interspace/projects.js", "Interspace/prisms.js", "Interspace/blueshift.js", "Interspace/bumpy.js", "Interspace/cere.js", "Check Back/goobert.js",
 		"DarkU1/timeCapsules.js", "Check Back/dragon.js",
-		"Interspace/starmetalEnhancement.js",
+		"Interspace/greenhouse.js", "Interspace/researchProjects.js", "Interspace/starmetalEnhancement.js",
 		"InterspaceCycle/beaconsOfBlacklight.js", "InterspaceCycle/foraging.js", "InterspaceCycle/planetarium.js", "InterspaceCycle/masterpieceResearch.js", "InterspaceCycle/astrolabe.js",
 		
 		"Puzzle World/akash.js", "Puzzle World/elements.js", 
@@ -331,20 +331,17 @@ function updateStyles() {
 		case "blu":
 			layerBG = "linear-gradient(0deg, #282040 0%, #130f1f 100%)"
 			break;
-		case "bum":
-			layerBG = "linear-gradient(0deg, #dfffdf -700%, #180b18 100%)"
+		case "gre":
+			layerBG = "linear-gradient(0deg, #2a3554 0%, #0f131f 100%)"
 			break;
-		case "cer":
-			layerBG = "linear-gradient(0deg, #402030 0%, #1f0812 100%)"
+		case "bum": case "rprj":
+			layerBG = "linear-gradient(0deg, #dfffdf -700%, #180b18 100%)"
 			break;
 		case "cer":
 			layerBG = "linear-gradient(0deg, #402030 0%, #1f0812 100%)"
 			break;
 		case "smn":
 			layerBG = "linear-gradient(120deg, #807350 0%, #996b7d 50%, #916b99 100%)"
-			break;
-		case "ans":
-			layerBG = "linear-gradient(0deg, #dfffdf -700%, #1f4040 100%)"
 			break;
 		case "bea":
 			layerBG = "linear-gradient(180deg, #1d172e 0%, #170f1f 100%)"
@@ -404,8 +401,11 @@ function updateStyles() {
 		case "ev16":
 			layerBG = "linear-gradient(0deg, #200020, #400040)"
 			break;
-		case "ep0": case "ep1": case "ep2": case "sp": case "ep3":
+		case "ep0": case "ep1": case "ep2": case "sp":
 			layerBG = "linear-gradient(0deg, #7d3f98)"
+			break;
+		case "ep3":
+			layerBG = "linear-gradient(0deg, #232e23)"
 			break;
 		case "leg":
 			layerBG = "linear-gradient(0deg, #eed200)"
@@ -622,7 +622,7 @@ function updateStyles() {
 	    }
 	}
 
-	if (!options.performanceMode && (player.tab === "wel" || player.tab === "prj" || player.tab === "pri" || player.tab === "blu" || player.tab === "bum" || player.tab === "cer" || player.tab === "smn"  || player.tab === "lightRift"
+	if (!options.performanceMode && (player.tab === "wel" || player.tab === "prj" || player.tab === "pri" || player.tab === "blu" || player.tab === "gre" || player.tab === "bum" || player.tab === "rprj" || player.tab === "cer" || player.tab === "smn"  || player.tab === "lightRift"
 		|| player.tab === "bea" || player.tab === "for" || player.tab === "plt" || player.tab === "ast" || player.tab === "mre"
 		)
     	) {
@@ -1258,7 +1258,7 @@ let changelog = `<h1>Changelog:</h1><br>
 			- Added twig skills.<br>
 			- Added the technological pylon. [WIP]<br>
 			- Added new star upgrade tree upgrades. [WIP]<br>
-			- Added three punchcards. [NYI]<br>
+			- Added four punchcards. [NYI]<br>
 			- Added five ships. [WIP]<br>
 			- Added a theme.<br>
 		<br>Design and QoL:<br>

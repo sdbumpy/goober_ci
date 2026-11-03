@@ -5034,6 +5034,7 @@
             trigger() {return false && player.pri.fountains[2].completions.gt(0) && player.pri.fountains[3].completions.gt(0) },
             dialogue: [
                 { text: "You enter a flashback." },
+                { text: "." },
             ],
         },
         "UD-Project-2-2": {
@@ -5196,11 +5197,309 @@
                 { text: "I kept wondering what this \"Masterpiece\" was. She never told me.", portrait: "resources/characterPortraits/bumpy/smile.png"  },
                 { text: "I'll never figure out what it is, now that she's gone.", portrait: "resources/characterPortraits/bumpy/smile.png"  },
                 { text: "It's okay. I don't even understand myself.", portrait: "resources/player.png"  },
-                { text: "I think I'll just have to move forward, and focus on my project independently.", portrait: "resources/characterPortraits/bumpy/smile.png"  },
+                { text: "I think I'll just have to move forward, and focus on my projects independently.", portrait: "resources/characterPortraits/bumpy/smile.png"  },
                 { text: "When I was a kid, I was always the type to finish all my schoolwork by myself.", portrait: "resources/characterPortraits/bumpy/smile.png"  },
                 { text: "Maybe it's just meant to be that way...", portrait: "resources/characterPortraits/bumpy/smile.png"  },
             ],
         },
+        "UD-Project-3-5": {
+            type: "normal",
+            portrait: "resources/secret.png",
+            music: "music/bumpy.mp3",
+            background: "linear-gradient(-135deg, #804080 0%, #404080 100%)",
+            trigger() {return player.prj.modules[3].focused == true && hasMilestone("prj", 304)},
+            dialogue: [
+                { text: "You notice Bumpy is no where to be seen. He must be in his office again."  },
+                { text: "He hasn't been the best mood since you met him, despite how hopeful he says he is."  },
+                { text: "His hope seems faulty, at best. Like there's a deep emotion he's trying to surpress."  },
+                { text: "If that's the case, then he's not very good at it."  },
+                { text: "You dwell on that conclusion for a moment."  },
+                { text: "..."  },
+                { text: "You hear footsteps. Bumpy returns from the direction of his office."  },
+                { text: "Hey Bumpy,", portrait: "resources/player.png"  },
+                { text: "Ah, there you are. I just got off the phone with a fellow developer from the CHC.", portrait: "resources/characterPortraits/bumpy/smile.png"  },
+                { text: "I've been sending them updates on your progress, and they're impressed so far.", portrait: "resources/characterPortraits/bumpy/smile.png"  },
+                { text: "They want to visit this place in a few days along with one of their apprentices.", portrait: "resources/characterPortraits/bumpy/smile.png"  },
+                { text: "We have a lot to do to prepare for them, hehe.", portrait: "resources/characterPortraits/bumpy/smile.png"  },
+                { text: "That's exciting! But, I'm curious, how do you think the CHC is going to help you find your co-founders?", portrait: "resources/player.png"  },
+                { text: "Oh, uh... it's complicated, but I'm familiar with their techniques.", portrait: "resources/characterPortraits/bumpy/smile.png"  },
+                { text: "See, you leave a footprint in every framework you use. It gives you SPVs, you give it SPVs.", portrait: "resources/characterPortraits/bumpy/smile.png"  },
+                { text: "The SPVs you exchange with frameworks can be traced back to their origins through superphysical links.", portrait: "resources/characterPortraits/bumpy/smile.png"  },
+                { text: "Most forms of superphysical power work like that: foresight user souls, celestial cores, equipment enchantments, et cetera.", portrait: "resources/characterPortraits/bumpy/smile.png"  },
+                { text: "Aurora and Reese have worked with a lot of frameworks...", portrait: "resources/characterPortraits/bumpy/smile.png"  },
+                { text: "That gives me hope for you.", portrait: "resources/player.png"  },
+                { text: "I can't wait to get this over with, to get back to my old life.", portrait: "resources/characterPortraits/bumpy/smile.png"  },
+                { text: "I just- I really don't want to be disappointed.", portrait: "resources/characterPortraits/bumpy/smile.png"  },
+                { text: "I don't know if I can take any more losses...", portrait: "resources/characterPortraits/bumpy/smile.png"  },
+                { text: "You've lost a lot. It's okay to worry, but don't let your worries drag you down.", portrait: "resources/player.png"  },
+                { text: "Thank you... I won't let them stop me.", portrait: "resources/characterPortraits/bumpy/smile.png"  },
+                { text: "I'll do whatever it takes...", portrait: "resources/characterPortraits/bumpy/smile.png"  },
+            ],
+        },
+        // bumpy brings you to the bottom of the pyramid
+        "UD-Project-4-1": {
+            type: "normal",
+            portrait: "resources/secret.png",
+            music: "music/bumpy.mp3",
+            background: "linear-gradient(-135deg, #804080 0%, #604080 100%)",
+            trigger() {return false },
+            dialogue: [
+                { text: "Bumpy guides you to a new room, still on the fourth layer of the pyramid." },
+            ],
+        },
+        // flashback - dark uni alpha, cere and bumpy battle
+        "UD-Starlight-Reset": {
+            type: "normal",
+            portrait: "resources/secret.png",
+            music: "music/devFlashback.mp3",
+            background: "linear-gradient(45deg, #5e2441 0%, #401010 100%)",
+            trigger() {return false },
+            dialogue: [
+                { text: "You enter a flashback." },
+            ],
+        },
+        // you notice the odd power is still present, deeper underground. bumpy tells you it's prolly a side effect of the cloning
+        "UD-Project-4-2": {
+            type: "normal",
+            portrait: "resources/secret.png",
+            music: "music/devFlashback.mp3",
+            background: "linear-gradient(-135deg, #804080 0%, #604080 100%)",
+            trigger() {return false },
+            dialogue: [
+                { text: "You." },
+            ],
+        },
+        // flashback - bumpy praying in his office
+        "UD-Pyramid-Row-5": {
+            type: "normal",
+            portrait: "resources/secret.png",
+            music: "music/devFlashback.mp3",
+            background: "linear-gradient(45deg, #401028 0%, #204030 100%)",
+            trigger() {return false && player.pri.fountains[10].completions.gt(0) && player.pri.fountains[11].completions.gt(0) && player.pri.fountains[12].completions.gt(0) },
+            dialogue: [
+                { text: "You enter a flashback." },
+            ], 
+        },
+        // bumpy asks you about how you feel about killing celestials. you start to put the pieces together and interrogate him. he runs off to his office.
+        "UD-Project-4-5": {
+            type: "normal",
+            portrait: "resources/secret.png",
+            music: "music/devFlashback.mp3",
+            background: "linear-gradient(-135deg, #804080 0%, #604080 100%)",
+            trigger() {return false },
+            dialogue: [
+                { text: "You." },
+            ],
+        },
+        //
+        "UD-Aniciffo-Defeated": {
+            type: "normal",
+            portrait: "resources/secret.png",
+            music: "music/devFlashback.mp3",
+            background: "linear-gradient(-135deg, #804080 0%, #604080 100%)",
+            trigger() {return false },
+            dialogue: [
+            ],
+        },
+        // you visit bumpy's office to try and calm him down, he doesn't answer, so you talk to some of his distressed clones
+        "UD-Research-Projects": {
+            type: "normal",
+            portrait: "resources/secret.png",
+            music: "music/devFlashback.mp3",
+            background: "linear-gradient(-135deg, #804080 0%, #604080 100%)",
+            trigger() {return false },
+            dialogue: [
+                { text: "You." },
+            ],
+        },
+        // a new set of wells emerge. bumpy explains them, and you 
+        "UD-Project-4-6": {
+            type: "normal",
+            portrait: "resources/secret.png",
+            music: "music/devFlashback.mp3",
+            background: "linear-gradient(-135deg, #804060 0%, #804080 100%)",
+            trigger() {return false },
+            dialogue: [
+                { text: "You." },
+            ],
+        },
+        "UD-Pyramid-Row-6": {
+            type: "normal",
+            portrait: "resources/secret.png",
+            music: "music/devFlashback.mp3",
+            background: "linear-gradient(45deg, #401028 0%, #204030 100%)",
+            trigger() {return false && player.pri.fountains[13].completions.gt(0) && player.pri.fountains[14].completions.gt(0) },
+            dialogue: [
+                { text: "You enter a flashback." },
+            ], 
+        },
+        "UD-Pyramid-Row-7": {
+            type: "normal",
+            portrait: "resources/secret.png",
+            music: "music/devFlashback.mp3",
+            background: "linear-gradient(45deg, #401028 0%, #204030 100%)",
+            trigger() {return false && player.pri.fountains[15].completions.gt(0) },
+            dialogue: [
+                { text: "You enter a flashback." },
+            ], 
+        },
+        "UD-Project-4-10": {
+            type: "normal",
+            portrait: "resources/secret.png",
+            music: "music/devFlashback.mp3",
+            background: "linear-gradient(-135deg, #804060 0%, #804080 100%)",
+            trigger() {return false },
+            dialogue: [
+                { text: "You." },
+            ],
+        },
+
+        /*
+                { text: "Maybe you disappeared, too. You had a life before. Now you have another life."  },
+                { text: "You want to believe that's how it is for everyone: after one life ends, another begins."  },
+                { text: "Fate offered Bumpy a new life, and he's rejecting it. You don't blame him."  },
+        */
+
+        // START OF CYCLE
+        // the inevitable bumpy crashout
+        "UD-Project-5-1": {
+            type: "normal",
+            portrait: "resources/secret.png",
+            music: "music/devFlashback.mp3",
+            background: "linear-gradient(180deg, #dfffdf -300%, #180b18 100%)",
+            trigger() {return false },
+            dialogue: [
+                { text: "You stare down Bumpy, who's across the room standing infront of the powered-on ring." },
+                { text: "What are your real intentions with me?", portrait: "resources/player.png"  },
+                
+                { text: "Ahaha. You know exactly what I want, don't you?", portrait: "resources/characterPortraits/bumpy/smile.png"  },
+                
+                { text: "You think about Bumpy, and his past with his cofounders...", portrait: "resources/player.png"  },
+                { text: "You've seen it all... you know Cere is alive.", portrait: "resources/characterPortraits/bumpy/smile.png"  },
+                
+                { text: "Cere is imprisoned under this building, and Aurora is in hiding.", portrait: "resources/player.png"  },
+                { text: "Yes! You know!", portrait: "resources/characterPortraits/bumpy/smile.png"  },
+                { text: "Bumpy cackles maniacally." },
+            ], 
+        },
+        // you follow bumpy into the rift.
+        // you arrive in front of a building much like the pyramid.
+        // you see bumpy through a window and follow him.
+        "UD_C-Cycle-Entry": {
+            type: "normal",
+            portrait: "resources/secret.png",
+            music: "music/devFlashback.mp3",
+            background: "linear-gradient(-135deg, #402030 0%, #1f0812 100%)",
+            trigger() {return false },
+            dialogue: [
+                { text: "h", portrait: "resources/characterPortraits/cere/smile.png"  },
+            ], 
+        },
+        // you catch bumpy and he explains some stuff about the cycle.
+        // the cycle resets everything inside it every five minutes. memories are the only thing retained.
+        // the cycle exists partially on the superphysical plane, so you're booted out on resets.
+        // cere appears in the distance at the end of your conversation.
+        // bumpy leaves in search of him.
+        "UD_C-Blacklight-Well-Beta": {
+            type: "normal",
+            portrait: "resources/secret.png",
+            music: "music/devFlashback.mp3",
+            background: "linear-gradient(-135deg, #402030 0%, #1f0812 100%)",
+            trigger() {return false },
+            dialogue: [
+                { text: "h", portrait: "resources/characterPortraits/cere/smile.png"  },
+            ], 
+        },
+        // bumpy and cere find you.
+        // the celestial is happy to meet you, and gives off an unfamiliar superphysical aura.
+        // bumpy says it's because "he's special". you aren't buying it.
+        // bumpy tries to coax cere into leaving your side.
+        "UD_C-Blacklight-Well-Gamma": {
+            type: "normal",
+            portrait: "resources/secret.png",
+            music: "music/devFlashback.mp3",
+            background: "linear-gradient(-135deg, #402030 0%, #1f0812 100%)",
+            trigger() {return false },
+            dialogue: [
+                { text: "h", portrait: "resources/characterPortraits/cere/smile.png"  },
+            ], 
+        },
+        // the two developers show up: akash and "the enchantress".
+        // akash talks about how he used to know bumpy, and trusts that you're as interesting as he said.
+        // he worries about bumpy deeply, but believes he'll be okay.
+        // the enchantress says she looked up to bumpy when growing up.
+        // she brings up how worried she was about him after losing so many people close to him.
+        "UD_C-Project-5-2": {
+            type: "normal",
+            portrait: "resources/secret.png",
+            music: "music/devFlashback.mp3",
+            background: "linear-gradient(-135deg, #402030 0%, #1f0812 100%)",
+            trigger() {return false },
+            dialogue: [
+                { text: "h", portrait: "resources/characterPortraits/cere/smile.png"  },
+            ], 
+        },
+        // you enter a room that looks a lot like one you saw in a flashback.
+        // cere finds you and tries to settle your differences while getting distracted about the room.
+        // you compare cere to aniciffo. he gives you a spark of hope.
+        // bumpy finds you two and is still kinda upset, he decides to sit out the rest of the run.
+        "UD_C-Planetarium": {
+            type: "normal",
+            portrait: "resources/secret.png",
+            music: "music/devFlashback.mp3",
+            background: "linear-gradient(-135deg, #402030 0%, #1f0812 100%)",
+            trigger() {return false },
+            dialogue: [
+                { text: "h", portrait: "resources/characterPortraits/cere/smile.png"  },
+            ], 
+        },
+        // you build the pylon, and the enchantress visits.
+        // she notices that you're using core fragments to build your pylon.
+        // she talks about how the CHC uses starmetal alloy to build its strongest equipment...
+        // ...and that your fragments might be good for something similar.
+        // you'll want all the firepower you can get to use on nova, after all.
+        "UD_C-Technological-Pylon": {
+            type: "normal",
+            portrait: "resources/secret.png",
+            music: "music/devFlashback.mp3",
+            background: "linear-gradient(-135deg, #402030 0%, #1f0812 100%)",
+            trigger() {return false },
+            dialogue: [
+                { text: "h", portrait: "resources/characterPortraits/cere/smile.png"  },
+            ], 
+        },
+        // the enchantress tells akash about your conversation with her.
+        // akash tells you that he helped bumpy on a few projects a while back.
+        // starmetal enhancement was the last one before reese and aurora disappeared.
+        // it was a framework that made weapon manufacturing easier.
+        // "I don't want to brag or anything, but I'm REALLY good at reading spells."
+        "UD_C-Project-5-5": {
+            type: "normal",
+            portrait: "resources/secret.png",
+            music: "music/devFlashback.mp3",
+            background: "linear-gradient(-135deg, #402030 0%, #1f0812 100%)",
+            trigger() {return false },
+            dialogue: [
+                { text: "h", portrait: "resources/characterPortraits/cere/smile.png"  },
+            ], 
+        },
+        // you encounter bumpy and cere again, seemingly enjoying each other's company.
+        // cere describes how his experience as a celestial has been, and what he's been doing in the cycle.
+        // you ask him about how he became a celestial, and he says that he was forcibly turned (Aurora equipped the ThornRing on Reese :skull:).
+        // he doesn't want to elaborate. he just wants his old life with his friends back.
+        "UD_C-Blacklight-Well-Delta": {
+            type: "normal",
+            portrait: "resources/secret.png",
+            music: "music/devFlashback.mp3",
+            background: "linear-gradient(-135deg, #402030 0%, #1f0812 100%)",
+            trigger() {return false },
+            dialogue: [
+                { text: "h", portrait: "resources/characterPortraits/cere/smile.png"  },
+            ], 
+        },
+
+
+
             //note: you can also use the original dice space song for cutscenes
         /*
         "CB-Goldsmith-Evo": {

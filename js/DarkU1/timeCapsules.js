@@ -106,6 +106,7 @@
     timeCapsuleReset() {
         player.dt.timeCapsules = player.dt.timeCapsules.add(player.dt.timeCapsulesToGet)
 
+        player.db.boosters = new Decimal(0)
         player.db.boosterBulk = new Decimal(0)
 
         layers.dg.generatorReset()

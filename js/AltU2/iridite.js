@@ -413,6 +413,14 @@ addLayer("ir", {
 
         adsFought: false,
         adsDefeated: false,
+
+        //marc stuff
+        soulEnergy: new Decimal(0),
+        soulEnergyMax: new Decimal(100),
+        soulEnergyGain: new Decimal(0),
+
+        dashCost: new Decimal(8),
+        timeStopCost: new Decimal(50),
     }},
     automate() {},
     nodeStyle() {
@@ -507,6 +515,7 @@ addLayer("ir", {
         if (hasMilestone("spaceZone2", 11)) player.ir.shipHealthMax = player.ir.shipHealthMax.mul(1.25);
         if (hasMilestone("spaceZone2", 13)) player.ir.shipHealthMax = player.ir.shipHealthMax.mul(1.15);
         if (hasUpgrade("ir", 29)) player.ir.shipHealthMax = player.ir.shipHealthMax.mul(upgradeEffect("ir", 29).toNumber());
+        if (inChallenge("anl", 16)) player.ir.shipHealthMax = player.ir.shipHealthMax.mul(0.1)
 
         player.ir.shipDamageMult = new Decimal(1)
         if (hasUpgrade("darkTemple", 14)) player.ir.shipDamageMult = player.ir.shipDamageMult.mul(upgradeEffect("darkTemple", 14))
@@ -551,6 +560,9 @@ addLayer("ir", {
         if (hasUpgrade("ir", 103)) player.ir.battleXPReq = player.ir.battleXPReq.div(1.5)
         if (hasUpgrade("ir", 106)) player.ir.battleXPReq = player.ir.battleXPReq.div(1.5)
         player.ir.battleXPReq = player.ir.battleXPReq.div(getBuyableAmount("bl", 14).div(100).add(1))
+        if (player.tab == "anl") {
+            player.ir.battleXPReq = player.ir.battleXPReq.pow(1.35)
+        }
 
         if (zoneRef) player.ir.battleXPReq = player.ir.battleXPReq.mul(zoneRef.xpReqMult)
 
@@ -592,6 +604,40 @@ addLayer("ir", {
         }
         if (cutsceneActive) pauseAsteroidMinigame();
         else resumeAsteroidMinigame();
+
+        // Marcel Soul Energy Logic
+        if (player.ir.shipType == 11) {
+            player.ir.soulEnergyGain = new Decimal(0.3);
+            if (player.ir.inBattle && player.subtabs["anl"]["stuff"] == "Battle") {
+                player.ir.soulEnergyGain = player.ir.soulEnergyGain.mul(arena.shipStats.soulEnergyGain)
+            }
+        } else {
+            player.ir.soulEnergyGain = new Decimal(0);
+        }
+
+        // Clamp to Max
+        if (player.ir.soulEnergy && player.ir.soulEnergy.gt(player.ir.soulEnergyMax)) {
+            player.ir.soulEnergy = player.ir.soulEnergyMax;
+        }
+
+        // Reset outside battle
+        if (!player.ir.inBattle) {
+            player.ir.soulEnergy = new Decimal(0);
+        }
+        player.ir.dashCost = new Decimal(8)
+        if (player.ir.inBattle && player.subtabs["anl"]["stuff"] == "Battle") {
+            player.ir.dashCost = player.ir.dashCost.div(arena.shipStats.dashDiscount)
+        }
+        player.ir.timeStopCost = new Decimal(50)
+
+        player.ir.soulEnergyMax = new Decimal(100)
+        if (player.ir.inBattle && player.subtabs["anl"]["stuff"] == "Battle") player.ir.soulEnergyMax = player.ir.soulEnergyMax.mul(arena.shipStats.soulEnergyCap)
+        player.ir.soulEnergyMax = player.ir.soulEnergyMax.mul(challengeEffect("anl", 16))
+
+        if (inChallenge("anl", 16) && player.ir.soulEnergy.gte(Decimal.add(1, Decimal.mul(0.25, challengeCompletions("anl", 16))).mul(200))) {
+            player.anl.challenges[16] = player.anl.challenges[16] + 1
+            startChallenge("anl", 16)
+        }
     },
     bars: {
         healthBar: {
@@ -622,6 +668,22 @@ addLayer("ir", {
             fillStyle: { background: "linear-gradient(15deg, #0000bf 0%, #00007f 100%)"},
             display() {
                 return formatWhole(player.ir.battleXP) + "/" + formatWhole(player.ir.battleXPReq) + " XP";
+            },
+        },
+        soulBar: {
+            unlocked() { return !(arena && arena._fullscreen) },
+            direction: RIGHT,
+            width() {return (arena && arena._fullscreen) ? "calc(100vw - 6px)" : "800px"},
+            height: "60px",
+            unlocked() {return player.ir.shipType == 11},
+            progress() {
+                return player.ir.soulEnergy.div(player.ir.soulEnergyMax);
+            },
+            borderStyle() { return !SB_zones[player.ir.battleStage] ? {} : {border: "3px solid " + SB_zones[player.ir.battleStage].primaryColor, borderRadius: "0", borderTop: "0px", color: "white"}},
+            baseStyle: {background: "#2c2030",},
+            fillStyle: { background: "linear-gradient(15deg, #aa6bce 0%, #867494 100%)"},
+            display() {
+                return format(player.ir.soulEnergy) + "/" + format(player.ir.soulEnergyMax) + " Soul Energy (+" + format(player.ir.soulEnergyGain) + " per knife hit)";
             },
         },
         bossHealthBar: {
@@ -2308,7 +2370,7 @@ addLayer("ir", {
                 "<span style='color:#ffe066;text-shadow:0 0 8px #ffe066'>" + formatWhole(this.cost) + " " + this.currencyDisplayName + "</span>" // BOTTOM
             },
             title: "Civilization",
-            unlocked() { return true },
+            unlocked() { return hasUpgrade("ir", 16) },
             description() { return "Unlocks a normality upgrade in the dark universe."},
             cost: new Decimal(2000),
             currencyLocation() { return player.ir },
@@ -5225,6 +5287,7 @@ addLayer("ir", {
                             ["style-column", container, {marginLeft: "-3px", border: "3px solid " + player.ir.primaryColor, background: player.ir.menu != 2 ? "transparent" : "black"}]
                         ], {display: player.ir.menu == 0 ? "none !important" : "",  height: (arena && arena._fullscreen) ? "calc(100vh - 279px)" : "800px", width: (arena && arena._fullscreen) ? "calc(100vw - 6px)" : "800px"}],
                         ["style-column", [], {background: player.ir.primaryColor, width: (arena && arena._fullscreen) ? "calc(100vw)" : "806px", height: "3px"}],
+                        ["row", [["ex-bar", "soulBar"],]],
                         ["row", [["ex-bar", "bossHealthBar"],]],
                         ["style-column", [
                             ["blank", "9px", {width: "6px"}],

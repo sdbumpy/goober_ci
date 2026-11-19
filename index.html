@@ -11,12 +11,16 @@
 	<link rel="stylesheet" type="text/css" href="css/tree-node.css" />
 	<link rel="stylesheet" type="text/css" href="css/style.css" />
 	<link rel="icon" href="resources/ascensionShard.png">
+	<link rel="icon" href="resources/ascensionShard.png">
 	<link href="https://fonts.googleapis.com/css?family=Inconsolata" rel="stylesheet">
 
 	<script src="https://unpkg.com/vue@2.7.16/dist/vue.min.js"></script>
 	<script src="js/utils/localdata.js"></script>
+	<script src="https://unpkg.com/vue@2.7.16/dist/vue.min.js"></script>
+	<script src="js/utils/localdata.js"></script>
 	<script src="js/technical/break_eternity.js"></script>
 	<script src="js/technical/layerSupport.js"></script>
+	<script src="js/technical/uniSupport.js"></script>
 	<script src="js/technical/uniSupport.js"></script>
 
 	<script src="js/mod.js"></script>
@@ -37,6 +41,7 @@
 	<script src="js/utils/save.js"></script>
 	<script src="js/utils/themes.js"></script>
 	<script src="js/ShipBattle/shipBattleArena.js"></script>
+	<script src="js/ShipBattle/shipBattleArena.js"></script>
 
 </head>
 <body onload="load()" onmousemove="updateMouse(event)">
@@ -51,6 +56,7 @@
  				<button class="uniButton" v-if="uniShown('U3')" v-bind:style="universes.U3.nodeStyle()" :disabled="uniPaused('U3')" onclick="player.universe='U3'"><span class="buttonText">3</span></button>
 				<button class="uniButton" v-if="uniShown('UB')" v-bind:style="universes.UB.nodeStyle()" :disabled="uniPaused('UB')" onclick="player.universe='UB'"><span class="buttonText">β</span></button>
  				<button class="uniButton" v-if="uniShown('D1')" v-bind:style="universes.D1.nodeStyle()" onclick="player.universe='D1'"><span class="buttonText">D1</span></button>
+ 				<button class="uniButton" v-if="uniShown('AD1')" v-bind:style="universes.AD1.nodeStyle()" onclick="player.universe='AD1'"><span class="buttonText">AD1</span></button>
 				<button class="uniButton" v-if="uniShown('CH')" v-bind:style="universes.CH.nodeStyle()" onclick="player.universe='CH'"><span class="buttonText">γ</span></button>
 				<button class="uniButton" v-if="uniShown('UD')" v-bind:style="universes.UD.nodeStyle()" :disabled="uniPaused('UD')" onclick="player.universe='UD'"><span class="buttonText">δ</span></button>
 				<button class="uniButton" v-if="uniShown('UD_C')" v-bind:style="universes.UD_C.nodeStyle()" :disabled="uniPaused('UD_C')" onclick="player.universe='UD_C'"><span class="buttonText">ƍ</span></button>
@@ -97,14 +103,20 @@
 			<h1>Loading... (If this takes too long it means there was a serious error!)←</h1>
 		</div>
 		<div class="vl" v-if="tmp.other.splitScreen && player.tab!='none' && !(tmp.gameEnded && !player.keepGoing)"></div>
+		<div class="vl" v-if="tmp.other.splitScreen && player.tab!='none' && !(tmp.gameEnded && !player.keepGoing)"></div>
 		<div v-if="(tmp.gameEnded && !player.keepGoing)" class="fullWidth">
 			<br>
 			<h2>{{modInfo.name}} {{VERSION.withoutName}}</h2><br><br>
 			<h3>Uh oh, this isn't supposed to appear.</h3><br>
 			<h3>Seems the game spontaniously inflated.</h3><br>
 			<h3>If possible, would appreciate info in the discord :]</h3><br>
+			<h3>Uh oh, this isn't supposed to appear.</h3><br>
+			<h3>Seems the game spontaniously inflated.</h3><br>
+			<h3>If possible, would appreciate info in the discord :]</h3><br>
 			<br>
 			<button class="longUpg can" onclick="hardReset(true)">Play Again</button>&nbsp;&nbsp;&nbsp;&nbsp;<button
+				class="longUpg can" onclick="keepGoing()">Keep Going</button>&nbsp;&nbsp;&nbsp;&nbsp;<button
+				class="longUpg can" onclick="exportFile()">Export File</button>
 				class="longUpg can" onclick="keepGoing()">Keep Going</button>&nbsp;&nbsp;&nbsp;&nbsp;<button
 				class="longUpg can" onclick="exportFile()">Export File</button>
 			<br><br><br>
@@ -122,6 +134,11 @@
 			fullWidth: (player.tab == 'none'),
 			col: (player.tab !== 'none'),
 			left: (player.tab !== 'none')}"
+		<div id="treeOverlay" v-if="!(tmp.gameEnded && !player.keepGoing) && (player.tab === 'none' || !readData(layoutInfo.showTree))" class="treeOverlay" onscroll="resizeCanvas()"
+			v-bind:class="{
+			fullWidth: (player.tab == 'none'),
+			col: (player.tab !== 'none'),
+			left: (player.tab !== 'none')}"
 			 :style="{'margin-top': !readData(layoutInfo.showTree) && player.tab == 'info-tab' ? '50px' : ''}">
 			<overlay-head v-if="!(tmp.gameEnded && !player.keepGoing)"></overlay-head>
 			<div class="sideLayers">
@@ -133,9 +150,14 @@
 
 		<div v-if="!(tmp.gameEnded && !player.keepGoing) && (player.tab === 'none')" id="treeTab"  onscroll="resizeCanvas()"
 			v-bind:class="{ fullWidth: (player.tab == 'none'), col: (player.tab !== 'none'), left: (player.tab !== 'none')}">
+
+		<div v-if="!(tmp.gameEnded && !player.keepGoing) && (player.tab === 'none')" id="treeTab"  onscroll="resizeCanvas()"
+			v-bind:class="{ fullWidth: (player.tab == 'none'), col: (player.tab !== 'none'), left: (player.tab !== 'none')}">
 			<br><br><br><br>
 			<overlay-head id="fakeHead" style="visibility: hidden;">
 			</overlay-head>
+			<layer-tab :layer="player.tab" :key="'left'"></layer-tab>
+			<bg :layer="player.tab"></bg>
 			<layer-tab :layer="player.tab" :key="'left'"></layer-tab>
 			<bg :layer="player.tab"></bg>
 		</div>
@@ -144,7 +166,13 @@
 		<div class="popup-container">
 			<transition-group name="fade">
 				<div v-for="popup,index in activePopups" class="popup" v-bind:class="[popup.type, popup.image ? 'popup-wide' : '']"
+				<div v-for="popup,index in activePopups" class="popup" v-bind:class="[popup.type, popup.image ? 'popup-wide' : '']"
 					 v-bind:key="'p' + popup.id" v-on:click="() => {activePopups.splice(index, 1)}" v-bind:style="popup.color ? {'background-color': popup.color} : {}">
+					<img v-if="popup.image" style="float:left;border-radius:10px;margin:5px;margin-top:-8px;border:3px solid" v-bind:src="popup.image" width="70px" height="70px"></img>
+					<div>
+						<h3>{{popup.title}}</h3><br>
+						<h2 v-html="popup.message"></h2>
+					</div>
 					<img v-if="popup.image" style="float:left;border-radius:10px;margin:5px;margin-top:-8px;border:3px solid" v-bind:src="popup.image" width="70px" height="70px"></img>
 					<div>
 						<h3>{{popup.title}}</h3><br>
@@ -154,11 +182,13 @@
 			</transition-group>
 		</div>
 		<div id="particleHolder" class="particle-container">
+		<div id="particleHolder" class="particle-container">
 				<div v-for="particle,index in particles">
 					<particle :data="particle" :index="index" v-bind:key="'b' + particle.id"></particle>
 				</div>
 		</div>
 
+		<div id="layerHolder" v-if="player.tab !== 'none' && !(tmp.gameEnded && !player.keepGoing)" onscroll="resizeCanvas()" v-bind:class="{fullWidth: true, fast: true, tab: true}">
 		<div id="layerHolder" v-if="player.tab !== 'none' && !(tmp.gameEnded && !player.keepGoing)" onscroll="resizeCanvas()" v-bind:class="{fullWidth: true, fast: true, tab: true}">
 			<div v-for="layer in LAYERS">
 				<div v-if="player.tab==layer">
@@ -213,7 +243,57 @@
 			<div class="debugRow" style="height:50px;padding:0 8px">
 				<button class="debugButton" style="width:85px;font-size:12px" onclick="if(options.fullscreen){options.fullscreen=false}else{options.fullscreen=true}" v-html="`Fullscreen<br>[` + options.fullscreen + `]`"></button>
 			</div>
+			<bg :layer="player.tab" style="visibility:hidden !important"></bg>
 		</div>
+		<div class="layerBG" id="uniBG" v-if="player.startedGame && !player.hideMenu"></div>
+		<div id="debugHolder" class="debugHide" v-bind:class="{debugContainer: options.debug}" v-if="options.debug">
+			<div class="debugTitle">
+				<p style="font-size:20px;color:#2CFF05">Debug</p>
+				<button class="debugExit" onclick="options.debug = false">X</button>
+			</div>
+			<div class="debugRow">
+				<div class="debugInputText">
+					<p style="font-size:16px;color:#2CFF05">Layer</p>
+				</div>
+				<input class="debugInput" v-model.lazy="player.tab" type="text">
+			</div>
+			<div class="debugRow">
+				<div class="debugInputText">
+					<p style="font-size:16px;color:#2CFF05">Universe</p>
+				</div>
+				<input class="debugInput" v-model.lazy="player.universe" type="text">
+			</div>
+			<div class="debugRow">
+				<div class="debugInputText">
+					<p style="font-size:16px;color:#2CFF05">Dev Speed</p>
+				</div>
+				<input class="debugInput" v-model.lazy.number="player.devSpeed" type="text" inputmode="numeric" pattern="[0-9]*">
+			</div>
+			<div class="debugTitle" style="border-bottom:0px">
+				<p style="font-size:20px;color:#2CFF05">Time Skip</p>
+			</div>
+			<div class="debugRow" style="padding:0px 10px 10px 10px;border-bottom:2px solid #3CFF05">
+				<button class="debugButton" onclick="gameLoop(60)">1m</button>
+				<button class="debugButton" onclick="gameLoop(600)">10m</button>
+				<button class="debugButton" onclick="gameLoop(3600)">1h</button>
+				<button class="debugButton" onclick="gameLoop(86400)">1d</button>
+			</div>
+			<div class="debugRow" style="height:50px;padding:4px 8px 0px 8px">
+				<button class="debugButton" style="width:85px;font-size:12px" onclick="save()">Save</button>
+				<button class="debugButton" style="width:85px;font-size:12px" onclick="toggleOpt('autosave')" v-html="`Autosave<br>[` + options.autosave + `]`"></button>
+				<button class="debugButton" style="width:85px;font-size:10px" onclick="toggleOpt('performanceMode')" v-html="`Canvas Performance [` + options.performanceMode + `]`"></button>
+			</div>
+			<div class="debugRow" style="height:40px;padding:2px 8px">
+			<label class=can for='importfile' style='display:flex;align-items:center;justify-content:center;width:81px;height:36px;background:#000;border:2px solid #3CFF05;font-size:12px;color:#3CFF05'>Import<br>file</label><input id='importfile' type='file' onchange='importFile()' style='display:none' />
+				<button class="debugButton" style="width:85px;font-size:12px" onclick="exportFile()">Export File</button>
+				<button class="debugButton" style="width:85px;font-size:10px" onclick="toggleOpt('musicToggle')" v-html="`Music Toggle [` + options.musicToggle + `]`"></button>
+			</div>
+			<div class="debugRow" style="height:50px;padding:0 8px">
+				<button class="debugButton" style="width:85px;font-size:12px" onclick="if(options.fullscreen){options.fullscreen=false}else{options.fullscreen=true}" v-html="`Fullscreen<br>[` + options.fullscreen + `]`"></button>
+			</div>
+		</div>
+		<!--gameLoop(diff)-->
 		<!--gameLoop(diff)-->
 	</div>
 </body>
+

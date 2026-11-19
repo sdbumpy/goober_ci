@@ -289,13 +289,136 @@ const UPGRADE_POOL = {
         pool: "junk",
         effect() { addUpgrade("spaceJunkGainLegendary") },
     },
+
+    //MSB
+    soulEnergyGainEvo: {
+        name() { return "Soul Energy Gain"},
+        description() { return "+20% soul energy gain"},
+        rarity: "evolution",
+        pool: "labyrinth",
+        effect() { addUpgrade("soulEnergyGainEvo") },
+    },
+    soulEnergyCapEvo: {
+        name() { return "Soul Energy Capacity"},
+        description() { return "+20% soul energy capacity"},
+        rarity: "evolution",
+        pool: "labyrinth",
+        effect() { addUpgrade("soulEnergyCapEvo") },
+    },
+    attackEvo: {
+        name() { return "Evolved Attack"},
+        description() { return "+5% attack damage, +2.5% attack speed"},
+        rarity: "evolution",
+        pool: "labyrinth",
+        effect() { addUpgrade("attackEvo") },
+    },
+    dashEvo: {
+        name() { return "Distant Dashes"},
+        description() { return "+10% dash speed"},
+        rarity: "evolution",
+        pool: "labyrinth",
+        effect() { addUpgrade("dashEvo") },
+    },
+    defenseEvo: {
+        name() { return "Evolved Defense"},
+        description() { return "Take 10% less damage, +0.5 HP/sec" },
+        rarity: "evolution",
+        pool: "labyrinth",
+        effect() { addUpgrade("defenseEvo") },
+    },
+    //paragon
+    attackParagon: {
+        name() { return "Paragon Attack"},
+        description() { return "+10% attack damage, +5% attack speed"},
+        rarity: "paragon",
+        pool: "labyrinth",
+        effect() { addUpgrade("attackParagon") },
+    },
+    soulParagon: {
+        name() { return "Paragon Soul"},
+        description() { return "+20% soul energy gain, +20% soul energy capacity"},
+        rarity: "paragon",
+        pool: "labyrinth",
+        effect() { addUpgrade("soulParagon") },
+    },
+    passiveParagon: {
+        name() { return "Soul Generation"},
+        description() { return "+10% soul energy gain per second"},
+        rarity: "paragon",
+        pool: "labyrinth",
+        effect() { addUpgrade("passiveParagon") },
+    },
+    defenseParagon: {
+        name() { return "Paragon Defense"},
+        description() { return "Take 20% less damage, +1 HP/sec"},
+        rarity: "paragon",
+        pool: "labyrinth",
+        effect() { addUpgrade("defenseParagon") },
+    },
+    dashParagon: {
+        name() { return "Discounted Dashes"},
+        description() { return "Dashes are 20% cheaper"},
+        rarity: "paragon",
+        pool: "labyrinth",
+        effect() { addUpgrade("dashParagon") }, //new stat
+    },
+    speedParagon: {
+        name() { return "Perfect Speed"},
+        description() { return "+20% movement speed"},
+        rarity: "paragon",
+        pool: "labyrinth",
+        effect() { addUpgrade("speedParagon") }, //new stat
+    },
+    //ascended
+    attackAscension: {
+        name() { return "Ascended Attack"},
+        description() { return "+25% attack damage, +10% attack speed"},
+        rarity: "ascension",
+        pool: "labyrinth",
+        effect() { addUpgrade("attackAscension") },
+    },
+    soulAscension: {
+        name() { return "Ascended Soul"},
+        description() { return "+40% soul energy gain, +40% soul energy capacity"},
+        rarity: "ascension",
+        pool: "labyrinth",
+        effect() { addUpgrade("soulAscension") },
+    },
+    mobilityAscension: {
+        name() { return "Ascended Mobility"},
+        description() { return "+25% movement speed, +10% dash speed"},
+        rarity: "ascension",
+        pool: "labyrinth",
+        effect() { addUpgrade("mobilityAscension") },
+    },
+    passiveAscension: {
+        name() { return "Ascended Soul Generation"},
+        description() { return "+25% soul energy gain per second"},
+        rarity: "ascension",
+        pool: "labyrinth",
+        effect() { addUpgrade("passiveAscension") },
+    },
+    defenseAscension: {
+        name() { return "Ascended Defense"},
+        description() { return "Take 30% less damage, +2 HP/sec"},
+        rarity: "ascension",
+        pool: "labyrinth",
+        effect() { addUpgrade("defenseAscension") },
+    },
+    worldAscension: {
+        name() { return "The World Ascended"},
+        description() { return "THE WORLD duration is 20% longer"},
+        rarity: "ascension",
+        pool: "labyrinth",
+        effect() { addUpgrade("worldAscension") }, //new stat
+    },
 };
 
 const UPGRADE_RARITIES = {
     common: {
         weight() {
             let base = 80
-            return base
+            return player.tab == "anl" ? 0 :base
         },
         color: "#ffffff",
         baseCost: new Decimal(50),
@@ -305,7 +428,7 @@ const UPGRADE_RARITIES = {
     uncommon: {
         weight() {
             let base = this.enhanced ? 60 : 40;
-            return base
+            return player.tab == "anl" ? 0 :base
         },
         color: "#4cff4c",
         baseCost: new Decimal(150),
@@ -315,7 +438,7 @@ const UPGRADE_RARITIES = {
     rare: {
         weight() {
             let base = this.enhanced ? 40 : 20;
-            return base
+            return player.tab == "anl" ? 0 :base
         },
         color: "#4c8cff",
         baseCost: new Decimal(600),
@@ -325,7 +448,7 @@ const UPGRADE_RARITIES = {
     epic: {
         weight() {
             let base = this.enhanced ? 20 : 10;
-            return base
+            return player.tab == "anl" ? 0 :base
         },
         color: "#b44cff",
         baseCost: new Decimal(3000),
@@ -335,12 +458,42 @@ const UPGRADE_RARITIES = {
     legendary: {
         weight() {
             let base = this.enhanced ? 4 : 1;
-            return base
+            return player.tab == "anl" ? 0 :base
         },
         color: "#ffd34d",
         baseCost: new Decimal(20000),
         costGrowth: new Decimal(3),
         score: 6,
+    },
+    evolution: {
+        weight() {
+            let base = 100;
+            return player.tab != "anl" ? 0 : base
+        },
+        color: "#6651ff",
+        baseCost: new Decimal(20000),
+        costGrowth: new Decimal(3),
+        score: 1.5,
+    },
+    paragon: {
+        weight() {
+            let base = 20;
+            return player.tab != "anl" ? 0 : base
+        },
+        color: "#51a2ff",
+        baseCost: new Decimal(20000),
+        costGrowth: new Decimal(3),
+        score: 1.5,
+    },
+    ascension: {
+        weight() {
+            let base = 5;
+            return player.tab != "anl" ? 0 : base
+        },
+        color: "#c6f7ff",
+        baseCost: new Decimal(20000),
+        costGrowth: new Decimal(3),
+        score: 1.5,
     },
 };
 
@@ -423,6 +576,42 @@ const SHIP_STAT_FORMATTING = {
         valueSuffix: "",
         showCondition() {return true},
     },
+    soulEnergyGain: {
+        name: "Soul Energy Gain",
+        valuePrefix: "x",
+        valueSuffix: "",
+        showCondition() {return player.tab == "anl"},
+    },
+    soulEnergyCap: {
+        name: "Soul Energy Capacity",
+        valuePrefix: "x",
+        valueSuffix: "",
+        showCondition() {return player.tab == "anl"},
+    },
+    dashSpeed: {
+        name: "Dash Speed",
+        valuePrefix: "x",
+        valueSuffix: "",
+        showCondition() {return player.tab == "anl"},
+    },
+    dashDiscount: {
+        name: "Dash Discount",
+        valuePrefix: "/",
+        valueSuffix: "",
+        showCondition() {return player.tab == "anl"},
+    },
+    passiveSoulGain: {
+        name: "Passive Soul Gain",
+        valuePrefix: "",
+        valueSuffix: "%",
+        showCondition() {return player.tab == "anl"},
+    },
+    worldDuration: {
+        name: "THE WORLD Duration",
+        valuePrefix: "x",
+        valueSuffix: "",
+        showCondition() {return player.tab == "anl"},
+    },
 }
 
 function pickUpgrade(canRepeat = true, repititions = 12, data = {}) {
@@ -492,6 +681,9 @@ function pickUpgrades(data = {}) {
                 case "junk": {
                     if ((data.forceIncludePool && data.forceIncludePool.junk)) possibleUpgrades[upg.rarity].push(id);
                 break; }
+                case "labyrinth": {
+                    if (player.tab == "anl") possibleUpgrades[upg.rarity].push(id);
+                break; }
                 default : {
                     possibleUpgrades[upg.rarity].push(id);
                 break; }
@@ -516,13 +708,13 @@ function pickSalvagedUpgrades(data = {}) {
     let possibleUpgrades = []
     let totalChance = 0;
     // Build Rarity Table
-    for (let [i, v] of Object.entries(player.ir.shipBattleSaveCurrent.bankedSalvagedUpgrades)) {
+    for (let [i, v] of Object.entries(player.ir.shipBattleSaveCurrent.bankedUpgrades)) {
         totalChance += v
         possibleUpgrades.push(i);
     }
     // Select Upgrades
     let chosen = [];
-    let k = Object.entries(player.ir.shipBattleSaveCurrent.bankedSalvagedUpgrades)
+    let k = Object.entries(player.ir.shipBattleSaveCurrent.bankedUpgrades)
     while (chosen.length < Math.min(k.length, 3)) {
         for (let [i, v] of k) {
         let r = Math.random()
@@ -1270,21 +1462,72 @@ class SpaceArena {
     }
 
     update() {
-        
-        this.arenaDiv.style.backgroundPosition = (this.UIScale * (this.canvasWidth / 2 - this.ship.x)) + "px " + (this.UIScale * (this.canvasHeight / 2 - this.ship.y)) + "px"
-        this.arenaDiv.style.zIndex = player.ir.menu == 0 ? 10000 : -3
+        this.arenaDiv.style.backgroundPosition = (this.canvasWidth / 2 - this.ship.x) + "px " + (this.canvasHeight / 2 - this.ship.y) + "px";
+        this.arenaDiv.style.zIndex = player.ir.menu == 0 ? 10000 : -3;
 
-        if (player.ir.menu == 0 && !arena.bossActive) {
-            this.propertyAttackCooldown--
+        let now = Date.now();
+        let dt = (now - (this.lastUpdate || now)) / 1000;
+        this.lastUpdate = now;
+        dt = Math.min(dt, 0.1); // Clamp to prevent massive time jumps from lag spikes
+
+        // Check if Time Stop is active (measured in seconds)
+        let timeStopped = this.timeStopTimer > 0;
+        if (timeStopped) {
+            this.timeStopTimer = Math.max(0, this.timeStopTimer - dt);
+            if (this.timeStopTimer === 0) {
+                this.endTimeStop();
+                timeStopped = false;
+                        setTimeout(() => {
+        document.querySelectorAll('[id^="za-warudo"], .zw-overlay-container').forEach(e => e.remove()), document.querySelectorAll('.zw-frozen-world, body, html').forEach(e => { e.classList.remove('zw-frozen-world'); e.style.filter = ''; });
+        }, 100);
+            }
+        }
+        if (player.ir.shipType == 11) {
+            let now = performance.now();
+            
+            // Reset timer while menus are open to avoid huge energy bursts on unpause
+            if (!this.lastSoulTime || player.ir.menu !== 0) {
+                this.lastSoulTime = now;
+            }
+            
+            // Calculate delta in seconds; clamp to 0.1s to prevent spikes from tab defocus
+            let dt = Math.min((now - this.lastSoulTime) / 1000, 0.1);
+            this.lastSoulTime = now;
+
+            if (player.ir.menu === 0 && !timeStopped) {
+                let rawPercent = this.shipStats?.passiveSoulGain ?? this.shipStats?.passiveSoulGeneration ?? 0;
+
+                if (rawPercent > 0) {
+                    let baseGain = player.ir.soulEnergyGain || new Decimal(0.3);
+
+                    // Rate per second: 0.3 * (50 / 100) = 0.15/sec
+                    // Scaled across the actual frame elapsed time (dt)
+                    let gainThisFrame = baseGain.mul(rawPercent / 100).mul(dt);
+
+                    if (!player.ir.soulEnergy || isNaN(player.ir.soulEnergy.mag)) {
+                        player.ir.soulEnergy = new Decimal(0);
+                    }
+
+                    player.ir.soulEnergy = player.ir.soulEnergy.add(gainThisFrame);
+
+                    if (player.ir.soulEnergy.gt(player.ir.soulEnergyMax)) {
+                        player.ir.soulEnergy = player.ir.soulEnergyMax;
+                    }
+                }
+            }
+        }
+
+        if (player.ir.menu == 0 && !arena.bossActive && !timeStopped) {
+            this.propertyAttackCooldown--;
             if (this.propertyAttackCooldown <= 0) {
                 // IRIDITE DAGGERS
                 if (player.ir.battleStage == "iriditeZone" || (player.ir.battleStage == "spaceZone2" && player.ir.battleLevel.gte(10))) {
-                    this.propertyAttackCooldown = 600
-                    let repititions = player.ir.battleStage == "iriditeZone" && player.ir.battleLevel.gte(10) ? 2 : 1
+                    this.propertyAttackCooldown = 600;
+                    let repititions = player.ir.battleStage == "iriditeZone" && player.ir.battleLevel.gte(10) ? 2 : 1;
                     for (let i = 0; i < repititions; i++) {
-                        let ang = (Math.random() - 0.5) * Math.PI * 2
-                        let dist = 800
-                        let count = player.ir.battleStage == "iriditeZone" && player.ir.battleLevel.gte(10) ? 3 : 5
+                        let ang = (Math.random() - 0.5) * Math.PI * 2;
+                        let dist = 800;
+                        let count = player.ir.battleStage == "iriditeZone" && player.ir.battleLevel.gte(10) ? 3 : 5;
                         for (let j = 0; j < count; j++) {
                             SB_spawnWarning("iriditeDagger", null, {
                                 x: this.ship.x - Math.cos(ang) * dist,
@@ -1335,18 +1578,24 @@ class SpaceArena {
                 }
                 if (reward.bloodGems) {
                     let amt = reward.bloodGems.mul(this.shipStats.bloodGemGain).floor();
-                    amt = amt.max(1)
+                    amt = amt.max(1);
                     player.bl.bloodGems = player.bl.bloodGems.add(amt);
                     arena.lootFlashPositions.push({ x: enemy.x, y: enemy.y, amount: amt, type: "bloodGems" });
+                }
+                if (reward.epochFragments) {
+                    let amt = reward.epochFragments/*.mul(this.shipStats.celestialRadiationStoneGain)*/.floor();
+                    amt = amt.max(1);
+                    player.anl.epochFragments = player.anl.epochFragments.add(amt);
+                    arena.lootFlashPositions.push({ x: enemy.x, y: enemy.y, amount: amt, type: "epochFragments" });
                 }
             }
             // xp drop -> spawn xp orb
             if (celRef && celRef.experienceReward) {
-                let amt = celRef.experienceReward()
+                let amt = celRef.experienceReward();
                 if (amt.gt(0)) xpOrbsToAdd.push({ x: enemy.x, y: enemy.y, amount: amt });
             }
 
-            SB_celestialites[enemy.type].onDeath(enemy)
+            SB_celestialites[enemy.type].onDeath(enemy);
 
             let i = this.enemies.indexOf(enemy);
             let j = this.asteroids.indexOf(enemy);
@@ -1357,20 +1606,17 @@ class SpaceArena {
             }
         };
 
-        // If we were in fullscreen iridite mode but the boss is gone, restore arena
-        
         if (player.ir.menu > 0) {
             this.draw();
             return;
         }
 
-        // decrement ship invulnerability timer each tick (approx 60FPS)
+        // Decrement ship invulnerability timer each tick (approx 60FPS)
         const _TICK_MS = 1000 / 60;
         if (this.shipHitInvuln > 0) this.shipHitInvuln = Math.max(0, this.shipHitInvuln - _TICK_MS);
 
         // Hard mode check
         const hardMode = player.ir.battleLevel.gte(8);
-        
         if (hardMode) this.enemySpawnCooldownMax = 700;
 
         // Health regen
@@ -2207,10 +2453,20 @@ class SpaceArena {
                     style: "24px monospace"
                 });
             }
+            if (pos.type == "epochFragments") {
+                this.lootFlashes.push({
+                    x: pos.x,
+                    y: pos.y,
+                    text: `+${formatWhole(pos.amount)} epoch fragment`,
+                    timer: 240,
+                    color: "#82f182",
+                    style: "16px monospace"
+                });
+            }
         }
         arena.lootFlashPositions = [];
 
-        // Add XP orbs
+        // Add XP Orbs
         for (let orb of xpOrbsToAdd) {
             this.xpOrbs.push({
                 x: orb.x,
@@ -2248,6 +2504,22 @@ class SpaceArena {
             if (!projectile.type) continue;
             SB_projectiles[projectile.type].tick(projectile)
         }
+        // Update Marcel Dash Mist Particles
+        if (this.marcelMist) {
+            for (let mist of this.marcelMist) {
+                mist.x += mist.vx;
+                mist.y += mist.vy;
+                mist.vx *= 0.95;
+                mist.vy *= 0.95;
+                mist.rotation += mist.rotSpeed;
+                mist.radius += (mist.maxRadius - mist.radius) * 0.05;
+                mist.timer--;
+                mist.x = ((mist.x % this.width) + this.width) % this.width;
+                mist.y = ((mist.y % this.height) + this.height) % this.height;
+            }
+            this.marcelMist = this.marcelMist.filter(m => m.timer > 0);
+        }
+
 
         this.draw();
     }
@@ -2261,9 +2533,7 @@ class SpaceArena {
         const INVULN_MS = 1000 / 3;
         if (this.shipHitInvuln && this.shipHitInvuln > 0) return false;
 
-        if (this.enemies.concat(this.asteroids).some(e => e.type === "iriditeBoss" && e.health.gt(0))) {
-            player.ir.tookDamageInIriditeFight = true;
-        }
+        this.damageCheckIridite();
 
         // grant invulnerability
         this.shipHitInvuln = INVULN_MS;
@@ -2298,6 +2568,13 @@ class SpaceArena {
         return true;
     }
 
+    // Checks if damage was taken while iridite boss is alive.
+    damageCheckIridite() {
+        if (this.enemies.concat(this.asteroids).some(e => e.type === "iridite" && e.health.gt(0))) {
+            player.ir.tookDamageInIriditeFight = true;
+        }
+    }
+
     createSmallAsteroid(x, y) {
         let size = 20 + Math.random() * 10;
         let health = 20;
@@ -2330,6 +2607,35 @@ class SpaceArena {
         this.ctx.clearRect(0, 0, this.width, this.height);
         this.ctx.scale(this.UIScale, this.UIScale)
 
+        // Draw Marcel Glowing Blue Mist Trail (#094599 Scheme)
+        if (this.marcelMist && this.marcelMist.length > 0) {
+            this.ctx.save();
+            if (!options.performanceMode) {
+                this.ctx.globalCompositeOperation = "lighter";
+            }
+            for (let mist of this.marcelMist) {
+                let wrapped = this.getVisibleWrappedCoords([mist.x, mist.y], [mist.radius * 2, mist.radius * 2]);
+                if (!wrapped) continue;
+
+                let drawX = wrapped[0] + (this.canvasWidth / 2) - this.ship.x;
+                let drawY = wrapped[1] + (this.canvasHeight / 2) - this.ship.y;
+                let alpha = Math.max(0, mist.timer / mist.maxTimer);
+
+                let g = this.ctx.createRadialGradient(drawX, drawY, 0, drawX, drawY, mist.radius);
+                g.addColorStop(0, `rgba(40, 120, 235, ${0.7 * alpha})`);      // Bright electric blue core
+                g.addColorStop(0.35, `rgba(9, 69, 153, ${0.6 * alpha})`);      // Core #094599 sapphire
+                g.addColorStop(0.7, `rgba(5, 40, 95, ${0.35 * alpha})`);       // Deep midnight blue
+                g.addColorStop(1, `rgba(9, 69, 153, 0)`);                      // Edge fadeout
+
+                this.ctx.fillStyle = g;
+                this.ctx.beginPath();
+                this.ctx.arc(drawX, drawY, mist.radius, 0, Math.PI * 2);
+                this.ctx.fill();
+            }
+            this.ctx.globalCompositeOperation = "source-over";
+            this.ctx.restore();
+        }
+        
         // Draw ship
         SB_ships[player.ir.type].draw(this.ctx, this.ship)
 
@@ -2351,21 +2657,22 @@ class SpaceArena {
                     this.ctx.beginPath();
                     this.ctx.arc(wrapped[0], wrapped[1], trail.radius, 0, 2 * Math.PI);
                     this.ctx.fillStyle = "#b44cff";
+                    if (player.tab == "anl") this.ctx.fillStyle = "#22c55e";
                     this.ctx.fill();
                     this.ctx.restore();
                 }
             }
         }
 
-        // Draw bullets
+// Draw bullets
         for (let bullet of this.bullets) {
             if (bullet.type && SB_projectiles[bullet.type]) {
                 SB_projectiles[bullet.type].draw(this.ctx, bullet);
                 continue;
             }
 
-            let radius = bullet.radius || 20
-            let wrapped = this.getVisibleWrappedCoords([bullet.x, bullet.y], [radius * 2, radius * 2])
+            let radius = bullet.radius || 20;
+            let wrapped = this.getVisibleWrappedCoords([bullet.x, bullet.y], [radius * 2, radius * 2]);
             if (!wrapped) continue;
             // Skip ritual projectiles - RitualArena handles these with custom visuals
             if (bullet.ritualOrb || bullet.ritualBlade) continue;
@@ -2454,9 +2761,121 @@ class SpaceArena {
                 if (!options.performanceMode) {this.ctx.shadowBlur = 6} else {this.ctx.shadowBlur = 0};
                 this.ctx.fillText("✦", 0, 0);
                 this.ctx.restore();
-            } else {
+            } else if (bullet.isKnife) {
                 this.ctx.save();
+                this.ctx.translate(wrapped[0] + (this.canvasWidth / 2) - this.ship.x, wrapped[1] + (this.canvasHeight / 2) - this.ship.y);
+                
+                // Preserve aim angle when velocity drops to 0 during stasis
+                let ang = (bullet.vx !== 0 || bullet.vy !== 0) ? Math.atan2(bullet.vy, bullet.vx) : (bullet.ang ?? 0);
+                this.ctx.rotate(ang);
 
+                let s = (this.shipStats.bulletSize || 1);
+                let len = 35 * s;
+                let bw = 4.2 * s;
+
+                // 1. Ring Pommel (Chamfered Steel Loop)
+                let ringX = -15 * s;
+                let outerR = 5.6 * s;
+                let innerR = 2.8 * s;
+
+                let ringGrad = this.ctx.createLinearGradient(ringX - outerR, -outerR, ringX + outerR, outerR);
+                ringGrad.addColorStop(0, "#cbd5e1");
+                ringGrad.addColorStop(0.5, "#64748b");
+                ringGrad.addColorStop(1, "#1e293b");
+
+                this.ctx.fillStyle = ringGrad;
+                this.ctx.strokeStyle = "#0f172a";
+                this.ctx.lineWidth = 1 * s;
+                this.ctx.beginPath();
+                this.ctx.arc(ringX, 0, outerR, 0, Math.PI * 2);
+                this.ctx.arc(ringX, 0, innerR, 0, Math.PI * 2, true); // Inner hole cutout
+                this.ctx.closePath();
+                this.ctx.fill();
+                this.ctx.stroke();
+
+                // 2. Handle / Grip (Smooth, Solid Gunmetal Shaft)
+                let handleStart = ringX + outerR * 0.85;
+                let handleEnd = 1.5 * s;
+                let hw = 1.6 * s;
+
+                let handleGrad = this.ctx.createLinearGradient(0, -hw, 0, hw);
+                handleGrad.addColorStop(0, "#334155");
+                handleGrad.addColorStop(0.5, "#475569");
+                handleGrad.addColorStop(1, "#1e293b");
+
+                this.ctx.fillStyle = handleGrad;
+                this.ctx.strokeStyle = "#0f172a";
+                this.ctx.lineWidth = 0.9 * s;
+                this.ctx.beginPath();
+                this.ctx.rect(handleStart, -hw, handleEnd - handleStart, hw * 2);
+                this.ctx.fill();
+                this.ctx.stroke();
+
+                // 3. Crossguard (Tapered Steel Bar)
+                let gw = 1.2 * s;
+                let gh = 5.8 * s;
+                let gx = 1.5 * s;
+
+                let guardGrad = this.ctx.createLinearGradient(gx, -gh, gx + gw, gh);
+                guardGrad.addColorStop(0, "#94a3b8");
+                guardGrad.addColorStop(0.5, "#cbd5e1");
+                guardGrad.addColorStop(1, "#334155");
+
+                this.ctx.fillStyle = guardGrad;
+                this.ctx.strokeStyle = "#0f172a";
+                this.ctx.lineWidth = 1 * s;
+                this.ctx.beginPath();
+                this.ctx.roundRect(gx, -gh, gw, gh * 2, 0.4 * s);
+                this.ctx.fill();
+                this.ctx.stroke();
+
+                // 4. Extended Stiletto Blade (Diamond Bevel Facets)
+                let bladeStartX = gx + gw;
+
+                // Upper Facet (Reflective Light)
+                let topBladeGrad = this.ctx.createLinearGradient(bladeStartX, -bw, len, 0);
+                topBladeGrad.addColorStop(0, "#f8fafc");
+                topBladeGrad.addColorStop(0.35, "#cbd5e1");
+                topBladeGrad.addColorStop(1, "#94a3b8");
+
+                this.ctx.fillStyle = topBladeGrad;
+                this.ctx.strokeStyle = "#0f172a";
+                this.ctx.lineWidth = 0.9 * s;
+                this.ctx.beginPath();
+                this.ctx.moveTo(len, 0);
+                this.ctx.lineTo(bladeStartX, -bw);
+                this.ctx.lineTo(bladeStartX, 0);
+                this.ctx.closePath();
+                this.ctx.fill();
+                this.ctx.stroke();
+
+                // Lower Facet (Shaded Steel)
+                let btmBladeGrad = this.ctx.createLinearGradient(bladeStartX, 0, len, bw);
+                btmBladeGrad.addColorStop(0, "#64748b");
+                btmBladeGrad.addColorStop(0.5, "#475569");
+                btmBladeGrad.addColorStop(1, "#1e293b");
+
+                this.ctx.fillStyle = btmBladeGrad;
+                this.ctx.beginPath();
+                this.ctx.moveTo(len, 0);
+                this.ctx.lineTo(bladeStartX, 0);
+                this.ctx.lineTo(bladeStartX, bw);
+                this.ctx.closePath();
+                this.ctx.fill();
+                this.ctx.stroke();
+
+                // Center Spine Ridge (Highlight Seam)
+                this.ctx.strokeStyle = "rgba(255, 255, 255, 0.75)";
+                this.ctx.lineWidth = 0.8 * s;
+                this.ctx.beginPath();
+                this.ctx.moveTo(len * 0.97, 0);
+                this.ctx.lineTo(bladeStartX, 0);
+                this.ctx.stroke();
+
+                this.ctx.restore();
+            } else {
+                // Default fallback: Standard yellow circle for normal ships
+                this.ctx.save();
                 let r = bullet.radius || 3;
                 this.ctx.beginPath();
                 this.ctx.arc(wrapped[0] + (this.canvasWidth / 2) - this.ship.x, wrapped[1] + (this.canvasHeight / 2) - this.ship.y, r, 0, 2 * Math.PI);
@@ -3008,6 +3427,7 @@ class SpaceArena {
 
     resumeEvents() {
         this.running = true;
+    this.lastUpdate = Date.now();
         if (!this.loop) {
             this.loop = setInterval(() => this.update(), 1000 / 60);
         }
@@ -3024,6 +3444,7 @@ class SpaceArena {
         if (player.tab == "ir") player.subtabs["ir"]['stuff'] = "Lose";
         if (player.tab == "bl") player.subtabs["bl"]['stuff'] = "Lose";
         if (player.tab == "cbs") player.subtabs["cbs"]['stuff'] = "Lose";
+        if (player.tab == "anl") player.subtabs["anl"]['stuff'] = "Lose";
         localStorage.setItem('arenaActive', 'false');
     }
 }

@@ -187,6 +187,21 @@
             yPos: 500,
         },
         412: {
+            universeId() { return "AD1" },
+            title() { return universes[this.universeId()].symbol},
+            canClick() { return true },
+            unlocked() { return true },
+            tooltip() { return "Alt-Dark Universe 1<br>The Decay Horizon" },
+            onClick() {},
+            onHold() {},
+            style() {
+                let look = {position: "relative", top: this.yPos + "px", left: this.xPos + "px", color: universes[this.universeId()].nodeStyle().color, background: universes[this.universeId()].nodeStyle().background, backgroundColor: universes[this.universeId()].nodeStyle().backgroundColor, border: "3px solid " + universes[this.universeId()].nodeStyle().borderColor, width: "100px", minHeight: "100px", fontSize: "32px", borderRadius: "50%"}
+                return look
+            },
+            xPos: 250,
+            yPos: 300,
+        },
+        413: {
             universeId() { return "UD_C"},
             title() { return universes[this.universeId()].symbol},
             canClick() { return true },
@@ -231,7 +246,8 @@
                                 createMultiverseMapConnection(404, 409),
                                 createMultiverseMapConnection(405, 410),
                                 createMultiverseMapConnection(401, 411),
-                                ["style-column", [createMultiverseMapConnection(410, 412)], () => {return {display: universes["UD_C"].uniShown() ? "" : "none !important"} }],
+                                ["style-column", [createMultiverseMapConnection(407, 412)], () => {return {display: true ? "" : "none !important"} }],
+                                ["style-column", [createMultiverseMapConnection(410, 413)], () => {return {display: universes["UD_C"].uniShown() ? "" : "none !important"} }],
                             ], {width: "0", height: "0"}],
                             ["style-column", [["clickable", 401]], {width: "0", height: "0"}],
                             ["style-column", [["clickable", 402]], {width: "0", height: "0"}],

@@ -122,6 +122,7 @@ addLayer('g', {
         // SOFTCAP START
         player.g.doomSoftcapStart = new Decimal("1e500000")
         player.g.doomSoftcapStart = player.g.doomSoftcapStart.pow(buyableEffect("fa", 407))
+        if (hasUpgrade("s", 33)) player.g.doomSoftcapStart = player.g.doomSoftcapStart.mul(upgradeEffect("s", 33))
 
         // SOFTCAP WEAKENER
         let doomWeaken = new Decimal(1)

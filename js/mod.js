@@ -31,7 +31,9 @@
 		"Black Heart/depth2.js", "Black Heart/depth3.js", "Black Heart/matosLair.js", "Black Heart/darkTemple.js", "Black Heart/bulletHell.js",
 		"Black Heart/stagnantSynestia.js", "Black Heart/depth4.js", "Black Heart/alephsChamber.js", "Black Heart/laboratory.js", "DarkU1/grassJump.js",
 		"Hive/nest.js", "Check Back/gwaTemple.js", "Zar/zarDungeon.js", "Black Heart/creation.js", "DarkU1/rerollPoints.js",
-		"Check Back/diamondDust.js", "Check Back/treasureRoom.js",
+		"DarkAU1/aniciffo.js", "DarkAU1/timeRadiation.js", "DarkAU1/spaceRadiation.js", "DarkAU1/mindRadiation.js", "DarkAU1/heartRadiation.js",
+		"DarkAU1/decay.js", "DarkAU1/hopeRadiation.js", "DarkAU1/rageRadiation.js", "DarkAU1/labyrinth.js", "DarkAU1/msb.js", "DarkAU1/msb2.js", "DarkAU1/msb3.js",
+		"Check Back/diamondDust.js", "Check Back/treasureRoom.js", "Check Back/reclock.js", "Hall of Celestials/celestialHall2.js",
 
 		"Singularity/lightRift.js",
 		"Interspace/well.js", "Interspace/projects.js", "Interspace/prisms.js", "Interspace/blueshift.js", "Interspace/bumpy.js", "Interspace/cere.js", "Check Back/goobert.js",
@@ -216,6 +218,9 @@ function updateStyles() {
 		case "revc":
 			layerBG = "linear-gradient(0deg, #31aeb0)"
 			break;
+		case "rc":
+			layerBG = "radial-gradient(circle, #253a44, #0a0d11)"
+			break;
 		case "tad":
 			if (player.subtabs["tad"]["Tabs"] == "Domain") layerBG = "linear-gradient(0deg, #b2d8d8)"
 			if (player.subtabs["tad"]["Tabs"] == "Infinitum") layerBG = "linear-gradient(0deg, #c8c9fc)"
@@ -290,6 +295,37 @@ function updateStyles() {
 			    case "zarDungeon":
 					layerBG = "linear-gradient(0deg, rgb(187, 187, 187) 0%, rgba(83,83,83,1) 100%)"
 					break;
+				case "roomA":
+					layerBG = "linear-gradient(180deg, #10220c 0%, #1f240f 100%)"
+					break;
+				case "roomB":
+					layerBG = "linear-gradient(160deg, #102b0b 0%, #2b3311 100%)"
+					break;
+				case "roomC":
+					layerBG = "linear-gradient(160deg, #1d2b0b 0%, #22331d 100%)"
+					break;
+				case "roomTemple":
+					layerBG = "radial-gradient(#113, black)"
+					break;
+				case "roomD":
+					layerBG = "linear-gradient(90deg, #0c2218 0%, #0b1f0e 100%)"
+					break;
+				case "roomE":
+					layerBG = "linear-gradient(120deg, #0c2122 0%, #0b1f16 100%)"
+					break;
+				case "roomF":
+					layerBG = "linear-gradient(135deg, #0e252b 0%, #12312b 100%)"
+					break;
+				case "roomG":
+					layerBG = "linear-gradient(115deg, #051425 0%, #123128 100%)"
+					break; //linear-gradient(45deg, #1a265f 0%, #153242 100%)
+				case "roomH":
+					layerBG = "linear-gradient(45deg, #0d132e 0%, #0b1a22 100%)"
+					break; 
+				case "roomBoss": 
+					if (player.bh.celestialite.id != "noxBoss") layerBG = "linear-gradient(35deg, #083019 0%, #182730 100%)"
+					if (player.bh.celestialite.id == "noxBoss") layerBG = "linear-gradient(15deg, #410f2aff 0%, #4f1818 50%, #290303ff 100%)"
+					break;
 				default: 
 					layerBG = "linear-gradient(0deg, black)"
 					break;
@@ -299,7 +335,15 @@ function updateStyles() {
 		case "dgr": case "dn": case "db": case "dv": case "ds": case "pu": case "rp":
 			layerBG = "linear-gradient(0deg, #000)"
 			break;
-		case "ch": case "mm":
+		case "ani": case "tr": case "sr": case "mr": case "hr": case "hor": case "rar": case "anl":
+			if (player.sma.inStarmetalChallenge) layerBG = "url(resources/ad1bg.png)"
+			if (!player.sma.inStarmetalChallenge && player.tab == "hor") layerBG = "#454726"
+			if (!player.sma.inStarmetalChallenge && player.tab == "rar") layerBG = "#520c61"
+			break;
+		case "dec":
+			layerBG = "url(resources/ad1bg2.png)"
+			break;
+		case "ch": case "mm": case "ch2":
 			layerBG = "linear-gradient(90deg, #260b36, #0920b5)"
 			break;
 		case "ro": case "mi":
@@ -365,7 +409,7 @@ function updateStyles() {
 				layerBG = "linear-gradient(to right, #443812, #432236)"
 			}
 			break;
-		case "tw": case "mut":
+		case "tw":
 			layerBG = "linear-gradient(0deg, #021507)"
 			break;
 		case "cb":
@@ -804,9 +848,9 @@ function updateStyles() {
 		let lay = document.getElementById("layerHolder");
 		if (lay) lay.style.filter = "brightness(100%)"
 	}
-
+	
 	// Solar Eclipse Effect (moving sun/moon)
-	if (!options.performanceMode && player.sma.inStarmetalChallenge && player.pet.legPetTimers[0].active) {
+	if (!options.performanceMode && player.sma.inStarmetalChallenge && player.pet.legPetTimers[0].active && player.musuniverse == "D1") {
 	    if (!document.getElementById("solar-eclipse-bg")) {
     	    // Create the eclipse overlay
 	        const eclipse = document.createElement("div");
@@ -1082,11 +1126,16 @@ function updateStyles() {
 		case "sma": case "bh": case "cof": case "sme": case "lightRift":
             player.musuniverse = "U3"
 			break;
-		case "du": case "le": case "dr": case "dp": case "dg":
-		case "dgr": case "dn": case "ds": case "dv": case "bl": case "rp":
+		case "du": case "le": case "dr": case "dp": case "dg": case "db": case "dt": case "dgj":
+		case "dgr": case "dn": case "ds": case "dv": case "bl": case "rp": case "funify":
             player.musuniverse = "D1"
 			break;
-		case "ch": case "mm":
+		case "ani": case "tr": case "sr": case "mr": case "hr": case "hor": case "rar": case "dec": case "anl":
+            if (player.sma.inStarmetalChallenge) player.musuniverse = "AD1"
+			if (!player.sma.inStarmetalChallenge && player.tab == "hor") player.musuniverse = "A1"
+			if (!player.sma.inStarmetalChallenge && player.tab == "rar") player.musuniverse = "UB"
+			break;
+		case "ch": case "mm": case "ch2":
             player.musuniverse = "CH"
 			break;
 		case "au2": case "st": case "spet": case "sdim": case "pl": case "ir": case "se": case "sb": case "sa": case "sh":
@@ -1168,6 +1217,10 @@ function updateStyles() {
 								playAndLoopAudio("music/depth1Encore.mp3", options.musicVolume/10)
 								break;
 							}
+							if (player.bh.currentStage == "roomBoss" && player.bh.celestialite.id == "noxBoss") {
+								playAndLoopAudio("music/bloodBattle.mp3", options.musicVolume/10)
+								break;
+							}
 							// Default Behavior
 							if (BHS[player.bh.currentStage] && BHS[player.bh.currentStage].music) {
 								playAndLoopAudio(BHS[player.bh.currentStage].music, options.musicVolume/10);
@@ -1184,6 +1237,11 @@ function updateStyles() {
 						if (player.ir.inBattle && arena && !arena.bossActive) playAndLoopAudio("music/bloodBattle.mp3", options.musicVolume/10);
 			    		if (player.ir.inBattle && arena && arena.bossActive) playAndLoopAudio("music/nox.mp3", options.musicVolume/10);
 						break;
+					case "AD1":
+						if (!player.ir.inBattle) playAndLoopAudio("music/dau1.mp3", options.musicVolume/10)
+						if (player.ir.inBattle && arena && !(arena.bossActive && (player.ir.battleStage == "roomBeta" || player.ir.battleStage == "roomGamma"))) playAndLoopAudio("music/msb.mp3", options.musicVolume/10);
+						if (player.ir.inBattle && arena && arena.bossActive && player.ir.battleStage == "roomBeta") playAndLoopAudio("music/marcelClone.mp3", options.musicVolume/10)
+						if (player.ir.inBattle && arena && arena.bossActive && player.ir.battleStage == "roomGamma") playAndLoopAudio("music/msbAniciffo.mp3", options.musicVolume/10)
 					case "CH":
 						if (player.tab == "ch" || player.tab == "mm") playAndLoopAudio("music/hallOfCelestials.mp3", options.musicVolume/10)
 						//if (player.tab == "ch" && player.subtabs["ch"]["stuff"] != "???") playAndLoopAudio("music/aniciffoCutscene.mp3", options.musicVolume/10)
@@ -1237,11 +1295,11 @@ let hotkey = `<h1>Hotkeys:</h1><br>
 
 let credits = `<h1>Credits:</h1><br>
 		-Game by Icecreamdude.<br>
-		-Music by !Sweet and 150percent.<br>
-		-Ideas and Balancing by Nova.<br>
-		-Art by Jtoh_Sc.<br>
-		-Testing by Nova and Piterpicher.<br>
-		-Bug Fixes by Tsanth and Forwaken.<br>
+		-Music by Icecreamdude and 150percent.<br>
+		-Content by Icecreamdude, Forwaken, Bumpy, Akash.<br>
+		-Additional development by Ruzz and Deusovi.<br>
+		-Art by Bumpy, Akash and other contributors.<br>
+		-Tested by a bunch of people.<br>
 		`
 
 let changelog = `<h1>Changelog:</h1><br>
@@ -1274,6 +1332,14 @@ let changelog = `<h1>Changelog:</h1><br>
 			- Fixed light well δ blueshift being unavailable.<br>
 		<br>
 
+	<h3>v1.15 - Decaying Descent</h3><br>
+		Content:<br>
+			- DUE TO THE SECRETIVE NATURE OF THIS UPDATE, THIS WON'T BE REVEALED [For the next few weeks or so]<br>
+			- Check Nox perks!<br><br>
+		Balancing:<br>
+			-Made a lot of balancing changes<br><br>
+		Bug Fixes:<br>
+			-Fixed a lot of bugs<br><br>
 	<h3>v1.14 - The Interspace Update Part I: A Change of Space</h3><br>
 	
 		Content:<br>
@@ -2328,8 +2394,10 @@ var doNotCallTheseFunctionsEveryTick = [
 	"startCutscene38", "startCutscene39", "cookieClick", "generateFlower", "generateMult", "flowerClick",
 	"selectCelestialites", "petDeath", "celestialiteDeath", "petAbility", "celestialiteAbility",
 	"arriveAtStar", "spaceEnergyReset", "coinFlip", "randomizeSegments", "spinWheel", "spinSlots", "evaluateRewards",
-	"slotReset", "enhanceReset", "cardReset", "cardDraw", "startGame", "endGame", "resetCreation",
+	"slotReset", "enhanceReset", "cardReset", "cardDraw", "startGame", "endGame", "resetCreation", "timeRadiationReset", "spaceRadiationReset",
 	"diamondDustReset",
+	"hopeEssenceReset", "rageEssenceReset",
+	"mindRadiationReset", "heartRadiationReset", "hopeRageLevelReset",
 	"openChest",
 	"checkAchs",
 	"levelableButtonStyle",
@@ -2873,7 +2941,16 @@ function fixOldSave(oldVersion){
 		player.sdim.dimensionPower = player.st.dimensionPower
 		player.sdim.dimensionPowerEffects = player.st.dimensionPowerEffects
 		player.sdim.dimensionPowerPerSecond = player.st.dimensionPowerPerSecond
-		player.sdim.dimMax = new Decimal(player.st.dimMax)
+		player.sdim.dimMax = player.st.dimMax
+		player.sdim.buyables[1] = new Decimal(player.st.buyables[1])
+		player.sdim.buyables[11] = new Decimal(player.st.buyables[11])
+		player.sdim.buyables[12] = new Decimal(player.st.buyables[12])
+		player.sdim.buyables[13] = new Decimal(player.st.buyables[13])
+		player.sdim.buyables[14] = new Decimal(player.st.buyables[14])
+		player.sdim.buyables[15] = new Decimal(player.st.buyables[15])
+		player.sdim.buyables[16] = new Decimal(player.st.buyables[16])
+		player.sdim.buyables[17] = new Decimal(player.st.buyables[17])
+		player.sdim.buyables[18] = new Decimal(player.st.buyables[18])
 
 		player.spet.levelables = player.st.levelables
 	}

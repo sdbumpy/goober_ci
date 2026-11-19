@@ -1732,7 +1732,7 @@ addLayer("anl", {
                                 let container = []
                                 if (player.ir.shipBattleSaveCurrent == null || player.ir.shipType == 0) return container;
                                 let shipStats = SB_getUpgradedShipStats(arena ? arena.upgrades : player.ir.shipBattleSaveCurrent.upgrades)
-                                let baseStats = SB_ships[SB_shipNames[player.ir.shipBattleSaveCurrent.shipType]].baseStats
+                                let baseStats = SB_ships[SB_shipNames[player.ir.shipBattleSaveCurrent.type]].baseStats
                                 for (let [i, v] of Object.entries(shipStats)) {
                                     let statFormat = SHIP_STAT_FORMATTING[i]
                                     let prefix = statFormat.valuePrefix
@@ -1785,7 +1785,7 @@ addLayer("anl", {
                             ["top-column", function () {
                             let container = []
                             if (player.ir.shipBattleSaveCurrent == null) return container;
-                            let shipStats = SB_ships[SB_shipNames[player.ir.shipBattleSaveCurrent.shipType]].baseStats
+                            let shipStats = SB_ships[SB_shipNames[player.ir.shipBattleSaveCurrent.type]].baseStats
                             for (let [i, v] of Object.entries(SB_getDefaultShipStats())) {
                                 v = shipStats[i]
                                 let statFormat = SHIP_STAT_FORMATTING[i]

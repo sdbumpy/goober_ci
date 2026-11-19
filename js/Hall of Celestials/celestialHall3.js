@@ -163,5 +163,5 @@
         ["buttonless-microtabs", "stuff", { 'border-width': '0px' }],
         ["blank", "25px"],
     ],
-    layerShown() { return player.startedGame && true && !player.sma.inStarmetalChallenge}
+    layerShown() { return player.startedGame && false && !player.sma.inStarmetalChallenge}
 })

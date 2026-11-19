@@ -69,8 +69,6 @@ addLayer("pu", {
         if (run(layers.pu.levelables[401].canSelect, layers.pu.levelables[401]) && !getLevelableTier("pu", 401, true)) player.pu.legendaryPunchcardsUnlocked = player.pu.legendaryPunchcardsUnlocked.add(1)
         if (run(layers.pu.levelables[402].canSelect, layers.pu.levelables[402]) && !getLevelableTier("pu", 402, true)) player.pu.legendaryPunchcardsUnlocked = player.pu.legendaryPunchcardsUnlocked.add(1)
         if (run(layers.pu.levelables[403].canSelect, layers.pu.levelables[403]) && !getLevelableTier("pu", 403, true)) player.pu.legendaryPunchcardsUnlocked = player.pu.legendaryPunchcardsUnlocked.add(1)
-        if (run(layers.pu.levelables[405].canSelect, layers.pu.levelables[405]) && !getLevelableTier("pu", 405, true)) player.pu.legendaryPunchcardsUnlocked = player.pu.legendaryPunchcardsUnlocked.add(1)
-        if (run(layers.pu.levelables[406].canSelect, layers.pu.levelables[406]) && !getLevelableTier("pu", 406, true)) player.pu.legendaryPunchcardsUnlocked = player.pu.legendaryPunchcardsUnlocked.add(1)
 
         player.pu.legendaryPunchcardChance = Decimal.add(0.04, player.pu.legendaryPunchcardsUnlocked.sub(1).mul(0.02))
         player.pu.legendaryPunchcardChance = player.pu.legendaryPunchcardChance.add(buyableEffect("rp", 13))

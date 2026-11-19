@@ -46,7 +46,7 @@
 
 		"Ordinal/ordinal.js", "Ordinal/markup.js",
 
-		"Hall of Celestials/multiverseMap.js",
+		"Hall of Celestials/multiverseMap.js", "Hall of Celestials/celestialHall3.js",
 	],
 
 	discordName: "",
@@ -343,7 +343,7 @@ function updateStyles() {
 		case "dec":
 			layerBG = "url(resources/ad1bg2.png)"
 			break;
-		case "ch": case "mm": case "ch2":
+		case "ch": case "mm": case "ch2": case "ch3":
 			layerBG = "linear-gradient(90deg, #260b36, #0920b5)"
 			break;
 		case "ro": case "mi":
@@ -1135,7 +1135,7 @@ function updateStyles() {
 			if (!player.sma.inStarmetalChallenge && player.tab == "hor") player.musuniverse = "A1"
 			if (!player.sma.inStarmetalChallenge && player.tab == "rar") player.musuniverse = "UB"
 			break;
-		case "ch": case "mm": case "ch2":
+		case "ch": case "mm": case "ch2": case "ch3":
             player.musuniverse = "CH"
 			break;
 		case "au2": case "st": case "spet": case "sdim": case "pl": case "ir": case "se": case "sb": case "sa": case "sh":

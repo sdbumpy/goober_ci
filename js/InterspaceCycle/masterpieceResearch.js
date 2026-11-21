@@ -1,6 +1,7 @@
 ﻿addLayer("mre", {
     name: "Masterpiece Research",
     symbol: "MR",
+    universe: "UD_C",
     row: 1,
     position: 0,
     startData() { return {

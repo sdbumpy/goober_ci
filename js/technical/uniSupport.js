@@ -426,7 +426,7 @@ addUniverse("UD", {
 addUniverse("UD_C", {
     name: "Universe ƍ<br>The Cycle",
     symbol: "ƍ",
-    tree: [["cer"], ["mre", "bea", "plt"], ["for", "ast"]],
+    tree: [["interspaceCycleTimer"], ["cer"], ["mre", "bea", "plt"], ["for", "ast"]],
     nodeStyle() {
         let style = {
             background: "linear-gradient(-45deg, #deffff 0%, #ffa1d0 100%)",

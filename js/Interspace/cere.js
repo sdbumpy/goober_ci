@@ -1,12 +1,12 @@
-﻿let getRingUpgradeTreeLeft = function(x) {
+﻿const getRingUpgradeTreeLeft = function(x) {
     return (-106.5 + 224 * x)
 }
-let getRingUpgradeTreeTop = function(x) {
+const getRingUpgradeTreeTop = function(x) {
     return (174 * x)
 }
-let createRingUpgradeConnection = function(xy1_b, xy2_b) {
-    let xy1 = [getRingUpgradeTreeLeft(xy1_b[0]), getRingUpgradeTreeTop(xy1_b[1])]
-    let xy2 = [getRingUpgradeTreeLeft(xy2_b[0]), getRingUpgradeTreeTop(xy2_b[1])]
+const createRingUpgradeConnection = function(xy1_b, xy2_b) {
+    const xy1 = [getRingUpgradeTreeLeft(xy1_b[0]), getRingUpgradeTreeTop(xy1_b[1])]
+    const xy2 = [getRingUpgradeTreeLeft(xy2_b[0]), getRingUpgradeTreeTop(xy2_b[1])]
     return ["style-row", [["style-row", [], {
         position: "relative",
             left: () => {return (106 + (xy1[0] + xy2[0]) / 2) + "px"},
@@ -16,10 +16,65 @@ let createRingUpgradeConnection = function(xy1_b, xy2_b) {
             height: "12px", background: "#ffdfef",
     }]], {width: "0", height: "0"}]
 }
-let createRingUpgrade = function(type, id, xy) {
+const createRingUpgrade = function(type, id, xy) {
     return ["style-column", [
         [type, id],
     ], {width: "0", height: "0", position: "relative", left: getRingUpgradeTreeLeft(xy[0]) + "px", top: getRingUpgradeTreeTop(xy[1]) + "px"}]
+}
+
+const beginCycleRun = function () {
+    // Blacklight
+
+    // Planetarium
+    player.plt.planetarium = new Decimal(0)
+    player.plt.planetariumMult = new Decimal(1)
+    player.plt.planetariumBase = new Decimal(2.5)
+    player.plt.planetariumCompaction = new Decimal(0)
+    player.plt.planetariumTimer = new Decimal(10)
+    player.plt.planetariumTimerReq = new Decimal(10)
+    player.plt.fountainSpeed = new Decimal(1)
+    for (let i = 1; i <= 4; i++) {
+        player.plt.fountains[i].time = new Decimal(0)
+        player.plt.fountains[i].completions = new Decimal(0)
+        player.plt.fountains[i].canAddCompletion = false
+        if (player.plt.fountains[i].focused) {
+            player.plt.fountains[i].focused = false
+            player.prj.focused = player.prj.focused.sub(1)
+        }
+        if (player.plt.fountains[i].isFocused) {
+            player.plt.fountains[i].isFocused = false
+            player.prj.focused = player.prj.focused.sub(1)
+        }
+    }
+    for (let i_1 = 1; i_1 <= 5; i_1++) {
+        for (let i_2 = 1; i_2 <= 8; i_2++) {
+            setGridData("plt", `${i_1}0${i_2}`, [
+                0, // Type
+            ])
+        }
+    }
+
+    // Astrolabe
+    player.ast.astro = new Decimal(0)
+    player.ast.astroMult = new Decimal(1)
+    player.ast.fountainSpeed = new Decimal(1)
+    for (let i = 1; i <= 4; i++) {
+        player.ast.fountains[i].time = new Decimal(0)
+        player.ast.fountains[i].completions = new Decimal(0)
+        player.ast.fountains[i].canAddCompletion = false
+        if (player.ast.fountains[i].focused) {
+            player.ast.fountains[i].focused = false
+            player.prj.focused = player.prj.focused.sub(1)
+        }
+        if (player.ast.fountains[i].isFocused) {
+            player.ast.fountains[i].isFocused = false
+            player.prj.focused = player.prj.focused.sub(1)
+        }
+    }
+
+    // Cycle
+    player.cer.cycleActive = true
+    player.cer.cycleTimer = new Decimal(300)
 }
 
 addLayer("cer", {
@@ -39,6 +94,9 @@ addLayer("cer", {
         cycles: new Decimal(0),
 
         lowestBlueshift: new Decimal(1e3),
+
+        cycleActive: false,
+        cycleTimer: new Decimal(0),
     }},
     automate() {},
     nodeStyle() {
@@ -54,14 +112,32 @@ addLayer("cer", {
     },
     color: "#ffdfef",
     update(delta) {
+        if (player.cer.cycleActive) {
+            player.cer.cycleTimer = player.cer.cycleTimer.sub(delta)
+            if (player.cer.cycleTimer.lte(0)) {
+                player.cer.cycleActive = false
+                player.cer.cycleTimer = new Decimal(0)
+                if (player.universe == "UD_C") {
+                    player.universe = "UD"
+                }
+                if (layers[player.tab].universe == "UD_C") {
+                    player.tab = "cer"
+                }
+            }
+        } else {
+            player.cer.cycleTimer = new Decimal(0)
+        }
     },
     branches: ["bum"],
     clickables: {
         "enter": {
-            title() { return "<h2>ENTER THE CYCLE.</h2><br>Req: 10 Starshine Project ↻<br>and 1e300 Light" },
-            canClick() { return player.wel.light.gte("1e300")},
+            title() { return "<h2>ENTER THE CYCLE.</h2><br>Req: 10 Starshine Project ↻<br>and 1e400 Light" },
+            canClick() { return player.wel.light.gte("1e400") || true},
             unlocked() { return true },
             onClick() {
+                beginCycleRun()
+                player.universe = "UD_C"
+                player.tab = "bea"
             },
             style() {
                 let look = {width: "350px", minHeight: "100px", borderRadius: "10px 10px 25px 25px", padding: "8px", margin: "6px"}
@@ -1734,5 +1810,5 @@ addLayer("cer", {
         ]],
         ["microtabs", "stuff", { 'border-width': '0px' }],
     ],
-    layerShown() { return player.startedGame == true && hasMilestone("prj", 501)}
+    layerShown() { return player.startedGame == true && hasMilestone("prj", 501) || false}
 })

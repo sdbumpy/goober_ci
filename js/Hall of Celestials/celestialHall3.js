@@ -111,7 +111,7 @@
     infoboxes: {
         1: {
             title: "Cere, the Celestial of Cycles",
-            body() { return "<img src='resources/cere.png' width='100' height='100'><br>Cere is" },
+            body() { return "<img src='resources/cere.png' width='100' height='100'><br>For once, I had felt regret after killing a celestial. Cere clearly had burning hopes and dreams that transcended his celestialhood, yet on the surface was a potent desire for vengance. I can understand why he'd feel this way; for years, he was the perfect person living the perfect life. Suddenly, it was swept from underneath him and his friend Aurora. His very soul was to be altered without his input. It leads me to wonder what Cere would do if he got revenge on whoever turned him..." },
             unlocked() { return player.ch3.celestialIndex.eq(0) },
             titleStyle: {
                 "background-color": "#ff7fbf",
@@ -119,7 +119,7 @@
                 "color": "#7f003f",
             },
             bodyStyle: {
-                "background": "linear-gradient(150deg, #ff7fbf 0%, #ffbfdf 50%, #ff7fbf 100%)", 
+                "background": "linear-gradient(90deg, #ff7fbf 0%, #ffbfdf 50%, #ff7fbf 100%)", 
                 "border-color": "#7f003f",
                 "color": "#7f003f",
             },
@@ -144,11 +144,11 @@
                     ["blank", "20px"],
                     ["row", [["clickable", 11],]],
                     ["blank", "40px"],
-                    ["row", [["clickable", 12], ["blank", ["200px", "20px"]], ["clickable", 13],]],
+                    ["row", [["clickable", 12], ["blank", ["160px", "20px"]], ["clickable", 13],]],
                     ["blank", "40px"],
                     ["row", [["clickable", 17],]],
                     ["blank", "40px"],
-                    ["row", [["clickable", 15], ["blank", ["200px", "20px"]], ["clickable", 16],]],
+                    ["row", [["clickable", 15], ["blank", ["160px", "20px"]], ["clickable", 16],]],
                     ["blank", "40px"],
                     ["row", [["clickable", 14],]],
                     ["blank", "40px"],

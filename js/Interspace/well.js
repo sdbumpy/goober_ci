@@ -2311,15 +2311,15 @@ const component_fountain = function (layer, id, data = {}) {
                 ["style-column", [
                     ["style-column", [
                         ["blank", "6px"],
-                        ["raw-html", layerFountain.title, {color: "white", fontSize: "16px", fontFamily: "monospace"}],
-                        ["raw-html", , {color: "white", fontSize: "14px", fontFamily: "monospace"}],
+                        ["raw-html", layerFountain.title, {color: data.textColor, fontSize: "16px", fontFamily: "monospace"}],
+                        ["raw-html", , {color: data.textColor, fontSize: "14px", fontFamily: "monospace"}],
                         ["tooltip-row", [
-                            ["raw-html", formatWhole(playerFountain.completions) + " ↻", {color: "white", fontSize: "16px", fontFamily: "monospace", lineHeight: "18px", display: "block"}],
+                            ["raw-html", formatWhole(playerFountain.completions) + " ↻", {color: data.textColor, fontSize: "16px", fontFamily: "monospace", lineHeight: "18px", display: "block"}],
                             ["raw-html", "<div class='bottomTooltip'>Best: " + formatShortWhole(playerFountain.bestCompletions) + " ↻</div>"],
                         ]],
                         ["blank", "6px"],
                         ["style-column", [
-                            ["raw-html", "-" + formatWhole(playerFountain.statReq) + " " + layerFountain.currencyDisplayName, {color: "white", fontSize: "14px", fontFamily: "monospace"}],
+                            ["raw-html", "-" + formatWhole(playerFountain.statReq) + " " + layerFountain.currencyDisplayName, {color: data.textColor, fontSize: "14px", fontFamily: "monospace"}],
                         ], {background: data.primaryColor, borderRadius: (data.leftAdjacent ? "0" : "25px") + " " + (data.rightAdjacent ? "0" : "25px") + " 0 0", width: "259px", height: "25px"}],
                         ["blank", "3px"],
                         ["style-column", [
@@ -2389,15 +2389,15 @@ const component_fountain = function (layer, id, data = {}) {
                     ], {background: data.secondaryColor, border: "3px solid " + data.secondaryColor, borderRadius: (data.topAdjacent || data.leftAdjacent ? "0" : "25px") + " " + (data.topAdjacent || data.rightAdjacent ? "0" : "25px") + " 0 0", width: "259px"}],
                     ["style-column", [
                         ["style-column", [
-                            ["raw-html", layerFountain.effectDisplay(), {color: "white", fontSize: "14px", fontFamily: "monospace", display: "block", lineHeight: "1"}],
+                            ["raw-html", layerFountain.effectDisplay(), {color: data.textColor, fontSize: "14px", fontFamily: "monospace", display: "block", lineHeight: "1"}],
                         ], {background: data.secondaryColor, border: "3px solid " + data.primaryColor, borderRadius: "0 0 " + (data.bottomAdjacent || data.rightAdjacent ? "0" : "22px") + " " + (data.bottomAdjacent || data.leftAdjacent ? "0" : "22px"), width: "241px", height: "44px", paddingLeft: "6px", paddingRight: "6px"}],
                     ], {background: data.primaryColor, border: "3px solid " + data.secondaryColor, borderRadius: "0 0 " + (data.bottomAdjacent || data.rightAdjacent ? "0" : "25px") + " " + (data.bottomAdjacent || data.leftAdjacent ? "0" : "25px"), borderTop: "0", height: "50px"}],
                 ], {width: "265px", margin: "3px"}]
             ]]
         } else {
             container = ["style-column", [
-                ["raw-html", layerFountain.title, {color: "white", fontSize: "16px", fontFamily: "monospace"}],
-                ["raw-html", "<small>Req: " + layerFountain.conditionDisplay(), {color: "white", fontSize: "16px", fontFamily: "monospace"}],
+                ["raw-html", layerFountain.title, {color: data.textColor, fontSize: "16px", fontFamily: "monospace"}],
+                ["raw-html", "<small>Req: " + layerFountain.conditionDisplay(), {color: data.textColor, fontSize: "16px", fontFamily: "monospace"}],
             ], {background: "black", border: "3px solid #663737", borderRadius: (data.topAdjacent || data.leftAdjacent ? "0" : "25px") + " " + (data.topAdjacent || data.rightAdjacent ? "0" : "25px") + " " + (data.bottomAdjacent || data.rightAdjacent ? "0" : "25px") + " " + (data.bottomAdjacent || data.leftAdjacent ? "0" : "25px"), height: "160px", width: "259px", margin: "3px"}]
         }
     } else {
